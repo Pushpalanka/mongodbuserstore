@@ -14,7 +14,7 @@ import org.wso2.carbon.user.core.service.RealmService;
 public class MongoDBUserStoreDSComponent {
 
 	private static Log log = (Log) LogFactory.getLog(MongoDBUserStoreDSComponent.class);
-   // private static RealmService realmService;
+    private static RealmService realmService;
 
     protected void activate(ComponentContext ctxt) {
 
@@ -30,11 +30,15 @@ public class MongoDBUserStoreDSComponent {
         }
     }
 
-    /*protected void setRealmService(RealmService rlmService) {
+    protected void setRealmService(RealmService rlmService) {
           realmService = rlmService;
     }
 
     protected void unsetRealmService(RealmService realmService) {
         realmService = null;
-    }*/
+    }
+    
+    public static RealmService getRealmService() {
+        return realmService;
+    }
 }
