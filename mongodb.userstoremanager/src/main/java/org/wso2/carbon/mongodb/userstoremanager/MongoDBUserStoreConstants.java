@@ -32,7 +32,7 @@ public class MongoDBUserStoreConstants {
 	    static {
 	        setMandatoryProperty("ServiceURL", "Service URL", "http://", "location of webservice");
 	        setMandatoryProperty("ServicePort", "Service Port",  "27017", "Service Port which monogodb connect to");
-	        setProperty("Username", "User Name",  "root", "User Name to connect to mongodb (if provided)");
-	        setProperty("Password", "Enable Password", "", "Password to connect to mongodb server (if provided any)");
+	        setMandatoryProperty("Username", "User Name",  "root", "User Name to connect to mongodb (if provided)");
+	        setMandatoryProperty("Password", "Enable Password", "", "Password to connect to mongodb server (if provided any)");
 	    }
 }
