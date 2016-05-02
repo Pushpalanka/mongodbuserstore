@@ -29,6 +29,8 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
 
 
@@ -49,11 +51,18 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 	{
 		String host = MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.get(0).getValue();
 		Integer port = Integer.parseInt(MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.get(1).getValue());
-		MongoClient mongoClient = new MongoClient(host,port);
+		String userName = MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.get(2).getValue();
+		String password = MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.get(3).getValue();
+		List<ServerAddress> seeds = new ArrayList<ServerAddress>();
+		seeds.add(new ServerAddress(host));
+		char[] pass=password.toCharArray();
+		List<MongoCredential> credentials = new ArrayList<MongoCredential>();
+		credentials.add(
+				MongoCredential.createScramSha1Credential(userName,"wso2_carbon_db", pass)
+		);
+		MongoClient mongoClient = new MongoClient(seeds, credentials);
 		mongoClient.setWriteConcern(WriteConcern.JOURNALED);
 		DB db = (DB) mongoClient.getDatabase("test");
-		/*String userName = MongoDBUserStoreConstants.CUSTOM_UM_OPTIONAL_PROPERTIES.get(0).getValue();
-		String password = MongoDBUserStoreConstants.CUSTOM_UM_OPTIONAL_PROPERTIES.get(1).getValue();*/
 		if(db == null)
 		{
 			throw new UserStoreException("Error While make Connection to DB");
