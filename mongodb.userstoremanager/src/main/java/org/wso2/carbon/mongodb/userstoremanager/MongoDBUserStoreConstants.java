@@ -30,9 +30,9 @@ public class MongoDBUserStoreConstants {
 	    }
 
 	    static {
-	        setMandatoryProperty("ServiceURL", "Service URL", "http://", "location of webservice");
-	        setMandatoryProperty("ServicePort", "Service Port",  "27017", "Service Port which monogodb connect to");
+	        setMandatoryProperty("ServiceURL", "Service URL", "mongodb://localhost:27017", "location of webservice");
 	        setMandatoryProperty("Username", "User Name",  "root", "User Name to connect to mongodb (if provided)");
 	        setMandatoryProperty("Password", "Enable Password", "", "Password to connect to mongodb server (if provided any)");
+	        setProperty("db_name","Database Name","","Give your database name if you want to install user store other than default database");
 	    }
 }

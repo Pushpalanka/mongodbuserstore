@@ -1,12 +1,14 @@
 package org.wso2.carbon.mongodb.userstoremanager;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.juli.logging.Log;
+import org.bson.Document;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 import org.wso2.carbon.user.core.claim.ClaimManager;
 import org.wso2.carbon.user.api.Claim;
@@ -27,13 +29,14 @@ import org.wso2.carbon.user.core.util.DatabaseUtil;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
+import com.mongodb.MongoException;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
-
-
+import com.mongodb.WriteResult;
 
 import org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager;
 import org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreConstants;
@@ -50,19 +53,26 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 	protected DB getDBConnection() throws UserStoreException
 	{
 		String host = MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.get(0).getValue();
-		Integer port = Integer.parseInt(MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.get(1).getValue());
 		String userName = MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.get(2).getValue();
 		String password = MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.get(3).getValue();
+		String database = MongoDBUserStoreConstants.CUSTOM_UM_OPTIONAL_PROPERTIES.get(0).getValue();
 		List<ServerAddress> seeds = new ArrayList<ServerAddress>();
 		seeds.add(new ServerAddress(host));
 		char[] pass=password.toCharArray();
 		List<MongoCredential> credentials = new ArrayList<MongoCredential>();
 		credentials.add(
-				MongoCredential.createScramSha1Credential(userName,"wso2_carbon_db", pass)
+				MongoCredential.createMongoCRCredential(userName,"wso2_carbon_db", pass)
 		);
 		MongoClient mongoClient = new MongoClient(seeds, credentials);
 		mongoClient.setWriteConcern(WriteConcern.JOURNALED);
-		DB db = (DB) mongoClient.getDatabase("test");
+		DB db;
+		if(database != null && !database.equals(""))
+		{
+			db = (DB) mongoClient.getDatabase(database);
+		}
+		else{
+			db = (DB) mongoClient.getDatabase("wso2_carbon_db");
+		}
 		if(db == null)
 		{
 			throw new UserStoreException("Error While make Connection to DB");
@@ -71,11 +81,63 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 			return db;
 		}
 	}
-	public void addRememberMe(String arg0, String arg1) throws org.wso2.carbon.user.api.UserStoreException {
+	public void addRememberMe(String userName, String token) throws org.wso2.carbon.user.api.UserStoreException {
 		// TODO Auto-generated method stub
-		
+		DB db= null;
+		try{
+			db=getDBConnection();
+			DBCollection collection = db.getCollection("UM_HYBRID_REMEMBER_ME");
+			BasicDBObject dbObject = new BasicDBObject("UM_USER_NAME",userName).append("UM_TENANT_ID",this.tenantId);
+			DBCursor cursor = collection.find(dbObject);
+			if(cursor.hasNext()){
+				DBObject res = cursor.next();
+				Date createdTime = Calendar.getInstance().getTime();
+				if(res.get("UM_COOKIE_VALUE").toString().length()> 0 && res!=null){
+					collection.updateMulti(new BasicDBObject("UM_COOKIE_VALUE",token).append("UM_CREATED_TIME", createdTime),
+							new BasicDBObject("$set",new BasicDBObject("UM_USER_NAME",userName)).append("UM_TENANT_ID",this.tenantId));
+					log.info("Update remeber configuration successfully");
+				}else{	
+					BasicDBObject document = new BasicDBObject("UM_ID",getCollectionSequence("UM_HYBRID_REMEMBER_ME"));
+					document.append("UM_USER_NAME",userName);
+					document.append("UM_COOKIE_VALUE",token);
+					document.append("UM_CREATED_TIME",createdTime);
+					document.append("UM_TENANT_ID",this.tenantId);
+					collection.insert(document);
+					log.info("nsert new remeber configuration successfully");
+				}
+			}
+		}
+		catch(MongoException e){
+			log.error("Error :"+e.getMessage());
+		}
+		catch(Exception e){
+			log.error("Error :"+e.getMessage());
+		}
 	}
 
+	public double getCollectionSequence(String COLLECTION_NAME)
+	{
+		DB db;
+		double seq=0;
+		try {
+			db = getDBConnection();
+			DBCollection collection = db.getCollection("COUNTERS");
+			BasicDBObject dbObject =new BasicDBObject("_id",COLLECTION_NAME);
+			DBCursor cursor = collection.find(dbObject);
+			if(cursor.hasNext()){
+				seq = Double.parseDouble(cursor.next().get("seq").toString());
+				collection.update(new BasicDBObject("_id",COLLECTION_NAME),new BasicDBObject("$set",new BasicDBObject("seq",seq+1)));
+			}
+			else{
+				collection.insert(new BasicDBObject("_id",COLLECTION_NAME).append("seq",1));
+				seq=1;
+			}
+		} catch (UserStoreException e) {
+			// TODO Auto-generated catch block
+			log.error("Error ocurred:"+e.getMessage());
+		}
+		return seq;
+	}
 	public void addRole(String arg0, String[] arg1, Permission[] arg2)
 			throws org.wso2.carbon.user.api.UserStoreException {
 		// TODO Auto-generated method stub
