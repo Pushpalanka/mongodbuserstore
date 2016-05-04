@@ -1,10 +1,18 @@
 package org.wso2.carbon.mongodb.userstoremanager;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.juli.logging.Log;
@@ -19,10 +27,15 @@ import org.wso2.carbon.user.api.Property;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreManager;
+import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreConfigConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.common.RoleContext;
+import org.wso2.carbon.user.core.common.UserRolesCache;
+import org.wso2.carbon.user.core.hybrid.HybridRoleManager;
+import org.wso2.carbon.user.core.jdbc.JDBCRealmConstants;
+import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.tenant.Tenant;
 import org.wso2.carbon.user.core.util.DatabaseUtil;
 
@@ -34,22 +47,47 @@ import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
+import com.mongodb.MongoWriteException;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 
 import org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager;
+import org.wso2.carbon.CarbonConstants;
+import org.wso2.carbon.mongodb.query.MongoQueryException;
+import org.wso2.carbon.mongodb.query.MongoQueryExecutor;
 import org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreConstants;
 public class MongoDBUserStoreManager implements UserStoreManager {
 
 	private int tenantId;
+	private DB db;
 	private DBCollection collection;
+    protected RealmConfiguration realmConfig = null;
+    protected ClaimManager claimManager = null;
+    protected ProfileConfigurationManager profileManager = null;
+    protected UserRealm userRealm = null;
+    protected HybridRoleManager hybridRoleManager = null;
+    private boolean userRolesCacheEnabled = true;
+    private String cacheIdentifier;
+    private boolean replaceEscapeCharactersAtUserLogin = true;
+    protected UserRolesCache userRolesCache = null;
+    protected Random random = new Random();
+    
 	private org.apache.commons.logging.Log log = LogFactory.getLog(MongoDBUserStoreManager.class);
 	public MongoDBUserStoreManager()
 	{
 		this.tenantId = -1234;
+		this.realmConfig = new org.wso2.carbon.user.core.config.RealmConfiguration();
 	}
 	
+	public MongoDBUserStoreManager(RealmConfiguration configuration,int tenantID)
+	{
+		this.realmConfig = configuration;
+		this.tenantId = tenantID;
+		realmConfig.setUserStoreProperties(realmConfig.getUserStoreProperties());
+		//initialize user role cache
+		initUserRolesCache();
+	}
 	protected DB getDBConnection() throws UserStoreException
 	{
 		String host = MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.get(0).getValue();
@@ -65,7 +103,6 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		);
 		MongoClient mongoClient = new MongoClient(seeds, credentials);
 		mongoClient.setWriteConcern(WriteConcern.JOURNALED);
-		DB db;
 		if(database != null && !database.equals(""))
 		{
 			db = (DB) mongoClient.getDatabase(database);
@@ -83,10 +120,9 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 	}
 	public void addRememberMe(String userName, String token) throws org.wso2.carbon.user.api.UserStoreException {
 		// TODO Auto-generated method stub
-		DB db= null;
 		try{
 			db=getDBConnection();
-			DBCollection collection = db.getCollection("UM_HYBRID_REMEMBER_ME");
+			collection = db.getCollection("UM_HYBRID_REMEMBER_ME");
 			BasicDBObject dbObject = new BasicDBObject("UM_USER_NAME",userName).append("UM_TENANT_ID",this.tenantId);
 			DBCursor cursor = collection.find(dbObject);
 			if(cursor.hasNext()){
@@ -117,7 +153,6 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 
 	public double getCollectionSequence(String COLLECTION_NAME)
 	{
-		DB db;
 		double seq=0;
 		try {
 			db = getDBConnection();
@@ -132,16 +167,37 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 				collection.insert(new BasicDBObject("_id",COLLECTION_NAME).append("seq",1));
 				seq=1;
 			}
-		} catch (UserStoreException e) {
+		}catch(MongoWriteException e){
+			
+			log.error("Error :"+e.getError().getMessage());
+		}catch(MongoException e){
+		
+			log.error("Error :"+e.getMessage());
+		}catch (UserStoreException e) {
 			// TODO Auto-generated catch block
 			log.error("Error ocurred:"+e.getMessage());
 		}
 		return seq;
 	}
-	public void addRole(String arg0, String[] arg1, Permission[] arg2)
+	public void addRole(String roleName, String[] userList, Permission[] permissions)
 			throws org.wso2.carbon.user.api.UserStoreException {
 		// TODO Auto-generated method stub
-		
+		DB dbConnection = null;
+		if(!roleNameValid(roleName)){
+			throw new UserStoreException(
+                    "Role name not valid. Role name must be a non null string with following format, " +
+                        realmConfig.getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_ROLE_NAME_JAVA_REG_EX));
+		}
+		if (isExistingRole(roleName)) {
+            throw new UserStoreException(
+                    "Role name: "+roleName+" in the system. Please pick another role name.");
+        }
+		if (isReadOnly() == true) {
+            hybridRoleManager.addHybridRole(roleName, userList);
+        }else{
+        	
+        	
+        }
 	}
 
 	public void addRole(String arg0, String[] arg1, Permission[] arg2, boolean arg3)
@@ -437,6 +493,372 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		
 	}
 
-	
+	protected void initUserRolesCache() {
 
+        String userRolesCacheEnabledString = (realmConfig.getUserStoreProperty(
+                UserCoreConstants.RealmConfig.PROPERTY_ROLES_CACHE_ENABLED));
+
+        String userCoreCacheIdentifier = realmConfig.getUserStoreProperty(UserCoreConstants.
+                RealmConfig.PROPERTY_USER_CORE_CACHE_IDENTIFIER);
+
+        if (userCoreCacheIdentifier != null && userCoreCacheIdentifier.trim().length() > 0) {
+            cacheIdentifier = userCoreCacheIdentifier;
+        }
+
+        if (userRolesCacheEnabledString != null && userRolesCacheEnabledString.equals("")) {
+            userRolesCacheEnabled = Boolean.parseBoolean(userRolesCacheEnabledString);
+            if (log.isDebugEnabled()) {
+                log.debug("User Roles Cache is configured to:" + userRolesCacheEnabledString);
+            }
+        } else {
+            if (log.isDebugEnabled()) {
+                log.info("User Roles Cache is not configured. Default value: " +
+                         userRolesCacheEnabled + " is taken.");
+            }
+        }
+
+        if (userRolesCacheEnabled) {
+            userRolesCache = UserRolesCache.getInstance();
+        }
+
+    }
+
+	private void addInitialData() throws UserStoreException {
+        boolean isAdminRoleAdded = false;
+        try{
+        	if (!isExistingRole(realmConfig.getAdminRoleName())) {
+        		this.addRole(realmConfig.getAdminRoleName(), null, null);
+        		isAdminRoleAdded = true;
+        	}
+
+        	if (!isExistingRole(realmConfig.getEveryOneRoleName())) {
+        		this.addRole(realmConfig.getEveryOneRoleName(), null, null);
+        	}
+
+        	String adminUserName = getAdminUser();
+        	if (adminUserName != null) {
+        		realmConfig.setAdminUserName(adminUserName);
+        	} else {
+        		if (!isExistingUser(realmConfig.getAdminUserName())) {
+        			if ("true".equals(realmConfig
+        					.getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_READ_ONLY))) {
+        				log.error("Admin user name is not valid");
+        				throw new UserStoreException("Admin user name is not valid");
+        			}
+        			// it is not required to notify to the listeners, just persist data.
+        			this.persistUser(realmConfig.getAdminUserName(), realmConfig.getAdminPassword(),
+        					null, null, null, false);
+        		}
+        	}
+
+        	// use isUserInRole method
+        	if (isAdminRoleAdded) {
+        		this.updateRoleListOfUser(realmConfig.getAdminUserName(), null,
+        				new String[] { realmConfig.getAdminRoleName() });
+        	}
+
+        	// anonymous user and role
+        	if (!isExistingUser(CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME) && !this.isReadOnly()) {
+        		byte[] password = new byte[12];
+        		random.nextBytes(password);
+        		this.addUser(CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME, Base64.getEncoder().encode(password),
+        				null, null, null);
+
+        	}
+        	// if the realm is read only the role will be hybrid
+        	if (!isExistingRole(CarbonConstants.REGISTRY_ANONNYMOUS_ROLE_NAME)) {
+        		this.addRole(CarbonConstants.REGISTRY_ANONNYMOUS_ROLE_NAME,
+        				new String[] { CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME }, null);
+        	}
+        }catch(org.wso2.carbon.user.api.UserStoreException e){
+        	
+        	log.error("Error :"+e.getMessage());
+        }
+    }
+	
+	public String getAdminUser() throws org.wso2.carbon.user.api.UserStoreException {
+        String[] users = getUserListOfRole(this.realmConfig.getAdminRoleName());
+        if (users != null && users.length > 0) {
+            return users[0];
+        }
+        return null;
+    }
+	
+	private void persistUser(String userName, Object credential, String[] roleList,
+			Map<String, String> claims, String profileName,
+			boolean requirePasswordChange) throws UserStoreException {
+		if (!checkUserNameValid(userName)) {
+			throw new UserStoreException(
+					"User name not valid. User name must be a non null string with following format, " +
+							realmConfig.getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_USER_NAME_JAVA_REG_EX));
+
+		}
+
+		if (!checkUserPasswordValid(credential)) {
+			throw new UserStoreException(
+					"Credential not valid. Credential must be a non null string with following format, " +
+							realmConfig.getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_JAVA_REG_EX));
+
+		}
+
+		boolean isExisting = checkExistingUserName(userName);
+		if (isExisting) {
+			throw new UserStoreException("User name : " + userName
+					+ " exists in the system. Please pick another user name");
+		}
+
+		DB dbConnection = null;
+		String password = (String) credential;
+		try {
+			dbConnection = getDBConnection();
+			String sqlStmt1 = realmConfig.getUserStoreProperty(JDBCRealmConstants.ADD_USER);
+
+			String saltValue = null;
+
+			if ("true".equals(realmConfig.getUserStoreProperties().get(
+					JDBCRealmConstants.STORE_SALTED_PASSWORDS))) {
+				byte[] bytes = new byte[16];
+				random.nextBytes(bytes);
+				saltValue = Base64.getEncoder().encodeToString(bytes);
+			}
+
+			password = this.preparePassword(password, saltValue);
+
+			// do all 4 possibilities
+			if (sqlStmt1.contains(UserCoreConstants.UM_TENANT_COLUMN) && (saltValue == null)) {
+				this.updateUserValue(dbConnection, userName, password,
+						"", requirePasswordChange, new Date(), tenantId);
+			} else if (sqlStmt1.contains(UserCoreConstants.UM_TENANT_COLUMN) && (saltValue != null)) {
+				this.updateUserValue(dbConnection, userName, password,
+						saltValue, requirePasswordChange, new Date(), tenantId);
+			} else if (!sqlStmt1.contains(UserCoreConstants.UM_TENANT_COLUMN)
+					&& (saltValue == null)) {
+				this.updateUserValue(dbConnection, userName, password,
+						null, requirePasswordChange, new Date(),0);
+			} else {
+				this.updateUserValue(dbConnection, userName, password,
+						null,requirePasswordChange, new Date(),0);
+			}
+
+			String[] roles = null;
+			if (CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME.equals(userName)) {
+				roles = new String[0];
+			} else {
+				if (roleList == null || roleList.length == 0) {
+					roles = new String[] { this.realmConfig.getEveryOneRoleName() };
+				} else {
+					Arrays.sort(roleList);
+					if (Arrays.binarySearch(roleList, realmConfig.getEveryOneRoleName()) < 0) {
+						roles = new String[roleList.length + 1];
+						int i = 0;
+						for (i = 0; i < roleList.length; i++) {
+							roles[i] = roleList[i];
+						}
+						roles[i] = realmConfig.getEveryOneRoleName();
+					} else {
+						roles = roleList;
+					}
+				}
+			}
+
+			// add user to role.
+			String sqlStmt2 = null;
+			sqlStmt2 = realmConfig.getUserStoreProperty(JDBCRealmConstants.ADD_ROLE_TO_USER
+					+ "-" +"SQL");
+			if (sqlStmt2 == null) {
+				sqlStmt2 = realmConfig
+						.getUserStoreProperty(JDBCRealmConstants.ADD_ROLE_TO_USER);
+			}
+			if (sqlStmt2.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
+				this.udpateUserRoleMappingInBatchMode(dbConnection, roles,
+						tenantId, userName, tenantId, tenantId);
+			} else {
+				this.udpateUserRoleMappingInBatchMode(dbConnection, roles,
+						tenantId, userName);
+			}
+
+
+			if (claims != null) {
+				// add the properties
+				if (profileName == null) {
+					profileName = UserCoreConstants.DEFAULT_PROFILE;
+				}
+
+				Iterator<Map.Entry<String, String>> ite = claims.entrySet().iterator();
+				while (ite.hasNext()) {
+					Map.Entry<String, String> entry = ite.next();
+					String claimURI = entry.getKey();
+					String propName = claimManager.getAttributeName(claimURI);
+					String propValue = entry.getValue();
+					addProperty(dbConnection, userName, propName, propValue, profileName);
+				}
+			}
+		} catch (Throwable e) {
+			log.error(e.getMessage(), e);
+			throw new UserStoreException(e.getMessage(), e);
+		} 
+	}
+	protected boolean checkUserNameValid(String userName)
+            throws UserStoreException {
+
+        if (userName == null || CarbonConstants.REGISTRY_SYSTEM_USERNAME.equals(userName)) {
+            return false;
+        }
+
+        userName = userName.trim();
+
+        if (userName.length() < 1) {
+            return false;
+        }
+
+        String regularExpression = realmConfig.getUserStoreProperty(UserCoreConstants.RealmConfig.
+                PROPERTY_USER_NAME_JAVA_REG_EX);
+        return regularExpression == null || regularExpression.equals("") || isFormatCorrect(regularExpression, userName);
+
+    }
+
+	private boolean isFormatCorrect(String regularExpression, String attribute) {
+
+        Pattern p = Pattern.compile(regularExpression);
+        Matcher m = p.matcher(attribute);
+        return m.matches();
+
+    }
+	
+	 protected boolean checkUserPasswordValid(Object credential)
+	            throws UserStoreException {
+
+	        if (credential == null) {
+	            return false;
+	        }
+
+	        if (!(credential instanceof String)) {
+	            throw new UserStoreException("Can handle only string type credentials");
+	        }
+
+	        String password = ((String) credential).trim();
+
+	        if (password.length() < 1) {
+	            return false;
+	        }
+
+	        String regularExpression = realmConfig.getUserStoreProperty(UserCoreConstants.RealmConfig.
+	                PROPERTY_JAVA_REG_EX);
+	        return regularExpression == null || isFormatCorrect(regularExpression, password);
+	    }
+	 
+	 protected String preparePassword(String password, String saltValue) throws UserStoreException {
+	        try {
+	            String digestInput = password;
+	            if (saltValue != null) {
+	                digestInput = password + saltValue;
+	            }
+	            String digsestFunction = realmConfig.getUserStoreProperties().get(
+	                    JDBCRealmConstants.DIGEST_FUNCTION);
+	            if (digsestFunction != null) {
+	                MessageDigest dgst = MessageDigest.getInstance(digsestFunction);
+	                byte[] byteValue = dgst.digest(digestInput.getBytes());
+	                password = Base64.getEncoder().encodeToString(byteValue);
+	            }
+	            return password;
+	        } catch (NoSuchAlgorithmException e) {
+	            log.error(e.getMessage(), e);
+	            throw new UserStoreException(e.getMessage(), e);
+	        }
+	 }
+	 
+	 protected boolean checkExistingUserName(String userName){
+		 
+		 boolean isExisting = false;
+		 String isUnique = realmConfig
+				 .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_USERNAME_UNIQUE);
+		 if ("true".equals(isUnique) && !CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME.equals(userName)) {
+			 BasicDBObject uniqueUser = new BasicDBObject("UM_USER_NAME",userName);
+			 DBCursor cursor = collection.find(uniqueUser);
+			 isExisting = cursor.hasNext();
+			 if(log.isDebugEnabled()) {
+				 log.debug("The username should be unique across tenants.");
+			 }
+		 } else {
+			 BasicDBObject userSearch = new BasicDBObject("UM_USER_NAME",userName).append("UM_TENANT_ID",this.tenantId);
+			 DBCursor cursor = collection.find(userSearch);
+			 isExisting = cursor.hasNext();
+			 
+		 }
+		 return isExisting;
+	 }
+	 
+	 protected void updateUserValue(DB connection,String userName,String Password,String saultValue,
+			 boolean requirePasswordChange,Date date,int tenantId){
+		 
+		 BasicDBObject dbObject = new BasicDBObject();
+		 dbObject.append("UM_USER_PASSWORD", Password);
+		 dbObject.append("UM_CHANGED_TIME",date);
+		 dbObject.append("UM_REQUIRE_CHANGE",requirePasswordChange);
+		 BasicDBObject updateQuery = new BasicDBObject("UM_USER_NAME",userName);
+		 if((saultValue.equals("")||saultValue==null) && tenantId == 0)
+		 {
+			collection.update(updateQuery, dbObject); 
+		 }else if((saultValue.equals("")||saultValue==null) && tenantId != 0){
+			 dbObject.append("UM_TENANT_ID",tenantId);
+			 collection.update(updateQuery,dbObject); 
+		 }else if(saultValue.length()>0 && tenantId !=0){
+			dbObject.append("UM_SALT_VALUE",saultValue);
+			dbObject.append("UM_TENANT_ID",tenantId);
+			collection.update(updateQuery,dbObject);
+		 }
+		 else{
+			 dbObject.append("UM_SALT_VALUE",saultValue);
+			 collection.update(updateQuery,dbObject); 
+		 }
+		 
+	 }
+	 protected void udpateUserRoleMappingInBatchMode(DB db,Object... params){
+		 
+	 }
+	 
+	 public void addProperty(DB dbConnection, String userName, String propertyName,
+	            String value, String profileName) throws UserStoreException {
+		 
+	 }
+	 protected boolean roleNameValid(String roleName) {
+		 if (roleName == null) {
+			 return false;
+		 }
+
+		 if (roleName.length() < 1) {
+			 return false;
+		 }
+
+		 String regularExpression =
+				 realmConfig.getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_ROLE_NAME_JAVA_REG_EX);
+		 if (regularExpression != null) {
+			 if (!isFormatCorrect(regularExpression, roleName)) {
+				 return false;
+			 }
+		 }
+
+		 return true;
+	 }
+	 
+	 public void testScript(){
+		 
+		 try {
+			db = getDBConnection();
+			MongoQueryExecutor execute = new MongoQueryExecutor(db);
+			BasicDBObject query = new BasicDBObject("UM_ID","?");
+			DBCursor cursor = execute.find("UM_USER", query,1);
+			if(cursor.hasNext()){
+				
+				System.out.println(cursor.next());
+			}
+		} catch (UserStoreException e) {
+			// TODO Auto-generated catch block
+			System.out.println(e.getMessage());
+		} catch (MongoQueryException e) {
+			// TODO Auto-generated catch block
+			System.out.println(e.getMessage());
+		}
+		 
+	 }
 }
