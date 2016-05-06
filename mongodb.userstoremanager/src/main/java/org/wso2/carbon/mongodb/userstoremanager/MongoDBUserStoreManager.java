@@ -840,25 +840,5 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 
 		 return true;
 	 }
-	 
-	 public void testScript(){
-		 
-		 try {
-			db = getDBConnection();
-			MongoQueryExecutor execute = new MongoQueryExecutor(db);
-			BasicDBObject query = new BasicDBObject("UM_ID","?");
-			DBCursor cursor = execute.find("UM_USER", query,1);
-			if(cursor.hasNext()){
-				
-				System.out.println(cursor.next());
-			}
-		} catch (UserStoreException e) {
-			// TODO Auto-generated catch block
-			System.out.println(e.getMessage());
-		} catch (MongoQueryException e) {
-			// TODO Auto-generated catch block
-			System.out.println(e.getMessage());
-		}
-		 
-	 }
+	
 }

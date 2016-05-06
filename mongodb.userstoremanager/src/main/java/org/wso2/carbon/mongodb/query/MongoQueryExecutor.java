@@ -1,19 +1,18 @@
 package org.wso2.carbon.mongodb.query;
 
-import java.util.ArrayList;
 import java.util.Map;
 
-import org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager;
 import org.wso2.carbon.user.core.UserStoreException;
 
 import com.mongodb.DBObject;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBEncoder;
-import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
+import org.wso2.carbon.mongodb.query.MongoQueryException;
 
 public class MongoQueryExecutor {
 	
@@ -89,17 +88,17 @@ public class MongoQueryExecutor {
 		}
 	}
 	
-	public WriteResult update(String collection,DBObject document,DBObject condition,Object... params) throws MongoQueryException{
+	public WriteResult update(String collection,DBObject document,DBObject condition,Object[] conditions,Object... params) throws MongoQueryException{
 		
 		this.collection = db.getCollection(collection);
 		if(params==null){
 			
 			return this.collection.update(condition,document);
 		}else{
-			if(matchUpdateQueryWithParameters(document,condition, params)){
+			if(matchUpdateQueryWithParameters(document,condition,conditions, params)){
 				document = getDBObject(document, params);
-				condition = getDBObject(condition, params);
-				return this.collection.update(condition,document);
+				condition = getDBObject(condition, conditions);
+				return this.collection.update(condition,new BasicDBObject("$set",document));
 			}
 			else{
 				throw new MongoQueryException("Objects and parameter count not matched");
@@ -107,7 +106,7 @@ public class MongoQueryExecutor {
 		}
 	}
 	
-	public WriteResult update(String collection,DBObject update,DBObject query,
+	public WriteResult update(String collection,DBObject update,DBObject query,Object[] conditions,
 			boolean upsert,boolean multi,Object... params) throws MongoQueryException{
 		
 		this.collection = db.getCollection(collection);
@@ -115,19 +114,19 @@ public class MongoQueryExecutor {
 			
 			return this.collection.update(query, update,upsert,multi);
 		}else{
-			if(!matchUpdateQueryWithParameters(update, query, params)){
+			if(!matchUpdateQueryWithParameters(update, query,conditions,params)){
 				
 				throw new MongoQueryException("Parameters not matched with query");
 			}
 			else{
 				update = getDBObject(update, params);
-				query = getDBObject(query, params);
-				return this.collection.update(query, update, upsert, multi);
+				query = getDBObject(query, conditions);
+				return this.collection.update(query, new BasicDBObject("$set",update), upsert, multi);
 			}
 		}
 	}
 	
-	public WriteResult update(String collection,DBObject update,DBObject query,
+	public WriteResult update(String collection,DBObject update,DBObject query,Object[] conditions,
 			boolean upsert,boolean multi,WriteConcern aWriteConcern,Object... params) throws MongoQueryException{
 		
 		this.collection = db.getCollection(collection);
@@ -135,19 +134,19 @@ public class MongoQueryExecutor {
 			
 			return this.collection.update(query, update,upsert,multi,aWriteConcern);
 		}else{
-			if(!matchUpdateQueryWithParameters(update, query, params)){
+			if(!matchUpdateQueryWithParameters(update, query,conditions,params)){
 				
 				throw new MongoQueryException("Parameters not matched with query");
 			}
 			else{
 				update = getDBObject(update, params);
-				query = getDBObject(query, params);
-				return this.collection.update(query, update, upsert, multi,aWriteConcern);
+				query = getDBObject(query, conditions);
+				return this.collection.update(query, new BasicDBObject("$set",update), upsert, multi,aWriteConcern);
 			}
 		}
 	}
 	
-	public WriteResult update(String collection,DBObject update,DBObject query,
+	public WriteResult update(String collection,DBObject update,DBObject query,Object[] conditions,
 			boolean upsert,boolean multi,WriteConcern aWriteConcern,DBEncoder encoder,Object... params) throws MongoQueryException{
 		
 		this.collection = db.getCollection(collection);
@@ -155,19 +154,19 @@ public class MongoQueryExecutor {
 			
 			return this.collection.update(query, update,upsert,multi,aWriteConcern,encoder);
 		}else{
-			if(!matchUpdateQueryWithParameters(update, query, params)){
+			if(!matchUpdateQueryWithParameters(update, query,conditions,params)){
 				
 				throw new MongoQueryException("Parameters not matched with query");
 			}
 			else{
 				update = getDBObject(update, params);
-				query = getDBObject(query, params);
-				return this.collection.update(query, update, upsert, multi,aWriteConcern,encoder);
+				query = getDBObject(query,conditions);
+				return this.collection.update(query, new BasicDBObject("$set",update), upsert, multi,aWriteConcern,encoder);
 			}
 		}
 	}
 	
-	public WriteResult update(String collection,DBObject update,DBObject query,
+	public WriteResult update(String collection,DBObject update,DBObject query,Object[] conditions,
 			boolean upsert,boolean multi,WriteConcern aWriteConcern,boolean bypassDocumentValidation,DBEncoder encoder,Object... params) throws MongoQueryException{
 		
 		this.collection = db.getCollection(collection);
@@ -175,29 +174,29 @@ public class MongoQueryExecutor {
 			
 			return this.collection.update(query, update,upsert,multi,aWriteConcern,bypassDocumentValidation,encoder);
 		}else{
-			if(!matchUpdateQueryWithParameters(update, query, params)){
+			if(!matchUpdateQueryWithParameters(update, query,conditions,params)){
 				
 				throw new MongoQueryException("Parameters not matched with query");
 			}
 			else{
 				update = getDBObject(update, params);
-				query = getDBObject(query, params);
-				return this.collection.update(query, update, upsert, multi,aWriteConcern,bypassDocumentValidation,encoder);
+				query = getDBObject(query, conditions);
+				return this.collection.update(query, new BasicDBObject("$set",update), upsert, multi,aWriteConcern,bypassDocumentValidation,encoder);
 			}
 		}
 	}
 	
-	public WriteResult updateMulti(String collection,DBObject document,DBObject condition,Object... params) throws MongoQueryException{
+	public WriteResult updateMulti(String collection,DBObject document,DBObject condition,Object[] conditions,Object... params) throws MongoQueryException{
 
 		this.collection = db.getCollection(collection);
 		if(params==null){
 
 			return this.collection.updateMulti(condition,document);
 		}else{
-			if(matchUpdateQueryWithParameters(document,condition, params)){
+			if(matchUpdateQueryWithParameters(document,condition,conditions,params)){
 				document = getDBObject(document, params);
-				condition = getDBObject(condition, params);
-				return this.collection.updateMulti(condition, document);
+				condition = getDBObject(condition, conditions);
+				return this.collection.updateMulti(condition, new BasicDBObject("$set",document));
 			}
 			else{
 				throw new MongoQueryException("Objects and parameter count not matched");
@@ -205,8 +204,9 @@ public class MongoQueryExecutor {
 		}
 	}
 	
-	public WriteResult remove(DBObject query,Object... params) throws MongoQueryException{
+	public WriteResult remove(String collection,DBObject query,Object... params) throws MongoQueryException{
 		
+		this.collection = db.getCollection(collection);
 		if(params == null){
 			
 			return this.collection.remove(query);
@@ -224,8 +224,9 @@ public class MongoQueryExecutor {
 		
 	}
 	
-	public WriteResult remove(DBObject query,WriteConcern concern,Object... params) throws MongoQueryException{
+	public WriteResult remove(String collection,DBObject query,WriteConcern concern,Object... params) throws MongoQueryException{
 		
+		this.collection = db.getCollection(collection);
 		if(params == null){
 			return this.collection.remove(query,concern);
 		}
@@ -241,8 +242,9 @@ public class MongoQueryExecutor {
 		}
 	}
 	
-	public WriteResult remove(DBObject query,WriteConcern concern,DBEncoder encoder,Object... params) throws MongoQueryException{
+	public WriteResult remove(String collection,DBObject query,WriteConcern concern,DBEncoder encoder,Object... params) throws MongoQueryException{
 
+		this.collection = db.getCollection(collection);
 		if(params == null){
 			return this.collection.remove(query,concern,encoder);
 		}
@@ -264,7 +266,6 @@ public class MongoQueryExecutor {
 		int paramsCount = 0;
 		for(Map.Entry<String, Object> entry:map.entrySet()){
 			
-			String key = entry.getKey();
 			String value = entry.getValue().toString();
 			if(value.contains("?")){
 				paramsCount++;
@@ -284,24 +285,52 @@ public class MongoQueryExecutor {
 		int index=0;
 		for(Map.Entry<String, Object> entry:keyValue.entrySet()){
 			
-			String key = entry.getKey();
 			String value = entry.getValue().toString();
 			if(value.contains("?")){
 				entry.setValue(params[index]);
 				index++;
 			}
 		}
-		document = (DBObject) keyValue;
+		document = new BasicDBObject(keyValue);
 		return document;
 	}
 	
-	private boolean matchUpdateQueryWithParameters(DBObject document,DBObject query,Object... params){
-		
+	private DBObject getDBObject(DBObject document,Object[] conditions,Object... params)
+	{
+		Map<String,Object> keyValue = document.toMap();
+		if(params != null){
+			int index=0;
+			for(Map.Entry<String, Object> entry:keyValue.entrySet()){
+
+				String value = entry.getValue().toString();
+				if(value.contains("?")){
+					entry.setValue(params[index]);
+					index++;
+				}
+			}
+			document = new BasicDBObject(keyValue);
+		}else{
+			int index=0;
+			for(Map.Entry<String, Object> entry:keyValue.entrySet()){
+
+				String value = entry.getValue().toString();
+				if(value.contains("?")){
+					entry.setValue(conditions[index]);
+					index++;
+				}
+			}
+			document = new BasicDBObject(keyValue);
+		}
+		return document;
+	}
+	
+	private boolean matchUpdateQueryWithParameters(DBObject document,DBObject query,Object[] conditions,Object... params){
+
 		Map<String, Object> mapDocument = document.toMap();
 		Map<String, Object> mapQuery = query.toMap();
 		int paramsCount = 0;
 		for(Map.Entry<String, Object> entry:mapDocument.entrySet()){
-			
+
 			String key = entry.getKey();
 			String value = entry.getValue().toString();
 			if(value.contains("?")){
@@ -316,7 +345,7 @@ public class MongoQueryExecutor {
 				paramsCount++;
 			}
 		}
-		int provideCount = params.length;
+		int provideCount = params.length+conditions.length;
 		if(provideCount != paramsCount)
 		{
 			return false;
