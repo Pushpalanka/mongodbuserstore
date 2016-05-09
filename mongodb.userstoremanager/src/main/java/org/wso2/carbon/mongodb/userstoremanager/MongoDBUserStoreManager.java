@@ -99,7 +99,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		char[] pass=password.toCharArray();
 		List<MongoCredential> credentials = new ArrayList<MongoCredential>();
 		credentials.add(
-				MongoCredential.createMongoCRCredential(userName,"wso2_carbon_db", pass)
+				MongoCredential.createCredential(userName,"wso2_carbon_db", pass)
 		);
 		MongoClient mongoClient = new MongoClient(seeds, credentials);
 		mongoClient.setWriteConcern(WriteConcern.JOURNALED);
