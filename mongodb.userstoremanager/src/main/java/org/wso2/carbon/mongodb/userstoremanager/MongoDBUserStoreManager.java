@@ -53,9 +53,9 @@ import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 
 import org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager;
+import org.wso2.carbon.mongodb.util.MongoDBRealmUtil;
 import org.wso2.carbon.CarbonConstants;
 import org.wso2.carbon.mongodb.query.MongoQueryException;
-import org.wso2.carbon.mongodb.query.MongoQueryExecutor;
 import org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreConstants;
 public class MongoDBUserStoreManager implements UserStoreManager {
 
@@ -77,14 +77,16 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 	public MongoDBUserStoreManager()
 	{
 		this.tenantId = -1234;
-		this.realmConfig = new org.wso2.carbon.user.core.config.RealmConfiguration();
+		this.realmConfig = new RealmConfiguration();
+		this.realmConfig.setUserStoreProperties(MongoDBRealmUtil.getMONGO_QUERY(this.realmConfig.getUserStoreProperties()));
+		initUserRolesCache();
 	}
 	
 	public MongoDBUserStoreManager(RealmConfiguration configuration,int tenantID)
 	{
 		this.realmConfig = configuration;
 		this.tenantId = tenantID;
-		realmConfig.setUserStoreProperties(realmConfig.getUserStoreProperties());
+		realmConfig.setUserStoreProperties(MongoDBRealmUtil.getMONGO_QUERY(realmConfig.getUserStoreProperties()));
 		//initialize user role cache
 		initUserRolesCache();
 	}
@@ -611,12 +613,12 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		String password = (String) credential;
 		try {
 			dbConnection = getDBConnection();
-			String sqlStmt1 = realmConfig.getUserStoreProperty(JDBCRealmConstants.ADD_USER);
+			String sqlStmt1 = realmConfig.getUserStoreProperty(MongoDBRealmConstants.ADD_USER);
 
 			String saltValue = null;
 
 			if ("true".equals(realmConfig.getUserStoreProperties().get(
-					JDBCRealmConstants.STORE_SALTED_PASSWORDS))) {
+					MongoDBRealmConstants.STORE_SALTED_PASSWORDS))) {
 				byte[] bytes = new byte[16];
 				random.nextBytes(bytes);
 				saltValue = Base64.getEncoder().encodeToString(bytes);
@@ -663,11 +665,11 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 
 			// add user to role.
 			String sqlStmt2 = null;
-			sqlStmt2 = realmConfig.getUserStoreProperty(JDBCRealmConstants.ADD_ROLE_TO_USER
-					+ "-" +"SQL");
+			sqlStmt2 = realmConfig.getUserStoreProperty(MongoDBRealmConstants.ADD_ROLE_TO_USER
+					+ "-" +"MONGO_QUERY");
 			if (sqlStmt2 == null) {
 				sqlStmt2 = realmConfig
-						.getUserStoreProperty(JDBCRealmConstants.ADD_ROLE_TO_USER);
+						.getUserStoreProperty(MongoDBRealmConstants.ADD_ROLE_TO_USER);
 			}
 			if (sqlStmt2.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
 				this.udpateUserRoleMappingInBatchMode(dbConnection, roles,
@@ -754,7 +756,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 	                digestInput = password + saltValue;
 	            }
 	            String digsestFunction = realmConfig.getUserStoreProperties().get(
-	                    JDBCRealmConstants.DIGEST_FUNCTION);
+	                    MongoDBRealmConstants.DIGEST_FUNCTION);
 	            if (digsestFunction != null) {
 	                MessageDigest dgst = MessageDigest.getInstance(digsestFunction);
 	                byte[] byteValue = dgst.digest(digestInput.getBytes());
@@ -814,6 +816,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		 
 	 }
 	 protected void udpateUserRoleMappingInBatchMode(DB db,Object... params){
+		 
 		 
 	 }
 	 
