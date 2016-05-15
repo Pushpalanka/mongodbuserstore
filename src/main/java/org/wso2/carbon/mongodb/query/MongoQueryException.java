@@ -23,5 +23,5 @@ public class MongoQueryException extends Exception{
 		super(message,reason);
 	}
 	
-	
+
 }
