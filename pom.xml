@@ -58,7 +58,7 @@
 		</dependency>
         <dependency>
         	<groupId>org.mongodb</groupId>
-        	<artifactId>mongodb-driver</artifactId>
+        	<artifactId>mongo-java-driver</artifactId>
         	<version>3.2.2</version>
         </dependency>
     </dependencies>
@@ -99,7 +99,6 @@
                             org.wso2.carbon.mongodb.userstoremanager.internal
                         </Private-Package>
                         <Export-Package>
-                            org.json.*;
                             !org.wso2.carbon.mongodb.userstoremanager.internal,
                             org.wso2.carbon.mongodb.userstoremanager.*,
                         </Export-Package>

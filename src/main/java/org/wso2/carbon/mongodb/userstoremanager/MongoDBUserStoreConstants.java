@@ -12,19 +12,19 @@ public class MongoDBUserStoreConstants {
 
 
 	    private static void setProperty(String name, String displayName, String value, String description) {
-	        Property property = new Property(name, value, displayName + "#" +description, (Property[])null);
+	        Property property = new Property(name, value, displayName + "#" +description, null);
 	        CUSTOM_UM_OPTIONAL_PROPERTIES.add(property);
 
 	    }
 
 	    private static void setMandatoryProperty(String name, String displayName, String value, String description) {
-	        Property property = new Property(name, value, displayName + "#" +description, (Property[])null);
+	        Property property = new Property(name, value, displayName + "#" +description, null);
 	        CUSTOM_UM_MANDATORY_PROPERTIES.add(property);
 
 	    }
 
 	    private static void setAdvancedProperty(String name, String displayName, String value, String description) {
-	        Property property = new Property(name, value, displayName + "#" +description, (Property[])null);
+	        Property property = new Property(name, value, displayName + "#" +description, null);
 	        CUSTOM_UM_ADVANCED_PROPERTIES.add(property);
 
 	    }

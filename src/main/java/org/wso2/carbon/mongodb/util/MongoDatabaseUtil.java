@@ -32,7 +32,7 @@ import com.mongodb.WriteResult;
 
 public class MongoDatabaseUtil {
 
-	private static Log log = LogFactory.getLog(DatabaseUtil.class);
+	private static final Log log = LogFactory.getLog(DatabaseUtil.class);
     private static long connectionsCreated ;
     private static long connectionsClosed ;
     private static ExecutorService executor = null;
@@ -97,6 +97,9 @@ public class MongoDatabaseUtil {
 				value = Integer.parseInt(cursor.next().toString());
 			}
 			return value;
+		}catch(NullPointerException ex){
+			log.error(ex.getMessage(),ex);
+            throw new UserStoreException(ex.getMessage(),ex);
 		}catch(MongoQueryException ex){
 			log.error(ex.getMessage(),ex);
 			log.error("Using JSON Query :"+stmt);
@@ -137,6 +140,7 @@ public class MongoDatabaseUtil {
 					prepStmt.insert();
 				}
 			}
+            localConnection = true;
 			if (log.isDebugEnabled()) {
                 log.debug("Executed a batch update. Querry is : " + stmt + ": and result is"
                         + batchParamIndex);

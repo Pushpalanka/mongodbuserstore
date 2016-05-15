@@ -18,6 +18,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.juli.logging.Log;
 import org.bson.Document;
 import org.jasypt.util.password.StrongPasswordEncryptor;
+import org.wso2.carbon.mongodb.util.MongoDatabaseUtil;
 import org.wso2.carbon.user.core.claim.ClaimManager;
 import org.wso2.carbon.user.api.Claim;
 import org.wso2.carbon.user.api.Permission;
@@ -77,9 +78,9 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 	public MongoDBUserStoreManager()
 	{
 		this.tenantId = -1234;
-		this.realmConfig = new RealmConfiguration();
+	/*	this.realmConfig = new RealmConfiguration();
 		this.realmConfig.setUserStoreProperties(MongoDBRealmUtil.getMONGO_QUERY(this.realmConfig.getUserStoreProperties()));
-		initUserRolesCache();
+		initUserRolesCache();*/
 	}
 	
 	public MongoDBUserStoreManager(RealmConfiguration configuration,int tenantID)
@@ -121,7 +122,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		}
 	}
 	public void addRememberMe(String userName, String token) throws org.wso2.carbon.user.api.UserStoreException {
-		// TODO Auto-generated method stub
+
 		try{
 			db=getDBConnection();
 			collection = db.getCollection("UM_HYBRID_REMEMBER_ME");
@@ -133,7 +134,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 				if(res.get("UM_COOKIE_VALUE").toString().length()> 0 && res!=null){
 					collection.updateMulti(new BasicDBObject("UM_COOKIE_VALUE",token).append("UM_CREATED_TIME", createdTime),
 							new BasicDBObject("$set",new BasicDBObject("UM_USER_NAME",userName)).append("UM_TENANT_ID",this.tenantId));
-					log.info("Update remeber configuration successfully");
+					log.info("Update remember configuration successfully");
 				}else{	
 					BasicDBObject document = new BasicDBObject("UM_ID",getCollectionSequence("UM_HYBRID_REMEMBER_ME"));
 					document.append("UM_USER_NAME",userName);
@@ -141,7 +142,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 					document.append("UM_CREATED_TIME",createdTime);
 					document.append("UM_TENANT_ID",this.tenantId);
 					collection.insert(document);
-					log.info("nsert new remeber configuration successfully");
+					log.info("Insert new remember configuration successfully");
 				}
 			}
 		}
@@ -177,14 +178,14 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 			log.error("Error :"+e.getMessage());
 		}catch (UserStoreException e) {
 			// TODO Auto-generated catch block
-			log.error("Error ocurred:"+e.getMessage());
+			log.error("Error occurred:"+e.getMessage());
 		}
 		return seq;
 	}
 	public void addRole(String roleName, String[] userList, Permission[] permissions)
 			throws org.wso2.carbon.user.api.UserStoreException {
-		// TODO Auto-generated method stub
-		DB dbConnection = null;
+
+		//DB dbConnection = null;
 		if(!roleNameValid(roleName)){
 			throw new UserStoreException(
                     "Role name not valid. Role name must be a non null string with following format, " +
@@ -194,11 +195,8 @@ public class MongoDBUserStoreManager implements UserStoreManager {
             throw new UserStoreException(
                     "Role name: "+roleName+" in the system. Please pick another role name.");
         }
-		if (isReadOnly() == true) {
+		if (isReadOnly()) {
             hybridRoleManager.addHybridRole(roleName, userList);
-        }else{
-        	
-        	
         }
 	}
 
@@ -253,8 +251,8 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		String[] profileNames=null;
 		log.info("DB Connection Made Successfully");
 		collection = db.getCollection("UM_USER_ATTRIBUTE");
-		DBObject objet = new BasicDBObject("UM_TENANT_ID",tenantId);
-		List list = collection.distinct("UM_PROFILE_ID", objet);
+		DBObject object = new BasicDBObject("UM_TENANT_ID",tenantId);
+		List list = collection.distinct("UM_PROFILE_ID", object);
 		if(!list.isEmpty())
 		{
 			for(int i=0;i<list.size();i++)
@@ -284,7 +282,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 
 	public Properties getDefaultUserStoreProperties() {
 		// TODO Auto-generated method stub
-		Property[] mandotaryProperties = MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.toArray(
+		Property[] mandatoryProperties = MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.toArray(
 				new Property[MongoDBUserStoreConstants.CUSTOM_UM_ADVANCED_PROPERTIES.size()]
 				); 
 		Property[] optionalProperties = MongoDBUserStoreConstants.CUSTOM_UM_OPTIONAL_PROPERTIES.toArray(
@@ -294,7 +292,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 				new Property[MongoDBUserStoreConstants.CUSTOM_UM_ADVANCED_PROPERTIES.size()]
 				);
 		Properties properties = new Properties();
-		properties.setMandatoryProperties(mandotaryProperties);
+		properties.setMandatoryProperties(mandatoryProperties);
 		properties.setOptionalProperties(optionalProperties);
 		properties.setAdvancedProperties(advancedProperties);
 		return properties;
@@ -321,14 +319,11 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		List list = collection2.distinct("UM_USER_ID",object);
 		if(!list.isEmpty())
 		{
-			for(int i=0;i<list.size();i++)
-			{
-				object = new BasicDBObject("UM_USER_ID",list.get(i).toString()).append("UM_TENANT_ID", tenantId);
-				List profiles = collection.distinct("UM_PROFILE_ID",object);
-				if(!profiles.isEmpty())
-				{
-					for(int j=0;j<profiles.size();j++)
-					{
+			for (Object aList : list) {
+				object = new BasicDBObject("UM_USER_ID", aList.toString()).append("UM_TENANT_ID", tenantId);
+				List profiles = collection.distinct("UM_PROFILE_ID", object);
+				if (!profiles.isEmpty()) {
+					for (int j = 0; j < profiles.size(); j++) {
 						profileNames[j] = profiles.get(j).toString();
 					}
 				}
@@ -337,7 +332,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		}
 		else{
 			
-			throw new UserStoreException("User not exsists");
+			throw new UserStoreException("User not exists");
 		}
 	}
 
@@ -374,7 +369,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		Object tenants = collection.findOne(object).get("UM_TENANT_ID");
 		if(tenants == null)
 		{
-			throw new UserStoreException("User Not Exsits...");
+			throw new UserStoreException("User not exists...");
 		}
 		this.tenantId = Integer.parseInt(tenants.toString());
 		return this.tenantId;
@@ -398,14 +393,13 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 	}
 
 	public int getUserId(String userName) throws org.wso2.carbon.user.api.UserStoreException {
-		// TODO Auto-generated method stub
 		DB db = getDBConnection();
 		collection = db.getCollection("UM_USER");
 		DBObject object = new BasicDBObject("UM_USER_NAME",userName);
 		Object user_id = collection.findOne(object).get("UM_ID");
 		if(user_id == null)
 		{
-			throw new UserStoreException("User not exsists");
+			throw new UserStoreException("User not exists");
 		}
 		return Integer.parseInt(user_id.toString());
 	}
@@ -609,7 +603,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 					+ " exists in the system. Please pick another user name");
 		}
 
-		DB dbConnection = null;
+		DB dbConnection;
 		String password = (String) credential;
 		try {
 			dbConnection = getDBConnection();
@@ -642,7 +636,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 						null,requirePasswordChange, new Date(),0);
 			}
 
-			String[] roles = null;
+			String[] roles;
 			if (CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME.equals(userName)) {
 				roles = new String[0];
 			} else {
@@ -652,7 +646,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 					Arrays.sort(roleList);
 					if (Arrays.binarySearch(roleList, realmConfig.getEveryOneRoleName()) < 0) {
 						roles = new String[roleList.length + 1];
-						int i = 0;
+						int i;
 						for (i = 0; i < roleList.length; i++) {
 							roles[i] = roleList[i];
 						}
@@ -664,7 +658,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 			}
 
 			// add user to role.
-			String sqlStmt2 = null;
+			String sqlStmt2;
 			sqlStmt2 = realmConfig.getUserStoreProperty(MongoDBRealmConstants.ADD_ROLE_TO_USER
 					+ "-" +"MONGO_QUERY");
 			if (sqlStmt2 == null) {
@@ -672,10 +666,9 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 						.getUserStoreProperty(MongoDBRealmConstants.ADD_ROLE_TO_USER);
 			}
 			if (sqlStmt2.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
-				this.udpateUserRoleMappingInBatchMode(dbConnection, roles,
-						tenantId, userName, tenantId, tenantId);
+				MongoDatabaseUtil.updateUserRoleMappingInBatchMode(dbConnection,sqlStmt2,roles,tenantId, userName, tenantId, tenantId);
 			} else {
-				this.udpateUserRoleMappingInBatchMode(dbConnection, roles,
+				MongoDatabaseUtil.updateUserRoleMappingInBatchMode(dbConnection, sqlStmt2,roles,
 						tenantId, userName);
 			}
 
@@ -686,9 +679,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 					profileName = UserCoreConstants.DEFAULT_PROFILE;
 				}
 
-				Iterator<Map.Entry<String, String>> ite = claims.entrySet().iterator();
-				while (ite.hasNext()) {
-					Map.Entry<String, String> entry = ite.next();
+				for (Map.Entry<String, String> entry : claims.entrySet()) {
 					String claimURI = entry.getKey();
 					String propName = claimManager.getAttributeName(claimURI);
 					String propValue = entry.getValue();
@@ -755,10 +746,10 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 	            if (saltValue != null) {
 	                digestInput = password + saltValue;
 	            }
-	            String digsestFunction = realmConfig.getUserStoreProperties().get(
+	            String digestFunction = realmConfig.getUserStoreProperties().get(
 	                    MongoDBRealmConstants.DIGEST_FUNCTION);
-	            if (digsestFunction != null) {
-	                MessageDigest dgst = MessageDigest.getInstance(digsestFunction);
+	            if (digestFunction != null) {
+	                MessageDigest dgst = MessageDigest.getInstance(digestFunction);
 	                byte[] byteValue = dgst.digest(digestInput.getBytes());
 	                password = Base64.encode(byteValue);
 	            }
@@ -771,7 +762,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 	 
 	 protected boolean checkExistingUserName(String userName){
 		 
-		 boolean isExisting = false;
+		 boolean isExisting;
 		 String isUnique = realmConfig
 				 .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_USERNAME_UNIQUE);
 		 if ("true".equals(isUnique) && !CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME.equals(userName)) {
@@ -815,10 +806,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		 }
 		 
 	 }
-	 protected void udpateUserRoleMappingInBatchMode(DB db,Object... params){
-		 
-		 
-	 }
+
 	 
 	 public void addProperty(DB dbConnection, String userName, String propertyName,
 	            String value, String profileName) throws UserStoreException {

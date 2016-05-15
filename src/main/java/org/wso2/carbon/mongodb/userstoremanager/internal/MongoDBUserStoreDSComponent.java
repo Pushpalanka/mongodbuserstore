@@ -14,7 +14,7 @@ import org.wso2.carbon.user.api.UserStoreManager;
 
 public class MongoDBUserStoreDSComponent {
 
-	private static Log log = (Log) LogFactory.getLog(MongoDBUserStoreDSComponent.class);
+	private static final Log log = (Log) LogFactory.getLog(MongoDBUserStoreDSComponent.class);
 
     protected void activate(ComponentContext ctxt) throws Exception{
 

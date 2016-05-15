@@ -328,11 +328,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 	        	}
 	        }
 		}
-		if(parameterValue.size()!= this.parameterCount){
-			
-			return false;
-		}
-		return true;
+		return parameterValue.size() == this.parameterCount;
 	}
 
 	private boolean convertToDBObject(String query){

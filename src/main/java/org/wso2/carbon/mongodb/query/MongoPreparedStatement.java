@@ -13,51 +13,51 @@ import com.mongodb.WriteResult;
 
 public interface MongoPreparedStatement {
 
-	public void setInt(String key,int parameter);
+	void setInt(String key, int parameter);
 	
-	public void setDouble(String key,double parameter);
+	void setDouble(String key, double parameter);
 	
-	public void setString(String key,String parameter);
+	void setString(String key, String parameter);
 	
-	public void setTimeStamp(String key,BSONTimestamp timeStamp);
+	void setTimeStamp(String key, BSONTimestamp timeStamp);
 	
-	public void setArray(String key,ArrayList<Object> parameters);
+	void setArray(String key, ArrayList<Object> parameters);
 	
-	public void setObject(String key,Object object);
+	void setObject(String key, Object object);
 	
-	public void setDate(String key,Date date);
+	void setDate(String key, Date date);
 	
-	public void setBoolean(String key,boolean parameter);
+	void setBoolean(String key, boolean parameter);
 	
-	public void setDBPointer(String key,DBRef dbRef);
+	void setDBPointer(String key, DBRef dbRef);
 	
-	public void setSymbol(String key,Symbol symbol);
+	void setSymbol(String key, Symbol symbol);
 	
-	public void setRegularExpression(String key,String parameter);
+	void setRegularExpression(String key, String parameter);
 	
-	public void setLong(String key,long parameter);
+	void setLong(String key, long parameter);
 	
-	public void close();
+	void close();
 	
-	public WriteResult insert() throws MongoQueryException;
+	WriteResult insert() throws MongoQueryException;
 	
-	public DBCursor find() throws MongoQueryException;
+	DBCursor find() throws MongoQueryException;
 	
-	public WriteResult update() throws MongoQueryException;
+	WriteResult update() throws MongoQueryException;
 	
-	public WriteResult update(boolean upsert,boolean multi) throws MongoQueryException;
+	WriteResult update(boolean upsert, boolean multi) throws MongoQueryException;
 	
-	public WriteResult update(boolean upsert,boolean multi,WriteConcern aWriteConcern) throws MongoQueryException;
+	WriteResult update(boolean upsert, boolean multi, WriteConcern aWriteConcern) throws MongoQueryException;
 	
-	public WriteResult update(boolean upsert,boolean multi,WriteConcern aWriteConcern,DBEncoder encoder) throws MongoQueryException;
+	WriteResult update(boolean upsert, boolean multi, WriteConcern aWriteConcern, DBEncoder encoder) throws MongoQueryException;
 	
-	public WriteResult update(boolean upsert,boolean multi,WriteConcern aWriteConcern,boolean byPassDocumentValidation,DBEncoder encoder) throws MongoQueryException;
+	WriteResult update(boolean upsert, boolean multi, WriteConcern aWriteConcern, boolean byPassDocumentValidation, DBEncoder encoder) throws MongoQueryException;
 	
-	public WriteResult updateMulti() throws MongoQueryException;
+	WriteResult updateMulti() throws MongoQueryException;
 	
-	public WriteResult remove() throws MongoQueryException;
+	WriteResult remove() throws MongoQueryException;
 	
-	public WriteResult remove(WriteConcern concern) throws MongoQueryException;
+	WriteResult remove(WriteConcern concern) throws MongoQueryException;
 	
-	public WriteResult remove(WriteConcern concern,DBEncoder encoder) throws MongoQueryException;
+	WriteResult remove(WriteConcern concern, DBEncoder encoder) throws MongoQueryException;
 }
