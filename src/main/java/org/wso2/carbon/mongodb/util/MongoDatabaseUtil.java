@@ -47,24 +47,24 @@ public class MongoDatabaseUtil {
 	private static final int DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS = -1;
 	private static final boolean DEFAULT_TEST_WHILE_IDLE = false;
 	
-	public static synchronized DB getRealmDataSource(){
+	public static synchronized DB getRealmDataSource(RealmConfiguration realmConfiguration){
 		
 		if(dataSource == null){
-			return createRealmDataSource();
+			return createRealmDataSource(realmConfiguration);
 		}
 		else{
 			return dataSource;
 		}
 	}
 
-	public static DB createRealmDataSource() {
+	public static DB createRealmDataSource(RealmConfiguration realmConfiguration) {
 		// TODO Auto-generated method stub
 		List<ServerAddress> seeds = new ArrayList<ServerAddress>();
-		seeds.add(new ServerAddress(MongoDBRealmConstants.URL));
-		char[] pass=MongoDBRealmConstants.PASSWORD.toCharArray();
+		seeds.add(new ServerAddress(realmConfiguration.getRealmProperty(MongoDBRealmConstants.URL)));
+		char[] pass=realmConfiguration.getRealmProperty(MongoDBRealmConstants.PASSWORD).toCharArray();
 		List<MongoCredential> credentials = new ArrayList<MongoCredential>();
 		credentials.add(
-				MongoCredential.createCredential(MongoDBRealmConstants.USER_NAME,"wso2_carbon_db", pass)
+				MongoCredential.createCredential(realmConfiguration.getRealmProperty(MongoDBRealmConstants.USER_NAME),"wso2_carbon_db", pass)
 		);
 		MongoClient mongoClient = new MongoClient(seeds, credentials);
 		mongoClient.setWriteConcern(WriteConcern.JOURNALED);
@@ -298,4 +298,5 @@ public class MongoDatabaseUtil {
          };
          scheduler.scheduleAtFixedRate(runnable, 60, 60, TimeUnit.SECONDS);
      }
+
 }

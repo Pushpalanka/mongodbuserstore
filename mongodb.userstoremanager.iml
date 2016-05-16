@@ -2,12 +2,12 @@
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
   <component name="FacetManager">
     <facet type="Osmorc" name="OSGi">
-      <configuration manifestGenerationMode="OsmorcControlled" manifestLocation="" jarfileLocation="mongodb.userstoremanager-0.0.1-SNAPSHOT.jar" outputPathType="CompilerOutputPath" bndFileLocation="" bundlorFileLocation="" bundleActivator="" bundleSymbolicName="mongodb.userstoremanager" bundleVersion="0.0.1.SNAPSHOT" ignoreFilePattern="" useProjectDefaultManifestFileLocation="true" alwaysRebuildBundleJAR="false" doNotSynchronizeWithMaven="false">
+      <configuration manifestGenerationMode="OsmorcControlled" manifestLocation="" jarfileLocation="mongodb.userstoremanager-0.0.1-SNAPSHOT.jar" outputPathType="CompilerOutputPath" bndFileLocation="" bundlorFileLocation="" bundleActivator="org.wso2.carbon.mongodb.userstoremanager.internal.MongoDBUserStoreDSComponent" bundleSymbolicName="mongodb.userstoremanager" bundleVersion="0.0.1.SNAPSHOT" ignoreFilePattern="" useProjectDefaultManifestFileLocation="true" alwaysRebuildBundleJAR="false" doNotSynchronizeWithMaven="false">
         <additionalProperties>
           <property key="Bundle-Name" value="mongodb.userstoremanager" />
           <property key="Private-Package" value="org.wso2.carbon.mongodb.userstoremanager.internal" />
           <property key="Export-Package" value="!org.wso2.carbon.mongodb.userstoremanager.internal,org.wso2.carbon.mongodb.userstoremanager.*," />
-          <property key="Import-Package" value="javax.servlet; version=2.4.0,javax.servlet.http; version=2.4.0,org.wso2.carbon.base.*,org.wso2.carbon.user.core.*,*;resolution:=optional" />
+          <property key="Import-Package" value="javax.servlet; version=2.4.0,javax.servlet.http; version=2.4.0,org.wso2.carbon.base.*,org.wso2.carbon.user.core.*; version=3.2.3,*;resolution:=optional" />
           <property key="DynamicImport-Package" value="*" />
         </additionalProperties>
         <additionalJARContents />

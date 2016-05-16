@@ -75,12 +75,12 @@ public class MongoDBUserStoreManager implements UserStoreManager {
     protected Random random = new Random();
     
 	private org.apache.commons.logging.Log log = LogFactory.getLog(MongoDBUserStoreManager.class);
-	public MongoDBUserStoreManager()
+	public MongoDBUserStoreManager(RealmConfiguration configuration)
 	{
 		this.tenantId = -1234;
-	/*	this.realmConfig = new RealmConfiguration();
+		this.realmConfig = configuration;
 		this.realmConfig.setUserStoreProperties(MongoDBRealmUtil.getMONGO_QUERY(this.realmConfig.getUserStoreProperties()));
-		initUserRolesCache();*/
+		initUserRolesCache();
 	}
 	
 	public MongoDBUserStoreManager(RealmConfiguration configuration,int tenantID)
@@ -392,6 +392,11 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		return null;
 	}
 
+	/**
+	 * @param userName
+	 * @return
+	 * @throws org.wso2.carbon.user.api.UserStoreException
+	 */
 	public int getUserId(String userName) throws org.wso2.carbon.user.api.UserStoreException {
 		DB db = getDBConnection();
 		collection = db.getCollection("UM_USER");
