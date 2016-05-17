@@ -9,9 +9,10 @@ import org.osgi.framework.BundleContext;
 import org.wso2.carbon.mongodb.dao.MongoDBUserStoreConfigDao;
 import org.wso2.carbon.mongodb.util.MongoDatabaseUtil;
 import org.wso2.carbon.user.api.RealmConfiguration;
+import org.wso2.carbon.user.api.Tenant;
 import org.wso2.carbon.user.core.UserCoreConstants;
-import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.user.core.claim.builder.ClaimBuilder;
+import org.wso2.carbon.user.core.common.RealmCache;
 import org.wso2.carbon.user.core.config.RealmConfigXMLProcessor;
 import org.wso2.carbon.user.core.config.TenantMgtXMLProcessor;
 import org.wso2.carbon.user.core.profile.builder.ProfileConfigurationBuilder;
@@ -30,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -39,6 +41,7 @@ import java.util.Map;
  */
 public class MongoDBDefaultRealmService implements RealmService {
 
+    private RealmCache realmCache = RealmCache.getInstance();
     private Map<Integer, UserRealm> userRealmMap = new HashMap<Integer, UserRealm>();
     private BundleContext bc;
     private RealmConfiguration bootstrapRealmConfig;
@@ -48,8 +51,8 @@ public class MongoDBDefaultRealmService implements RealmService {
     private TenantManager tenantManager;
     private UserRealm bootstrapRealm;
     private MultiTenantRealmConfigBuilder multiTenantBuilder = null;
-    private static final String TENANT_MGT_XML = "tenant-mgt.xml";
-    public static final String USER_STORE_AS_PROPERTY = "userstore";
+    private static final String PRIMARY_TENANT_REALM = "primary";
+    private static boolean isFirstInitialization = true;
     private static final Log log = LogFactory.getLog(MongoDBDefaultRealmService.class);
 
     private static final String DB_CHECK_SQL = "{'collection' : 'UM_USER'}";
@@ -66,7 +69,7 @@ public class MongoDBDefaultRealmService implements RealmService {
         else{
             this.bootstrapRealmConfig = buildBootStrapRealmConfig();
         }
-        this.tenantMgtConfiguration = buildTenantMgtConfig(bc);
+        this.tenantMgtConfiguration = buildTenantMgtConfig(bc,this.bootstrapRealmConfig.getUserStoreProperty(UserCoreConstants.TenantMgtConfig.LOCAL_NAME_TENANT_MANAGER));
         this.dataSource = MongoDatabaseUtil.getRealmDataSource(this.bootstrapRealmConfig);
         properties.put(UserCoreConstants.DATA_SOURCE,this.dataSource);
         initializeDatabase(this.dataSource);
@@ -77,14 +80,14 @@ public class MongoDBDefaultRealmService implements RealmService {
         // initializing the bootstrapRealm
         this.bc = bc;
         bootstrapRealm = initializeRealm(bootstrapRealmConfig, 0);
-        /*Dictionary<String, String> dictionary = new Hashtable<String, String>();
+        Dictionary<String, String> dictionary = new Hashtable<String, String>();
         dictionary.put(UserCoreConstants.REALM_GENRE, UserCoreConstants.DELEGATING_REALM);
         if (bc != null) {
             // note that in a case of we don't run this in an OSGI envrionment
             // like checkin-client,
             // we need to avoid the registration of the service
             bc.registerService(UserRealm.class.getName(), bootstrapRealm, dictionary);
-        }*/
+        }
 
     }
 
@@ -159,11 +162,11 @@ public class MongoDBDefaultRealmService implements RealmService {
         }
     }
 
-    private TenantMgtConfiguration buildTenantMgtConfig(BundleContext bc) throws UserStoreException{
+    private TenantMgtConfiguration buildTenantMgtConfig(BundleContext bc,String tenantManagerClass) throws UserStoreException{
 
         TenantMgtXMLProcessor tenantMgtXMLProcessor = new TenantMgtXMLProcessor();
         tenantMgtXMLProcessor.setBundleContext(bc);
-        return tenantMgtXMLProcessor.buildTenantMgtConfigFromFile(TENANT_MGT_XML);
+        return tenantMgtXMLProcessor.buildTenantMgtConfigFromFile(tenantManagerClass);
     }
 
     private RealmConfiguration buildBootStrapRealmConfig() throws UserStoreException{
@@ -212,7 +215,7 @@ public class MongoDBDefaultRealmService implements RealmService {
 
         UserRealm userRealm;
         int tenantId = tenantRealmConfig.getTenantId();
-        userRealm = userRealmMap.get(Integer.valueOf(tenantId));
+        userRealm = (UserRealm) realmCache.getUserRealm(tenantId, PRIMARY_TENANT_REALM);
         if (userRealm == null && tenantId == 0) {
             userRealm = bootstrapRealm;
         }
@@ -288,25 +291,17 @@ public class MongoDBDefaultRealmService implements RealmService {
         }
         try {
             if (tenantManager.getTenant(tenantId) != null) {
-                RealmConfiguration tenantRealmConfig = (RealmConfiguration) tenantManager.getTenant(
-                        tenantId).getRealmConfig();
-                userRealm = initializeRealm(tenantRealmConfig, tenantId);
-                Map<String, String> cproperties = getCustomUserStore(tenantId);
-                if (cproperties.size() > 0) {
-                    tenantRealmConfig.setUserStoreProperties(cproperties);
-                    tenantRealmConfig.setUserStoreClass(cproperties.get("userStoreClass"));
-                    UserRealm tempRealm2 = initializeRealm(tenantRealmConfig, tenantId);
-                    UserStoreManager cStoreManager = tempRealm2.getUserStoreManager();
 
-                    UserStoreManager pStoreManager = (UserStoreManager)userRealm.getUserStoreManager();
-                    //to handle threading issues
-                    Map<String, Object> propMap = new HashMap<String, Object>();
-                    propMap.putAll(properties);
-                    propMap.put(USER_STORE_AS_PROPERTY, cStoreManager);
-                    userRealm = initializeRealm(tenantRealmConfig, tenantId);
+                Tenant tenant = tenantManager.getTenant(tenantId);
+                RealmConfiguration tenantRealmConfig = tenant.getRealmConfig();
+                MultiTenantRealmConfigBuilder realmConfigBuilder = getMultiTenantRealmConfigBuilder();
+                if (realmConfigBuilder != null) {
+                    tenantRealmConfig = realmConfigBuilder.getRealmConfigForTenantToCreateRealm(
+                            bootstrapRealmConfig, tenantRealmConfig, tenantId);
                 }
+                userRealm = initializeRealm(tenantRealmConfig, tenantId);
                 synchronized (this) {
-                    userRealmMap.put(Integer.valueOf(tenantId), (UserRealm) userRealm);
+                    realmCache.addToCache(tenantId, PRIMARY_TENANT_REALM, userRealm);
                 }
             }
 
@@ -381,5 +376,6 @@ public class MongoDBDefaultRealmService implements RealmService {
 
     public void clearCachedUserRealm(int tenantId) throws UserStoreException {
 
+        realmCache.clearFromCache(tenantId, PRIMARY_TENANT_REALM);
     }
 }

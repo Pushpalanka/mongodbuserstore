@@ -137,6 +137,38 @@ public class MongoDBRealmUtil {
             properties.put(MongoDBRealmConstants.UPDATE_ROLE_NAME,
                     MongoDBRealmConstants.UPDATE_ROLE_NAME_MONGO_QUERY);
         }
+        if (!properties.containsKey(MongoDBRealmConstants.GET_SHARED_ROLE_LIST)) {
+            properties.put(MongoDBRealmConstants.GET_SHARED_ROLE_LIST,
+                    MongoDBRealmConstants.GET_SHARED_ROLE_LIST_MONGO_QUERY);
+        }
+        if (!properties.containsKey(MongoDBRealmConstants.GET_SHARED_ROLE)) {
+            properties.put(MongoDBRealmConstants.GET_SHARED_ROLE,
+                    MongoDBRealmConstants.GET_SHARED_ROLE_MONGO_QUERY);
+        }
+        if (!properties.containsKey(MongoDBRealmConstants.GET_USER_LIST_OF_ROLE)) {
+            properties.put(MongoDBRealmConstants.GET_USER_LIST_OF_ROLE,
+                    MongoDBRealmConstants.GET_USER_LIST_OF_ROLE_MONGO_QUERY);
+        }
+        if (!properties.containsKey(MongoDBRealmConstants.GET_USERNAME_FROM_TENANT_ID)) {
+            properties.put(MongoDBRealmConstants.GET_USERNAME_FROM_TENANT_ID,
+                    MongoDBRealmConstants.GET_USERNAME_FROM_TENANT_ID_MONGO_QUERY);
+        }
+        if (!properties.containsKey(MongoDBRealmConstants.ADD_SHARED_ROLE_TO_USER)) {
+            properties.put(MongoDBRealmConstants.ADD_SHARED_ROLE_TO_USER,
+                    MongoDBRealmConstants.ADD_SHARED_ROLE_TO_USER_MONGO_QUERY);
+        }
+        if (!properties.containsKey(MongoDBRealmConstants.REMOVE_USER_FROM_SHARED_ROLE)) {
+            properties.put(MongoDBRealmConstants.REMOVE_USER_FROM_SHARED_ROLE,
+                    MongoDBRealmConstants.REMOVE_USER_FROM_SHARED_ROLE_MONGO_QUERY);
+        }
+        if (!properties.containsKey(MongoDBRealmConstants.IS_DOMAIN_EXISTS)) {
+            properties.put(MongoDBRealmConstants.IS_DOMAIN_EXISTS,
+                    MongoDBRealmConstants.IS_DOMAIN_EXISTS_MONGO_QUERY);
+        }
+        if (!properties.containsKey(MongoDBRealmConstants.ADD_DOMAIN)) {
+            properties.put(MongoDBRealmConstants.ADD_DOMAIN,
+                    MongoDBRealmConstants.ADD_DOMAIN_MONGO_QUERY);
+        }
         return properties;
     } 
 }

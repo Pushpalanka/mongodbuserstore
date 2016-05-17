@@ -75,6 +75,12 @@ public class MongoDBUserStoreManager implements UserStoreManager {
     protected Random random = new Random();
     
 	private org.apache.commons.logging.Log log = LogFactory.getLog(MongoDBUserStoreManager.class);
+
+	public MongoDBUserStoreManager(){
+
+
+	}
+
 	public MongoDBUserStoreManager(RealmConfiguration configuration)
 	{
 		this.tenantId = -1234;

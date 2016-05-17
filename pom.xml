@@ -100,7 +100,7 @@
                         </Private-Package>
                         <Export-Package>
                             !org.wso2.carbon.mongodb.userstoremanager.internal,
-                            org.wso2.carbon.mongodb.userstoremanager.*,
+                            org.wso2.carbon.mongodb.*,
                         </Export-Package>
                         <Import-Package>
                             javax.servlet; version=2.4.0,

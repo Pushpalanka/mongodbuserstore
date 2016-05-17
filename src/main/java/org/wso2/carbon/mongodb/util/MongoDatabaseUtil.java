@@ -60,11 +60,24 @@ public class MongoDatabaseUtil {
 	public static DB createRealmDataSource(RealmConfiguration realmConfiguration) {
 		// TODO Auto-generated method stub
 		List<ServerAddress> seeds = new ArrayList<ServerAddress>();
-		seeds.add(new ServerAddress(realmConfiguration.getRealmProperty(MongoDBRealmConstants.URL)));
-		char[] pass=realmConfiguration.getRealmProperty(MongoDBRealmConstants.PASSWORD).toCharArray();
-		List<MongoCredential> credentials = new ArrayList<MongoCredential>();
+		seeds.add(new ServerAddress(realmConfiguration.getUserStoreProperty(MongoDBRealmConstants.URL)));
+        char[] pass;
+        if(realmConfiguration.getUserStoreProperty(MongoDBRealmConstants.PASSWORD)!=null) {
+            pass = realmConfiguration.getUserStoreProperty(MongoDBRealmConstants.PASSWORD).toCharArray();
+
+        }else{
+            pass = "123".toCharArray();
+        }
+        List<MongoCredential> credentials = new ArrayList<MongoCredential>();
+        String userName;
+        if(realmConfiguration.getUserStoreProperty(MongoDBRealmConstants.USER_NAME)!= null){
+
+            userName = realmConfiguration.getUserStoreProperty(MongoDBRealmConstants.USER_NAME);
+        }else{
+            userName = "admin";
+        }
 		credentials.add(
-				MongoCredential.createCredential(realmConfiguration.getRealmProperty(MongoDBRealmConstants.USER_NAME),"wso2_carbon_db", pass)
+				MongoCredential.createCredential(userName,"wso2_carbon_db", pass)
 		);
 		MongoClient mongoClient = new MongoClient(seeds, credentials);
 		mongoClient.setWriteConcern(WriteConcern.JOURNALED);
