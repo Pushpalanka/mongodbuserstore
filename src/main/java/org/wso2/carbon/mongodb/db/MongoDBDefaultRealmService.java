@@ -62,14 +62,14 @@ public class MongoDBDefaultRealmService implements RealmService {
 
     public MongoDBDefaultRealmService(BundleContext bc,RealmConfiguration realmConfiguration) throws Exception{
 
-
         if(realmConfiguration != null){
             this.bootstrapRealmConfig = realmConfiguration;
         }
         else{
             this.bootstrapRealmConfig = buildBootStrapRealmConfig();
         }
-        this.tenantMgtConfiguration = buildTenantMgtConfig(bc,this.bootstrapRealmConfig.getUserStoreProperty(UserCoreConstants.TenantMgtConfig.LOCAL_NAME_TENANT_MANAGER));
+       // this.tenantMgtConfiguration = buildTenantMgtConfig(bc,this.bootstrapRealmConfig.getUserStoreProperty(UserCoreConstants.TenantMgtConfig.LOCAL_NAME_TENANT_MANAGER));
+        this.tenantMgtConfiguration = buildTenantMgtConfig(bc,"com.mongodb.DB");
         this.dataSource = MongoDatabaseUtil.getRealmDataSource(this.bootstrapRealmConfig);
         properties.put(UserCoreConstants.DATA_SOURCE,this.dataSource);
         initializeDatabase(this.dataSource);
@@ -123,6 +123,7 @@ public class MongoDBDefaultRealmService implements RealmService {
         return userRealm;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private TenantManager initializeTenantManger(TenantMgtConfiguration tenantMgtConfiguration) throws Exception{
 
         TenantManager tenantManager;

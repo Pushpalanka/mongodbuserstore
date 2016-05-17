@@ -168,13 +168,12 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 			DBCollection collection = db.getCollection("COUNTERS");
 			BasicDBObject dbObject =new BasicDBObject("_id",COLLECTION_NAME);
 			DBCursor cursor = collection.find(dbObject);
-			if(cursor.hasNext()){
+			if (!cursor.hasNext()) {
+				collection.insert(new BasicDBObject("_id", COLLECTION_NAME).append("seq", 1));
+				seq = 1;
+			} else {
 				seq = Double.parseDouble(cursor.next().get("seq").toString());
-				collection.update(new BasicDBObject("_id",COLLECTION_NAME),new BasicDBObject("$set",new BasicDBObject("seq",seq+1)));
-			}
-			else{
-				collection.insert(new BasicDBObject("_id",COLLECTION_NAME).append("seq",1));
-				seq=1;
+				collection.update(new BasicDBObject("_id", COLLECTION_NAME), new BasicDBObject("$set", new BasicDBObject("seq", seq + 1)));
 			}
 		}catch(MongoWriteException e){
 			
@@ -183,7 +182,6 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		
 			log.error("Error :"+e.getMessage());
 		}catch (UserStoreException e) {
-			// TODO Auto-generated catch block
 			log.error("Error occurred:"+e.getMessage());
 		}
 		return seq;

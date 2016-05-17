@@ -66,7 +66,7 @@ public class MongoDatabaseUtil {
             pass = realmConfiguration.getUserStoreProperty(MongoDBRealmConstants.PASSWORD).toCharArray();
 
         }else{
-            pass = "123".toCharArray();
+            pass = "admin123".toCharArray();
         }
         List<MongoCredential> credentials = new ArrayList<MongoCredential>();
         String userName;
@@ -81,7 +81,7 @@ public class MongoDatabaseUtil {
 		);
 		MongoClient mongoClient = new MongoClient(seeds, credentials);
 		mongoClient.setWriteConcern(WriteConcern.JOURNALED);
-		dataSource = (DB)mongoClient.getDatabase("wso2_carbon_db");		
+		dataSource = mongoClient.getDB("wso2_carbon_db");
 		return dataSource;
 	}
 	
