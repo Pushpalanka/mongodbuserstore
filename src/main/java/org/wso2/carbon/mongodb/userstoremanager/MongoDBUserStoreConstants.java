@@ -33,31 +33,43 @@ public class MongoDBUserStoreConstants {
 	    static {
 	        setMandatoryProperty(MongoDBRealmConstants.URL, "127.0.0.1", "location of webservice");
 	        setMandatoryProperty(MongoDBRealmConstants.USER_NAME, "admin", "User Name to connect to mongodb (if provided)");
-	        setMandatoryProperty(MongoDBRealmConstants.PASSWORD, "admin", "Password to connect to mongodb server (if provided any)");
-			setProperty("PasswordDigest", "SHA-256", UserStoreConfigConstants.passwordHashMethodDescription);
-			setProperty(UserStoreConfigConstants.readGroups, "true", UserStoreConfigConstants.readLDAPGroupsDescription);
-			setProperty("ReadOnly", "false", "Indicates whether the user store of this realm operates in the user read only mode or not");
-			setProperty("IsEmailUserName", "false", "Indicates whether Email is used as user name (apply when realm operates in read only mode).");
-			setProperty("DomainCalculation", "default", "Can be either default or custom (apply when realm operates in read only mode)");
-			setProperty("StoreSaltedPassword", "true", "Indicates whether to salt the password");
-			setProperty(UserStoreConfigConstants.writeGroups, "true", UserStoreConfigConstants.writeGroupsDescription);
-			setProperty("UserNameUniqueAcrossTenants", "false", "An attribute used for multi-tenancy");
-			setProperty("PasswordJavaRegEx", "^[\\S]{5,30}$", "A regular expression to validate passwords");
-			setProperty("PasswordJavaScriptRegEx", "^[\\S]{5,30}$", "The regular expression used by the font-end components for password validation");
-			setProperty("UsernameJavaRegEx", "^[\\S]{5,30}$", "A regular expression to validate user names");
-//        setProperty("UsernameJavaRegEx","^[^~!#$;%^*+={}\\\\|\\\\\\\\&lt;&gt;,\\\'\\\"]{3,30}$","A regular expression to validate user names");
-			setProperty("UsernameJavaScriptRegEx", "^[\\S]{5,30}$", "The regular expression used by the font-end components for username validation");
-			setProperty("RolenameJavaRegEx", "^[\\S]{5,30}$", "A regular expression to validate role names");
-//        setProperty("RolenameJavaRegEx","^[^~!#$;%^*+={}\\\\|\\\\\\\\&lt;&gt;,\\\'\\\"]{3,30}$","A regular expression to validate role names");
-			setProperty("RolenameJavaScriptRegEx", "^[\\S]{5,30}$", "The regular expression used by the font-end components for role name validation");
-			setProperty(UserStoreConfigConstants.SCIMEnabled, "false", UserStoreConfigConstants.SCIMEnabledDescription);
+	        setMandatoryProperty(MongoDBRealmConstants.PASSWORD, "admin123", "Password to connect to mongodb server (if provided any)");
 
-			//Advanced Properties (No descriptions added for each property)
+            setProperty("PasswordDigest", "SHA-256", UserStoreConfigConstants.passwordHashMethodDescription);
+            setProperty(UserStoreConfigConstants.readGroups, "true", UserStoreConfigConstants.readLDAPGroupsDescription);
+            setProperty("ReadOnly", "false", "Indicates whether the user store of this realm operates in the user read only mode or not");
+            setProperty("IsEmailUserName", "false", "Indicates whether Email is used as user name (apply when realm operates in read only mode).");
+            setProperty("DomainCalculation", "default", "Can be either default or custom (apply when realm operates in read only mode)");
+            setProperty("StoreSaltedPassword", "true", "Indicates whether to salt the password");
+            setProperty(UserStoreConfigConstants.writeGroups, "true", UserStoreConfigConstants.writeGroupsDescription);
+            setProperty("UserNameUniqueAcrossTenants", "false", "An attribute used for multi-tenancy");
+            setProperty("PasswordJavaRegEx", "^[\\S]{5,30}$", "A regular expression to validate passwords");
+            setProperty("PasswordJavaScriptRegEx", "^[\\S]{5,30}$", "The regular expression used by the font-end components for password validation");
+            setProperty("UsernameJavaRegEx", "^[\\S]{5,30}$", "A regular expression to validate user names");
+//        setProperty("UsernameJavaRegEx","^[^~!#$;%^*+={}\\\\|\\\\\\\\&lt;&gt;,\\\'\\\"]{3,30}$","A regular expression to validate user names");
+            setProperty("UsernameJavaScriptRegEx", "^[\\S]{5,30}$", "The regular expression used by the font-end components for username validation");
+            setProperty("RolenameJavaRegEx", "^[\\S]{5,30}$", "A regular expression to validate role names");
+//        setProperty("RolenameJavaRegEx","^[^~!#$;%^*+={}\\\\|\\\\\\\\&lt;&gt;,\\\'\\\"]{3,30}$","A regular expression to validate role names");
+            setProperty("RolenameJavaScriptRegEx", "^[\\S]{5,30}$", "The regular expression used by the font-end components for role name validation");
+            setProperty(UserStoreConfigConstants.SCIMEnabled, "false", UserStoreConfigConstants.SCIMEnabledDescription);
+
+            //Advanced Properties (No descriptions added for each property)
+            setAdvancedProperty("Enable SCIM","false","");
+            setAdvancedProperty("Is Bulk Import Supported","false","");
+            setAdvancedProperty("Password Hashing Algorithm","SHA-256","");
+            setAdvancedProperty("Multiple Attribute Separator ",",","");
+            setAdvancedProperty("Enable Salted Passwords","true","");
+            setAdvancedProperty("Maximum User List Length","100","");
+            setAdvancedProperty("Maximum Role List Length","100","");
+            setAdvancedProperty("Enable User Role Cache","true","");
+            setAdvancedProperty("Make Username Unique Across Tenants","false","");
+            setAdvancedProperty("validationQuery for the database","","");
+            setAdvancedProperty("Validation Interval(time in milliseconds)","","");
 			setAdvancedProperty("SelectUserMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?'}", "");
-			setAdvancedProperty("GetRoleListMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_TENANT_ID' : '?','projection':{'UM_ROLE_NAME' : '1','_id' : '0'}}", "");
+			setAdvancedProperty("GetRoleListMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_TENANT_ID' : '?','projection': '{'UM_ROLE_NAME' : '1','_id' : '0'}'}", "");
 			setAdvancedProperty("GetSharedRoleListMONGO_QUERY","{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_SHARED_ROLE' : '1','projection' : '{'UM_ROLE_NAME' : '1','UM_TENANT_ID' : '1','UM_SHARED_ROLE' : '1'}'}", "");
-			setAdvancedProperty("UserFilterMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'UM_USER_NAME' : '1','$orderby' : {'UM_USER_NAME' : '1'}}}", "");
-			setAdvancedProperty("UserRoleMONGO_QUERY ", "{'collection' : 'UM_ROLE','UM_TENANT_ID' : '?','projection' : {'UM_ROLE_NAME' : '1'},'$lookup' : [{'from' : 'UM_USER_ROLE','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','UM_TENANT_ID' : '?'},{'from' : 'UM_USER','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','UM_TENANT_ID' : '?'}]}", "");
+			setAdvancedProperty("UserFilterMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'UM_USER_NAME' : '1','$orderby' : '{'UM_USER_NAME' : '1'}'}'}", "");
+			setAdvancedProperty("UserRoleMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_TENANT_ID' : '?','projection' : '{'UM_ROLE_NAME' : '1'}','$lookup' : '[{'from' : 'UM_USER_ROLE','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','UM_TENANT_ID' : '?'},{'from' : 'UM_USER','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','UM_TENANT_ID' : '?'}]'}", "");
 			setAdvancedProperty("UserSharedRoleMONGO_QUERY","{'collection' : 'UM_SHARED_USER_ROLE','user.UM_USER_NAME' : '?','UM_USER_TENANT_ID' : 'role.UM_TENANT_ID','UM_USER_TENANT_ID' : '?','$lookup' : '[{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'user'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'role'}]'}","");
 
 			setAdvancedProperty("IsRoleExistingMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'UM_ID' : '1'}'}","");

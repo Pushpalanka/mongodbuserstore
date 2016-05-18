@@ -3,6 +3,7 @@ package org.wso2.carbon.mongodb.query;
 import java.util.ArrayList;
 import java.util.Date;
 import org.bson.types.BSONTimestamp;
+import org.bson.types.Binary;
 import org.bson.types.Symbol;
 
 import com.mongodb.DBCursor;
@@ -36,6 +37,8 @@ public interface MongoPreparedStatement {
 	void setRegularExpression(String key, String parameter);
 	
 	void setLong(String key, long parameter);
+
+	void setBinary(String key, Binary stream);
 	
 	void close();
 	

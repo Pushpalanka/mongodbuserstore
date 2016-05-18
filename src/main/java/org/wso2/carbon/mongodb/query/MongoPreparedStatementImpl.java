@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.bson.types.BSONTimestamp;
+import org.bson.types.Binary;
 import org.bson.types.Symbol;
 import org.json.JSONObject;
 
@@ -130,6 +131,11 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 	public void setLong(String key, long parameter){
 		
 		parameterValue.put(key, parameter);
+	}
+
+	public void setBinary(String key, Binary stream) {
+
+		parameterValue.put(key,stream);
 	}
 
 	public void setArray(String key,ArrayList<Object> parameters){

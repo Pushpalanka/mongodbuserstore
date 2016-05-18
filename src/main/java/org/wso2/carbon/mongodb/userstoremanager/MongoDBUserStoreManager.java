@@ -78,7 +78,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 
 	public MongoDBUserStoreManager(){
 
-
+		this.tenantId = -1234;
 	}
 
 	public MongoDBUserStoreManager(RealmConfiguration configuration)
@@ -114,10 +114,10 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 		mongoClient.setWriteConcern(WriteConcern.JOURNALED);
 		if(database != null && !database.equals(""))
 		{
-			db = (DB) mongoClient.getDatabase(database);
+			db = mongoClient.getDB(database);
 		}
 		else{
-			db = (DB) mongoClient.getDatabase("wso2_carbon_db");
+			db = mongoClient.getDB("wso2_carbon_db");
 		}
 		if(db == null)
 		{
@@ -287,7 +287,7 @@ public class MongoDBUserStoreManager implements UserStoreManager {
 	public Properties getDefaultUserStoreProperties() {
 		// TODO Auto-generated method stub
 		Property[] mandatoryProperties = MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.toArray(
-				new Property[MongoDBUserStoreConstants.CUSTOM_UM_ADVANCED_PROPERTIES.size()]
+				new Property[MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES.size()]
 				); 
 		Property[] optionalProperties = MongoDBUserStoreConstants.CUSTOM_UM_OPTIONAL_PROPERTIES.toArray(
 				new Property[MongoDBUserStoreConstants.CUSTOM_UM_OPTIONAL_PROPERTIES.size()]
