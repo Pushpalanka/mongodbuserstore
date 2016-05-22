@@ -13,8 +13,7 @@ import org.wso2.carbon.user.core.service.RealmService;
  */
 public class MongoDBUserStoreDSComponent{
 
-	private static final Log log = LogFactory.getLog(MongoDBUserStoreDSComponent.class);
-    private static RealmService realmService;
+   private static final Log log = LogFactory.getLog(MongoDBUserStoreDSComponent.class);
 
     protected void activate(ComponentContext cc) throws Exception{
 
