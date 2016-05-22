@@ -312,4 +312,49 @@ public class MongoDatabaseUtil {
          scheduler.scheduleAtFixedRate(runnable, 60, 60, TimeUnit.SECONDS);
      }
 
+    public static void updateUserRoleMappingWithExactParams(DB dbConnection, String mongoQuery, String[] sharedRoles, String userName, Integer[] sharedTenantIds, int tenantId) {
+
+
+    }
+
+	public static String[] getStringValuesFromDatabase(DB dbConnection, String mongoQuery,Object... params) throws UserStoreException{
+
+        MongoPreparedStatement prepStmt = null;
+        String[] values = new String[0];
+        JSONObject jsonKeys = new JSONObject(mongoQuery);
+        List<String> keys = getKeys(jsonKeys);
+        try{
+            if(params != null && params.length > 0){
+                for(int i=0;i<params.length;i++){
+                    Object param = params[i];
+                    prepStmt = new MongoPreparedStatementImpl(dbConnection, mongoQuery);
+                    if(param==null){
+                        throw new UserStoreException("Null Data Provided");
+                    }else if(param instanceof String){
+                        prepStmt.setString(keys.get(i),(String)param);
+                    }else if(param instanceof Integer){
+                        prepStmt.setInt(keys.get(i), (Integer)param);
+                    }
+                }
+            }
+            DBCursor cursor=prepStmt.find();
+            List<String> lst = new ArrayList<String>();
+            while(cursor.hasNext()){
+                lst.add(cursor.next().toString());
+            }
+            if (lst.size() > 0) {
+                values = lst.toArray(new String[lst.size()]);
+            }
+            return values;
+        }catch(NullPointerException ex){
+            log.error(ex.getMessage(),ex);
+            throw new UserStoreException(ex.getMessage(),ex);
+        }catch(MongoQueryException ex){
+            log.error(ex.getMessage(),ex);
+            log.error("Using JSON Query :"+mongoQuery);
+            throw new UserStoreException(ex.getMessage(),ex);
+        }finally {
+            MongoDatabaseUtil.closeAllConnections(dbConnection, prepStmt);
+        }
+	}
 }

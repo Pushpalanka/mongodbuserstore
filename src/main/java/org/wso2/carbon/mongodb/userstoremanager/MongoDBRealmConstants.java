@@ -20,9 +20,9 @@ public class MongoDBRealmConstants {
 	    public static final String GET_USERID_FROM_USERNAME = "GetUserIDFromUserNameMONGO_QUERY";
 	    public static final String GET_USERNAME_FROM_TENANT_ID = "GetUserNameFromTenantIDMONGO_QUERY";
 	    public static final String GET_TENANT_ID_FROM_USERNAME = "GetTenantIDFromUserNameMONGO_QUERY";
+		public static final String GET_USERS_FOR_PROP = "GetUserLisForPropertySQL";
 
-
-	    public static final String ADD_USER = "AddUserMONGO_QUERY";
+		public static final String ADD_USER = "AddUserMONGO_QUERY";
 	    public static final String ADD_USER_TO_ROLE = "AddUserToRoleMONGO_QUERY";
 	    public static final String ADD_USER_PERMISSION = "AddUserPermission";
 	    public static final String ADD_ROLE = "AddRoleMONGO_QUERY";
@@ -48,10 +48,13 @@ public class MongoDBRealmConstants {
 	    public static final String USER_NAME_UNIQUE = "UserNameUniqueAcrossTenantsMONGO_QUERY";
         public static final String IS_DOMAIN_EXISTS="IsDomainExistingMONGO_QUERY";
         public static final String ADD_DOMAIN = "AddDomainMONGO_QUERY";
+        public static final String GET_SHARED_ROLES_FOR_USER="UserSharedRoleMONGO_QUERY";
+        public static final String ADD_SHARED_ROLE = "AddSharedRoleMONGO_QUERY";
+        public static final String GET_USERS_IN_SHARED_ROLE = "GetUserListOfSharedRoleMONGO_QUERY";
 
 	    public static final String SELECT_USER_MONGO_QUERY = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?'}";
 	    public static final String GET_SHARED_ROLE_LIST_MONGO_QUERY = "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_SHARED_ROLE' : '1','projection' : '{'UM_ROLE_NAME' : '1','UM_TENANT_ID' : '1','UM_SHARED_ROLE' : '1'}'}";
-		public static final String GET_ROLE_LIST_MONGO_QUERY = "{'collection' : 'UM_ROLE','UM_TENANT_ID' : '?','projection':{'UM_ROLE_NAME' : '1','_id' : '0'}}";
+		public static final String GET_ROLE_LIST_MONGO_QUERY = "{'collection' : 'UM_ROLE','UM_TENANT_ID' : '?','UM_ROLE_NAME' : '?','projection': '{'UM_ROLE_NAME' : '1','_id' : '0'}' ,'$orderby' : '{'UM_ROLE_NAME' : '1'}'}";
 	    public static final String GET_USER_FILTER_MONGO_QUERY = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'UM_USER_NAME' : '1','$orderby' : {'UM_USER_NAME' : '1'}}}";
 	    public static final String GET_USER_ROLE_MONGO_QUERY = "{'collection' : 'UM_ROLE','UM_TENANT_ID' : '?','projection' : {'UM_ROLE_NAME' : '1'},'$lookup' : [{'from' : 'UM_USER_ROLE','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','UM_TENANT_ID' : '?'},{'from' : 'UM_USER','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','UM_TENANT_ID' : '?'}]}";
 	                                                   
@@ -68,11 +71,12 @@ public class MongoDBRealmConstants {
 	    public static final String GET_TENANT_ID_FROM_USERNAME_MONGO_QUERY = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','projection' : '{'UM_TENANT_ID' : '?'}'}";
         public static final String GET_SHARED_ROLE_MONGO_QUERY="{'collection' : 'UM_SHARED_USER_ROLE','user.UM_USER_NAME' : '?','UM_USER_TENANT_ID' : 'role.UM_TENANT_ID','UM_USER_TENANT_ID' : '?','$lookup' : '[{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'user'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'role'}]'}";
         public static final String GET_USER_LIST_OF_ROLE_MONGO_QUERY = "{'collection' : 'UM_USER','attribute.UM_ATTR_NAME' : '?','attribute.UM_ATTR_VALUE' : '?','attribute.UM_ATTR_NAME' : '?','attribute.UM_PROFILE_ID' : '?','atrribute.UM_TENANT_ID' : '?','user.UM_TENANT_ID' : '?','$lookup' : '{'from' : 'UM_USER_ATTRIBUTE','localField' : 'UM_ID','foreignField' : 'UM_USER_ID','as' : 'attribute'}','projection' : '{'UM_USER_NAME' : '1'}'}";
-
+		public static final String GET_USERS_FOR_PROP_SQL = "{'collection' : 'UM_USER','UM_TENANT_ID' : '?','attribute.UM_ATTR_NAME' : '?','attribute.UM_ATTR_VALUE' : '?','attribute.UM_PROFILE_ID' : '?','$lookup' : '{'from' : 'UM_USER_ATTRIBUTE','localField' : 'UM_ID','foreignField' : 'UM_USER_ID','as' : 'users'}','','projection' : '{'UM_USER_NAME' : '1'}'}";
+        public static final String GET_USERS_IN_SHARED_ROLE_MONGO_QUERY = "{'collection' : 'UM_SHARED_USER_ROLE','UM_ROLE_NAME' : '?','UM_USER_TENANT_ID' : 'user.UM_TENANT_ID','UM_ROLE_TENANT_ID' : 'role.UM_TENANT_ID','$lookup' : '[{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'users'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','projection' : '{'UM_USER_NAME','1'}'}]'}";
 	    public static final String ADD_USER_MONGO_QUERY = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_USER_PASSWORD' : '?','UM_SALT_VALUE' : '?','UM_REQUIRE_CHANGE' : '?','UM_CHANGED_TIME' : '?','UM_TENANT_ID' : '?'}";
 	    public static final String ADD_USER_TO_ROLE_MONGO_QUERY = "{'collection' : 'UM_USER_ROLE','UM_USER_ID' : '?','UM_ROLE_ID' : '?','UM_TENANT_ID' : '?'}";
-	    public static final String ADD_USER_TO_ROLE_MONGO_QUERY_CONDITION1 = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'UM_ID' : '?'}'}";
-	    public static final String ADD_USER_TO_ROLE_MONGO_QUERY_CONDITION2	= "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'UM_ID' : '?'}'}";
+	    public static final String ADD_USER_TO_ROLE_MONGO_QUERY_CONDITION1 = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'UM_ID' : '1'}'}";
+	    public static final String ADD_USER_TO_ROLE_MONGO_QUERY_CONDITION2	= "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'UM_ID' : '1'}'}";
 	    public static final String ADD_USER_PERMISSION_MONGO_QUERY = "AddUserPermission";
 	    public static final String ADD_ROLE_MONGO_QUERY = "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?'}";
 	    public static final String ADD_ROLE_TO_USER_MONGO_QUERY = "{'collection' : 'UM_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_TENANT_ID' : '?'}";
@@ -88,6 +92,7 @@ public class MongoDBRealmConstants {
 	    public static final String ON_DELETE_USER_DELETE_PERMISSION_MONGO_QUERY= "OnDeleteUserRemovePermissionsMONGO_QUERY";
         public static final String ADD_SHARED_ROLE_TO_USER_MONGO_QUERY = "{'collection' : 'UM_SHARED_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_USER_TENANT_ID' : '?','UM_ROLE_TENANT_ID' : '?'}";
         public static final String REMOVE_USER_FROM_SHARED_ROLE_MONGO_QUERY = "{'collection' : 'UM_SHARED_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_USER_TENANT_ID' : '?','UM_ROLE_TENANT_ID' : '?'}";
+        public static final String ADD_SHARED_ROLE_MONGO_QUERY = "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'$set' : '{'UM_SHARED_ROLE' : '?'}'}'}";
 
 	    public static final String UPDATE_USER_PASSWORD_MONGO_QUERY = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'$set'  : '{'UM_USER_PASSWORD' : '?','UM_SALT_VALUE' : '?','UM_REQUIRE_CHANGE' : '?','UM_CHANGED_TIME' : '?'}'}'}";
 	    public static final String UPDATE_ROLE_NAME_MONGO_QUERY="{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'$set' : '{'UM_ROLE_NAME' : '?'}'}'}";
@@ -99,10 +104,11 @@ public class MongoDBRealmConstants {
 	    public static final String USER_NAME_UNIQUE_MONGO_QUERY = "{'collection' : 'UM_USER_ATTRIBUTE','UM_USER_ID' : '?','UM_ATTR_NAME' : '?','UM_PROFILE_ID' : '?','UM_TENANT_ID' : '?'}";
 	    public static final String IS_DOMAIN_EXISTS_MONGO_QUERY = "{'collection' : 'UM_DOMAIN','UM_DOMAIN_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'UM_DOMAIN_ID' : '1'}'}";
         public static final String ADD_DOMAIN_MONGO_QUERY = "{'collection' : 'UM_DOMAIN','UM_DOMAIN_NAME' : '?','UM_TENANT_ID' : '?'}";
+		public static final String GET_SHARED_ROLES_FOR_USER_MONGO_QUERY = "{'collection' : 'UM_SHARED_USER_ROLE','user.UM_USER_NAME' : '?','UM_USER_TENANT_ID' : '?','UM_USER_TENANT_ID' : 'user.UM_TENANT_ID','UM_ROLE_TENANT_ID' : 'role.UM_TENANT_ID','$lookup' : '[{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'user'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'roles'}]'}";
 
 	    public static final String DIGEST_FUNCTION = "PasswordDigest";
 	    public static final String STORE_SALTED_PASSWORDS = "StoreSaltedPassword";
-	    
+
 	    //properties
 	    public static final String URL = "url";
 	    public static final String USER_NAME = "userName";
@@ -114,6 +120,7 @@ public class MongoDBRealmConstants {
 	    public static final String MAX_IDLE = "maxIdle";
 	    public static final String VALIDATION_QUERY = "validationQuery";
 	    public static final String DIALECT_FLAG = "dialectFlag";
-	    
+
+
 
 }

@@ -116,5 +116,7 @@ public class MongoDBUserStoreConstants {
 
 			setAdvancedProperty("AddDomainMONGO_QUERY", "{'collection' : 'UM_DOMAIN','UM_DOMAIN_NAME' : '?','UM_TENANT_ID' : '?'}","");
 
+			setAdvancedProperty("UserSharedRoleMONGO_QUERY","{'collection' : 'UM_SHARED_USER_ROLE','user.UM_USER_NAME' : '?','UM_USER_TENANT_ID' : '?','UM_USER_TENANT_ID' : 'user.UM_TENANT_ID','UM_ROLE_TENANT_ID' : 'role.UM_TENANT_ID','$lookup' : '[{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'user'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'roles'}]','projection' : '{'UM_ROLE_NAME' : '1','roles.UM_TENANT_ID' : '1','UM_SHARED_ROLE' : '1'}'}","");
+            setAdvancedProperty("GetUserListOfSharedRoleMONGO_QUERY","{'collection' : 'UM_SHARED_USER_ROLE','UM_ROLE_NAME' : '?','UM_USER_TENANT_ID' : 'user.UM_TENANT_ID','UM_ROLE_TENANT_ID' : 'role.UM_TENANT_ID','$lookup' : '[{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'users'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','projection' : '{'UM_USER_NAME','1'}'}]'}","");
 		}
 }
