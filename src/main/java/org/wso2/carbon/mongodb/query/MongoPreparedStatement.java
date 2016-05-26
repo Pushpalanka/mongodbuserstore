@@ -2,15 +2,12 @@ package org.wso2.carbon.mongodb.query;
 
 import java.util.ArrayList;
 import java.util.Date;
+
+import com.mongodb.*;
 import org.bson.types.BSONTimestamp;
 import org.bson.types.Binary;
 import org.bson.types.Symbol;
-
-import com.mongodb.DBCursor;
-import com.mongodb.DBEncoder;
-import com.mongodb.DBRef;
-import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
+import org.wso2.carbon.user.api.UserStoreException;
 
 public interface MongoPreparedStatement {
 
@@ -45,7 +42,9 @@ public interface MongoPreparedStatement {
 	WriteResult insert() throws MongoQueryException;
 	
 	DBCursor find() throws MongoQueryException;
-	
+
+	AggregationOutput aggregate() throws UserStoreException;
+
 	WriteResult update() throws MongoQueryException;
 	
 	WriteResult update(boolean upsert, boolean multi) throws MongoQueryException;

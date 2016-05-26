@@ -3,9 +3,12 @@ package org.wso2.carbon.mongodb.userstoremanager.internal;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osgi.service.component.ComponentContext;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager;
+import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
-
+import org.wso2.carbon.user.core.tracker.UserStoreManagerRegistry;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 
 /**
@@ -17,9 +20,14 @@ public class MongoDBUserStoreDSComponent{
 
     protected void activate(ComponentContext cc) throws Exception{
 
-        MongoDBUserStoreManager userStoreManager = new MongoDBUserStoreManager();
-        cc.getBundleContext().registerService(org.wso2.carbon.user.api.UserStoreManager.class.getName(), userStoreManager, null);
+        PrivilegedCarbonContext carbonContext = PrivilegedCarbonContext
+                .getThreadLocalCarbonContext();
+        carbonContext.setTenantId(MultitenantConstants.SUPER_TENANT_ID);
+        carbonContext.setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+        UserStoreManager userStoreManager = new MongoDBUserStoreManager();
+        cc.getBundleContext().registerService(UserStoreManager.class.getName(), userStoreManager, null);
         log.info("MongoDB User Store bundle activated successfully..");
+        UserStoreManagerRegistry.init(cc.getBundleContext());
         System.out.println("Mongo Started");
     }
 

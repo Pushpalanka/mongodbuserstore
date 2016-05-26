@@ -1,25 +1,15 @@
 package org.wso2.carbon.mongodb.query;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
+import com.mongodb.*;
 import org.bson.types.BSONTimestamp;
 import org.bson.types.Binary;
 import org.bson.types.Symbol;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBEncoder;
-import com.mongodb.DBObject;
-import com.mongodb.DBRef;
-import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
+import org.wso2.carbon.user.api.UserStoreException;
 
 public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 
@@ -31,11 +21,27 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 	private Map<String, Object> parameterValue;
 	private JSONObject queryJson;
 	private int parameterCount;
+	private Map<String,Object> mapQuery = null;
+	private Map<String,Object> mapProjection = null;
+	private Map<String,Object> mapMatch = null;
+	private Map<String,Object> mapProject = null;
+	private Map<String,Object> mapSort = null;
+	private Map<String,Object> mapLookUp = null;
+	private Map<String,Object> mapGroup = null;
+	private Map<String,Object> mapUnwind = null;
 	
 	public MongoPreparedStatementImpl(DB db,String query){
 	
 		if(this.db == null){
 			this.db = db;
+		}
+		if(mapQuery == null && mapProjection == null){
+
+			mapQuery = new HashMap<String, Object>();
+			mapProjection = new HashMap<String, Object>();
+		}
+		if(mapMatch == null){
+			mapMatch = new HashMap<String, Object>();
 		}
 		this.defaultQuery = query;
 		this.queryJson = new JSONObject(defaultQuery);
@@ -56,6 +62,14 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		this.defaultQuery = null;
 		this.queryJson = null;
 		this.parameterCount = 0;
+		this.mapQuery = null;
+		this.mapProjection = null;
+		this.mapMatch = null;
+		this.mapLookUp = null;
+		this.mapProject =null;
+		this.mapSort = null;
+		this.mapGroup = null;
+		this.mapUnwind = null;
 	}
 
 
@@ -179,7 +193,40 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		}
 	}
 
+    public AggregationOutput aggregate() throws UserStoreException{
 
+        JSONObject defaultObject = new JSONObject(defaultQuery);
+        getAggregrationObjects(defaultObject);
+        try{
+
+            DBObject match = new BasicDBObject("$match",new BasicDBObject(mapMatch));
+            DBObject lookup = new BasicDBObject("$lookup",new BasicDBObject(mapLookUp));
+            DBObject project = new BasicDBObject("$project",new BasicDBObject(mapProject));
+            List<DBObject> pipeline = new ArrayList<DBObject>();
+            pipeline.add(match);
+            pipeline.add(lookup);
+            pipeline.add(project);
+            if(mapSort != null){
+
+                DBObject sort = new BasicDBObject("$sort",new BasicDBObject(mapSort));
+                pipeline.add(sort);
+            }
+            if(mapGroup != null){
+
+                DBObject group = new BasicDBObject("$group",new BasicDBObject(mapGroup));
+                pipeline.add(group);
+            }
+            if(mapUnwind != null){
+
+                DBObject unwind = new BasicDBObject("$unwind",new BasicDBObject(mapUnwind));
+                pipeline.add(unwind);
+            }
+            return this.collection.aggregate(pipeline);
+        }catch(MongoException e){
+
+            throw new UserStoreException(e.getMessage());
+        }
+    }
 
 	public WriteResult update() throws MongoQueryException {
 		// TODO Auto-generated method stub
@@ -188,7 +235,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		}
 		else{
 			if(convertToDBObject(defaultQuery)){
-				return this.collection.update(this.query,this.projection);
+				return this.collection.update(this.query,new BasicDBObject("$set",this.projection));
 			}else{
 				throw new MongoQueryException("Query format is invalid no collection found");
 			}
@@ -204,7 +251,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		}
 		else{
 			if(convertToDBObject(defaultQuery)){
-				return this.collection.update(this.query,this.projection,upsert,multi);
+				return this.collection.update(this.query,new BasicDBObject("$set",this.projection),upsert,multi);
 			}else{
 				throw new MongoQueryException("Query format is invalid no collection found");
 			}
@@ -220,7 +267,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		}
 		else{
 			if(convertToDBObject(defaultQuery)){
-				return this.collection.update(this.query,this.projection,upsert,multi,aWriteConcern);
+				return this.collection.update(this.query,new BasicDBObject("$set",this.projection),upsert,multi,aWriteConcern);
 			}else{
 				throw new MongoQueryException("Query format is invalid no collection found");
 			}
@@ -237,7 +284,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		}
 		else{
 			if(convertToDBObject(defaultQuery)){
-				return this.collection.update(this.query,this.projection,upsert,multi,aWriteConcern,encoder);
+				return this.collection.update(this.query,new BasicDBObject("$set",this.projection),upsert,multi,aWriteConcern,encoder);
 			}else{
 				throw new MongoQueryException("Query format is invalid no collection found");
 			}
@@ -254,7 +301,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		}
 		else{
 			if(convertToDBObject(defaultQuery)){
-				return this.collection.update(this.query,this.projection,upsert,multi,aWriteConcern,byPassDocumentValidation,encoder);
+				return this.collection.update(this.query,new BasicDBObject("$set",this.projection),upsert,multi,aWriteConcern,byPassDocumentValidation,encoder);
 			}else{
 				throw new MongoQueryException("Query format is invalid no collection found");
 			}
@@ -270,7 +317,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		}
 		else{
 			if(convertToDBObject(defaultQuery)){
-				return this.collection.updateMulti(this.query,this.projection);
+				return this.collection.updateMulti(this.query,new BasicDBObject("$set",this.projection));
 			}else{
 				throw new MongoQueryException("Query format is invalid no collection found");
 			}
@@ -353,36 +400,122 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 	}
 	
 	private void setQueryObject(JSONObject object,boolean status){
-		
-		Map<String,Object> mapQuery = new HashMap<String, Object>();
-		Map<String,Object> mapProjection = new HashMap<String, Object>();
-		boolean hasProjection = status;
-		Iterator<String> keys = object.keys();
-		while(keys.hasNext()){
-			String key = keys.next();
-			Object val=null;
-	        try{
-	             JSONObject value = object.getJSONObject(key);
-	             if(key.equals("projection")){
-	            	 hasProjection = true;
-	             }
-	             setQueryObject(value,hasProjection);
-	        }catch(Exception e){
-	        	if(parameterValue.containsKey(key)){
-	        		val = parameterValue.get(key);
-	        	}
-	        }
-	        if(val != null){
-	        	if(!hasProjection){
-	        		mapQuery.put(key,val);
-	        	}else{
-	        		mapProjection.put(key, val);
-	        	}
-        	}
-		}
-		this.query = new BasicDBObject(mapQuery);
-		if(!mapProjection.isEmpty()){
-			this.projection = new BasicDBObject(mapProjection);
-		}
+
+        boolean hasProjection = status;
+        Iterator<String> keys = object.keys();
+        while(keys.hasNext()){
+            String key = keys.next();
+            Object val=null;
+            try{
+                JSONObject value = object.getJSONObject(key);
+                if(key.equals("projection")){
+                    hasProjection = true;
+                }
+                setQueryObject(value,hasProjection);
+            }catch(Exception e){
+                if(parameterValue.containsKey(key)){
+                    val = parameterValue.get(key);
+                }
+            }
+            if(val != null){
+                if(!hasProjection){
+                    mapQuery.put(key,val);
+                }else{
+                    mapProjection.put(key, val);
+                }
+            }
+        }
+        this.query = new BasicDBObject(mapQuery);
+        if(!mapProjection.isEmpty()){
+            this.projection = new BasicDBObject(mapProjection);
+        }
 	}
+
+    private void getAggregrationObjects(JSONObject stmt){
+
+        Iterator<String> keys = stmt.keys();
+        while(keys.hasNext()){
+
+            String key = keys.next();
+            JSONObject value=null;
+            try{
+                if(!key.equals("collection"))
+                {
+                    value = stmt.getJSONObject(key);
+                }
+            }catch(JSONException e){
+
+                throw new JSONException(e.getMessage());
+            }
+            if(key.equals("collection")){
+
+                this.collection = db.getCollection(key);
+            }else if(key.equals("$lookup")){
+
+                mapLookUp = toMap(value);
+            }else if(key.equals("$project")){
+
+                mapProject = toMap(value);
+            }else if(key.equals("$sort")){
+
+                mapSort = toMap(value);
+            }else if(key.equals("$group")){
+
+                mapGroup = toMap(value);
+            }else if(key.equals("$unwind")){
+
+                mapUnwind =toMap(value);
+            }else{
+
+                setMatchObject(value);
+            }
+        }
+    }
+
+    public void setMatchObject(JSONObject stmt){
+
+        Iterator<String> keys = stmt.keys();
+        while(keys.hasNext()){
+            String key = keys.next();
+            if(parameterValue.containsKey(key)){
+                Object val= parameterValue.get(key);
+                mapMatch.put(key, val);
+            }
+        }
+    }
+    public static Map<String, Object> toMap(JSONObject object) throws JSONException {
+        Map<String, Object> map = new HashMap<String, Object>();
+
+        Iterator<String> keysItr = object.keys();
+        while(keysItr.hasNext()) {
+            String key = keysItr.next();
+            Object value = object.get(key);
+
+            if(value instanceof JSONArray) {
+                value = toList((JSONArray) value);
+            }
+
+            else if(value instanceof JSONObject) {
+                value = toMap((JSONObject) value);
+            }
+            map.put(key, value);
+        }
+        return map;
+    }
+
+    public static List<Object> toList(JSONArray array) throws JSONException {
+        List<Object> list = new ArrayList<Object>();
+        for(int i = 0; i < array.length(); i++) {
+            Object value = array.get(i);
+            if(value instanceof JSONArray) {
+                value = toList((JSONArray) value);
+            }
+
+            else if(value instanceof JSONObject) {
+                value = toMap((JSONObject) value);
+            }
+            list.add(value);
+        }
+        return list;
+    }
 }

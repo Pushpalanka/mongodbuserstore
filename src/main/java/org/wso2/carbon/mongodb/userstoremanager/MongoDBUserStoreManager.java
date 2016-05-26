@@ -10,11 +10,15 @@ import org.apache.axiom.om.util.Base64;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.BSONTimestamp;
 import org.wso2.carbon.CarbonConstants;
+import org.wso2.carbon.mongodb.hybrid.HybridMongoDBConstants;
+import org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager;
 import org.wso2.carbon.mongodb.query.*;
+import org.wso2.carbon.mongodb.system.SystemMongoUserRoleManager;
 import org.wso2.carbon.mongodb.util.MongoDatabaseUtil;
+import org.wso2.carbon.mongodb.util.MongoUserCoreUtil;
 import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.claim.ClaimManager;
-import org.wso2.carbon.user.api.ProfileConfigurationManager;
+import org.wso2.carbon.user.core.profile.ProfileConfigurationManager;
 import org.wso2.carbon.user.api.Properties;
 import org.wso2.carbon.user.api.Property;
 import org.wso2.carbon.user.api.RealmConfiguration;
@@ -38,6 +42,8 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager {
     private static final String CASE_INSENSITIVE_USERNAME = "CaseInsensitiveUsername";
     protected Random random = new Random();
     private static final String SHA_1_PRNG = "SHA1PRNG";
+    protected HybridMongoDBRoleManager mongoDBRoleManager = null;
+    protected SystemMongoUserRoleManager systemMongoUserRoleManager = null;
 	private org.apache.commons.logging.Log log = LogFactory.getLog(MongoDBUserStoreManager.class);
 
 	public MongoDBUserStoreManager(){
@@ -144,16 +150,9 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager {
             }
         }
 
-        db = (DB) properties.get(UserCoreConstants.DATA_SOURCE);
-        if (dataSource == null) {
-            dataSource = DatabaseUtil.getRealmDataSource(realmConfig);
-        }
-        if (dataSource == null) {
-            throw new UserStoreException("User Management Data Source is null");
-        }
+        properties.put(UserCoreConstants.DATA_SOURCE, db);
 
-        properties.put(UserCoreConstants.DATA_SOURCE, dataSource);
-
+        this.db = db;
 
         realmConfig.setUserStoreProperties(MongoDBRealmUtil.getMONGO_QUERY(realmConfig
                 .getUserStoreProperties()));
@@ -2055,26 +2054,28 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager {
     public boolean isExistingRememberMeToken(String userName, String token)
             throws org.wso2.carbon.user.api.UserStoreException {
         boolean isValid = false;
-       /* Connection dbConnection = null;
-        PreparedStatement prepStmt = null;
-        ResultSet rs = null;
+        DB dbConnection = null;
+        MongoPreparedStatement prepStmt = null;
+        DBCursor cursor = null;
         String value = null;
         Date createdTime = null;
         try {
-            dbConnection = getDBConnection();
-            prepStmt = dbConnection.prepareStatement(HybridJDBCConstants.GET_REMEMBERME_VALUE_SQL);
-            prepStmt.setString(1, userName);
-            prepStmt.setInt(2, tenantId);
-            rs = prepStmt.executeQuery();
-            while (rs.next()) {
-                value = rs.getString(1);
-                createdTime = rs.getTimestamp(2);
+            dbConnection = loadUserStoreSpacificDataSoruce();
+            prepStmt = new MongoPreparedStatementImpl(dbConnection,HybridMongoDBConstants.GET_REMEMBERME_VALUE_MONGO_QUERY);
+            prepStmt.setString("UM_USER_NAME", userName);
+            prepStmt.setInt("UM_TENANT_ID", tenantId);
+            cursor = prepStmt.find();
+            while (cursor.hasNext()) {
+                value = cursor.next().get("UM_COOKIE_VALUE").toString();
+                createdTime = (Date) cursor.next().get("UM_CREATED_TIME");
+                createdTime = new Date(new BSONTimestamp((int)createdTime.getTime(),1).getTime());
             }
-        } catch (SQLException e) {
-            log.error("Using sql : " + HybridJDBCConstants.GET_REMEMBERME_VALUE_SQL);
+        } catch (MongoQueryException e) {
+            log.error("Using sql : " + HybridMongoDBConstants.GET_REMEMBERME_VALUE_MONGO_QUERY);
             throw new UserStoreException(e.getMessage(), e);
         } finally {
-            DatabaseUtil.closeAllConnections(null, rs, prepStmt);
+
+            MongoDatabaseUtil.closeAllConnections(dbConnection,prepStmt);
         }
 
         if (value != null && createdTime != null) {
@@ -2097,7 +2098,7 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager {
                     isValid = false;
                 }
             }
-        }*/
+        }
 
         return isValid;
     }
@@ -2145,5 +2146,206 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager {
     private boolean isCaseSensitiveUsername() {
         String isUsernameCaseInsensitiveString = realmConfig.getUserStoreProperty(CASE_INSENSITIVE_USERNAME);
         return !Boolean.parseBoolean(isUsernameCaseInsensitiveString);
+    }
+
+    protected void persistDomain() throws UserStoreException{
+
+        String domain = MongoUserCoreUtil.getDomainName(this.realmConfig);
+        if (domain != null) {
+            MongoUserCoreUtil.persistDomain(domain, this.tenantId, this.db);
+        }
+    }
+
+    protected void addInitialAdminData(boolean addAdmin, boolean initialSetup) throws UserStoreException {
+
+        if (realmConfig.getAdminRoleName() == null || realmConfig.getAdminUserName() == null) {
+            log.error("Admin user name or role name is not valid. Please provide valid values.");
+            throw new UserStoreException(
+                    "Admin user name or role name is not valid. Please provide valid values.");
+        }
+        String adminUserName = MongoUserCoreUtil.removeDomainFromName(realmConfig.getAdminUserName());
+        String adminRoleName = MongoUserCoreUtil.removeDomainFromName(realmConfig.getAdminRoleName());
+        boolean userExist = false;
+        boolean roleExist = false;
+        boolean isInternalRole = false;
+        try {
+            if (Boolean.parseBoolean(this.getRealmConfiguration().getUserStoreProperty(
+                    UserCoreConstants.RealmConfig.READ_GROUPS_ENABLED))) {
+                roleExist = doCheckExistingRole(adminRoleName);
+            }
+        } catch (Exception e) {
+            //ignore
+        }
+
+        if (!roleExist) {
+            try {
+                roleExist = mongoDBRoleManager.isExistingRole(adminRoleName);
+            } catch (Exception e) {
+                //ignore
+            }
+            if (roleExist) {
+                isInternalRole = true;
+            }
+        }
+
+        try {
+            userExist = doCheckExistingUser(adminUserName);
+        } catch (Exception e) {
+            //ignore
+        }
+
+        if (!userExist) {
+            if (isReadOnly()) {
+                String message = "Admin user can not be created in primary user store. " +
+                        "User store is read only. " +
+                        "Please pick a user name which is exist in the primary user store as Admin user";
+                if (initialSetup) {
+                    throw new UserStoreException(message);
+                } else if (log.isDebugEnabled()) {
+                    log.error(message);
+                }
+            } else if (addAdmin) {
+                try {
+                    this.doAddUser(adminUserName, realmConfig.getAdminPassword(),
+                            null, null, null, false);
+                } catch (Exception e) {
+                    String message = "Admin user has not been created. " +
+                            "Error occurs while creating Admin user in primary user store.";
+                    if (initialSetup) {
+                        throw new UserStoreException(message, e);
+                    } else if (log.isDebugEnabled()) {
+                        log.error(message, e);
+                    }
+                }
+            } else {
+                if (initialSetup) {
+                    String message = "Admin user can not be created in primary user store. " +
+                            "Add-Admin has been set to false. " +
+                            "Please pick a User name which is exist in the primary user store as Admin user";
+                    if (initialSetup) {
+                        throw new UserStoreException(message);
+                    } else if (log.isDebugEnabled()) {
+                        log.error(message);
+                    }
+                }
+            }
+        }
+
+        if (!roleExist) {
+            if (addAdmin) {
+                if (!isReadOnly() && writeGroupsEnabled) {
+                    try {
+                        this.doAddRole(adminRoleName, new String[]{adminUserName}, false);
+                    } catch (org.wso2.carbon.user.api.UserStoreException e) {
+                        String message = "Admin role has not been created. " +
+                                "Error occurs while creating Admin role in primary user store.";
+                        if (initialSetup) {
+                            throw new UserStoreException(message, e);
+                        } else if (log.isDebugEnabled()) {
+                            log.error(message, e);
+                        }
+                    }
+                } else {
+                    // creates internal role
+                    try {
+                        mongoDBRoleManager.addHybridRole(adminRoleName, new String[]{adminUserName});
+                        isInternalRole = true;
+                    } catch (Exception e) {
+                        String message = "Admin role has not been created. " +
+                                "Error occurs while creating Admin role in primary user store.";
+                        if (initialSetup) {
+                            throw new UserStoreException(message, e);
+                        } else if (log.isDebugEnabled()) {
+                            log.error(message, e);
+                        }
+                    }
+                }
+            } else {
+                String message = "Admin role can not be created in primary user store. " +
+                        "Add-Admin has been set to false. " +
+                        "Please pick a Role name which is exist in the primary user store as Admin Role";
+                if (initialSetup) {
+                    throw new UserStoreException(message);
+                } else if (log.isDebugEnabled()) {
+                    log.error(message);
+                }
+            }
+        }
+
+        if (isInternalRole) {
+            if (!mongoDBRoleManager.isUserInRole(adminUserName, adminRoleName)) {
+                try {
+                    mongoDBRoleManager.updateHybridRoleListOfUser(adminUserName, null,
+                            new String[]{adminRoleName});
+                } catch (Exception e) {
+                    String message = "Admin user has not been assigned to Admin role. " +
+                            "Error while assignment is done";
+                    if (initialSetup) {
+                        throw new UserStoreException(message, e);
+                    } else if (log.isDebugEnabled()) {
+                        log.error(message, e);
+                    }
+                }
+            }
+            realmConfig.setAdminRoleName(MongoUserCoreUtil.addInternalDomainName(adminRoleName));
+        } else if (!isReadOnly() && writeGroupsEnabled) {
+            if (!this.doCheckIsUserInRole(adminUserName, adminRoleName)) {
+                if (addAdmin) {
+                    try {
+                        this.doUpdateRoleListOfUser(adminUserName, null,
+                                new String[]{adminRoleName});
+                    } catch (Exception e) {
+                        String message = "Admin user has not been assigned to Admin role. " +
+                                "Error while assignment is done";
+                        if (initialSetup) {
+                            throw new UserStoreException(message, e);
+                        } else if (log.isDebugEnabled()) {
+                            log.error(message, e);
+                        }
+                    }
+                } else {
+                    String message = "Admin user can not be assigned to Admin role " +
+                            "Add-Admin has been set to false. Please do the assign it in user store level";
+                    if (initialSetup) {
+                        throw new UserStoreException(message);
+                    } else if (log.isDebugEnabled()) {
+                        log.error(message);
+                    }
+                }
+            }
+        }
+
+        doInitialUserAdding();
+    }
+
+
+    /**
+     * @return whether this is the initial startup
+     * @throws UserStoreException
+     */
+    protected void doInitialUserAdding() throws UserStoreException {
+
+        String systemUser = MongoUserCoreUtil.removeDomainFromName(CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME);
+        String systemRole = MongoUserCoreUtil.removeDomainFromName(CarbonConstants.REGISTRY_ANONNYMOUS_ROLE_NAME);
+
+        if (!systemMongoUserRoleManager.isExistingSystemUser(systemUser,this.db)) {
+            systemMongoUserRoleManager.addSystemUser(systemUser,
+                    MongoUserCoreUtil.getPolicyFriendlyRandomPassword(systemUser), null,this.db);
+        }
+
+        if (!systemMongoUserRoleManager.isExistingRole(systemRole,this.db)) {
+            systemMongoUserRoleManager.addSystemRole(systemRole, new String[]{systemUser},this.db);
+        }
+
+        if (!mongoDBRoleManager.isExistingRole(MongoUserCoreUtil.removeDomainFromName(realmConfig
+                .getEveryOneRoleName()))) {
+            mongoDBRoleManager.addHybridRole(
+                    MongoUserCoreUtil.removeDomainFromName(realmConfig.getEveryOneRoleName()), null);
+        }
+    }
+
+    protected void doInitialSetup() throws UserStoreException {
+        systemMongoUserRoleManager = new SystemMongoUserRoleManager(this.db, tenantId);
+        mongoDBRoleManager = new HybridMongoDBRoleManager(this.db, tenantId, realmConfig, userRealm);
     }
 }
