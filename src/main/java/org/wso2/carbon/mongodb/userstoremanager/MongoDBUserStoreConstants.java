@@ -66,30 +66,31 @@ public class MongoDBUserStoreConstants {
             setAdvancedProperty("validationQuery for the database","","");
             setAdvancedProperty("Validation Interval(time in milliseconds)","","");
 			setAdvancedProperty("SelectUserMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?'}", "");
-			setAdvancedProperty("GetRoleListMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_TENANT_ID' : '?','projection': '{'UM_ROLE_NAME' : '1','_id' : '0'}'}", "");
-			setAdvancedProperty("GetSharedRoleListMONGO_QUERY","{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_SHARED_ROLE' : '1','projection' : '{'UM_ROLE_NAME' : '1','UM_TENANT_ID' : '1','UM_SHARED_ROLE' : '1'}'}", "");
-			setAdvancedProperty("UserFilterMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'UM_USER_NAME' : '1','$orderby' : '{'UM_USER_NAME' : '1'}'}'}", "");
-			setAdvancedProperty("UserRoleMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_TENANT_ID' : '?','projection' : '{'UM_ROLE_NAME' : '1'}','$lookup' : '[{'from' : 'UM_USER_ROLE','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','UM_TENANT_ID' : '?'},{'from' : 'UM_USER','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','UM_TENANT_ID' : '?'}]'}", "");
-			setAdvancedProperty("UserSharedRoleMONGO_QUERY","{'collection' : 'UM_SHARED_USER_ROLE','user.UM_USER_NAME' : '?','UM_USER_TENANT_ID' : 'role.UM_TENANT_ID','UM_USER_TENANT_ID' : '?','$lookup' : '[{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'user'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'role'}]'}","");
+			setAdvancedProperty("GetRoleListMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_TENANT_ID' : '?','UM_ROLE_NAME' : '?','UM_SHARED_ROLE' : '0','projection': {'UM_ROLE_NAME' : '1','UM_TENANT_ID' : 1,'UM_SHARED_ROLE' : 1,'_id' : '0'}}", "");
+			setAdvancedProperty("GetSharedRoleListMONGO_QUERY","{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_SHARED_ROLE' : '1','projection' : {'UM_ROLE_NAME' : '1','UM_TENANT_ID' : '1','UM_SHARED_ROLE' : '1'}}", "");
+			setAdvancedProperty("UserFilterMONGO_QUERY", "{'collection' : 'UM_USER','$match' : {'UM_USER_NAME' : '?','UM_TENANT_ID' : '?'},'$project' : {'UM_USER_NAME' : 1,'_id' : 0},'$sort' : {'UM_USER_NAME' : '1'}}", "");
+			setAdvancedProperty("UserRoleMONGO_QUERY", "{'collection' : 'UM_ROLE','$match' : {'UM_TENANT_ID' : '?'},'$project' : {'UM_ROLE_NAME' : 1,'_id' : 0},'$lookup' : [{'from' : 'UM_USER_ROLE','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','UM_TENANT_ID' : '?','as' : 'role'},{'from' : 'UM_USER','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','UM_TENANT_ID' : '?','as' : 'users'}]}", "");
+			setAdvancedProperty("UserSharedRoleMONGO_QUERY","{'collection' : 'UM_SHARED_USER_ROLE','$match' : {'user.UM_USER_NAME' : '?','UM_USER_TENANT_ID' : '$role.UM_TENANT_ID','UM_USER_TENANT_ID' : '?'},'$unwind' : '$role','$lookup' : [{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'user'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'role'}]}","");
 
-			setAdvancedProperty("IsRoleExistingMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'UM_ID' : '1'}'}","");
-			setAdvancedProperty("GetUserListOfRoleMONGO_QUERY","{'collection' : 'UM_USER','UM_TENANT_ID' : '?','role.UM_ROLE_NAME' : '?','role.UM_TENANT_ID' : '?','userRole.UM_TENANT_ID' : '?','projection' : {'UM_USER_NAME' : '1'},'$lookup' : '[{'from' : 'UM_USER_ROLE','localField' : 'UM_ID','foreignField' : 'UM_USER_ID','as' : 'userRole'},{'from' : 'UM_ROLE','localField' : 'UM_USER_ROLE.UM_ROLE_ID','foreignField' : 'UM_ROLE.UM_ID','as' : 'role'}]'}","");
+			setAdvancedProperty("IsRoleExistingMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'UM_ID' : 1}}","");
+			setAdvancedProperty("GetUserListOfRoleMONGO_QUERY","{'collection' : 'UM_USER','$match' : {'UM_TENANT_ID' : '?','role.UM_ROLE_NAME' : '?','role.UM_TENANT_ID' : '?','userRole.UM_TENANT_ID' : '?'},'$project' : {'name' : '$_id','UM_USER_NAME' : 1},'$lookup' : [{'from' : 'UM_USER_ROLE','localField' : 'UM_ID','foreignField' : 'UM_USER_ID','as' : 'userRole'},{'from' : 'UM_ROLE','localField' : 'UM_USER_ROLE.UM_ROLE_ID','foreignField' : 'UM_ROLE.UM_ID','as' : 'role'}]}","");
 
-			setAdvancedProperty("IsUserExistingMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'UM_ID' : '1'}'}","");
-			setAdvancedProperty("GetUserPropertiesForProfileMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','UM_PROFILE_ID' : '?','UM_TENANT_ID' : '?','users.UM_USER_NAME' : '?','users.UM_TENANT_ID' : '?','$lookup' : '{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'users'}','projection' : '{'UM_ATTR_NAME' : '1','UM_PROFILE_VALUE' : '1'}'}","");
-			setAdvancedProperty("GetUserPropertyForProfileMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','UM_ATTR_NAME' : '?','UM_PROFILE_ID' : '?','UM_TENANT_ID' : '?','users.UM_USER_NAME' : '?','users.UM_TENANT_ID' : '?','$lookup' : '{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'users'},'projection' : '{'UM_ATTR_VALUE' : '1'}''}","");
-			setAdvancedProperty("GetUserLisForPropertyMONGO_QUERY","{'collection' : 'UM_USER','attribute.UM_ATTR_NAME' : '?','attribute.UM_ATTR_VALUE' : '?','attribute.UM_ATTR_NAME' : '?','attribute.UM_PROFILE_ID' : '?','atrribute.UM_TENANT_ID' : '?','user.UM_TENANT_ID' : '?','$lookup' : '{'from' : 'UM_USER_ATTRIBUTE','localField' : 'UM_ID','foreignField' : 'UM_USER_ID','as' : 'attribute'}','projection' : '{'UM_USER_NAME' : '1'}'}","");
+			setAdvancedProperty("IsUserExistingMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'UM_ID' : 1}}","");
+			setAdvancedProperty("GetUserPropertiesForProfileMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','$match' : {'UM_PROFILE_ID' : '?','UM_TENANT_ID' : '?','users.UM_USER_NAME' : '?','users.UM_TENANT_ID' : '?'},'$lookup' : {'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'users'},'$project' : {'name' : '$_id','UM_ATTR_NAME' : 1,'UM_PROFILE_VALUE' : 1}}","");
+			setAdvancedProperty("GetUserPropertyForProfileMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','$match' : {'UM_ATTR_NAME' : '?','UM_PROFILE_ID' : '?','UM_TENANT_ID' : '?','users.UM_USER_NAME' : '?','users.UM_TENANT_ID' : '?'},'$lookup' : '{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'users'},'$project' : {'name' : '$_id','UM_ATTR_VALUE' : 1}}","");
+			setAdvancedProperty("GetUserLisForPropertyMONGO_QUERY","{'collection' : 'UM_USER','$match' : {'attribute.UM_ATTR_NAME' : '?','attribute.UM_ATTR_VALUE' : '?','attribute.UM_ATTR_NAME' : '?','attribute.UM_PROFILE_ID' : '?','atrribute.UM_TENANT_ID' : '?','user.UM_TENANT_ID' : '?'},'$lookup' : {'from' : 'UM_USER_ATTRIBUTE','localField' : 'UM_ID','foreignField' : 'UM_USER_ID','as' : 'attribute'},'$project' : {'name' : '$_id','UM_USER_NAME' : 1}}","");
 
-			setAdvancedProperty("GetProfileNamesMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','UM_TENANT_ID' : '?','projection' : '{'UM_PROFILE_ID' : '1'}','distinct' : 'UM_PROFILE_ID'}","");
+			setAdvancedProperty("GetProfileNamesMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','UM_TENANT_ID' : '?','projection' : {'UM_PROFILE_ID' : 1},'distinct' : 'UM_PROFILE_ID'}","");
 			setAdvancedProperty("GetUserProfileNamesMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','UM_USER_ID' : '?','projection' : '{'UM_PROFILE_ID' : '?'}','distinct' : 'UM_PROFILE_ID'}","");
-			setAdvancedProperty("GetUserIDFromUserNameMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'UM_ID' : '1'}'}","");
-			setAdvancedProperty("GetUserNameFromTenantIDMONGO_QUERY", "{'collection' : 'UM_USER','UM_TENANT_ID' : '?','projection' : '{'UM_USER_NAME' : '1'}'}","");
-			setAdvancedProperty("GetTenantIDFromUserNameMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','projection' : '{'UM_TENANT_ID' : '?'}'}","");
+			setAdvancedProperty("GetUserIDFromUserNameMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'UM_ID' : 1}}","");
+			setAdvancedProperty("GetUserNameFromTenantIDMONGO_QUERY", "{'collection' : 'UM_USER','UM_TENANT_ID' : '?','projection' : {'UM_USER_NAME' : 1}}","");
+			setAdvancedProperty("GetTenantIDFromUserNameMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','projection' : {'UM_USER_NAME' : 1}}","");
 
 			setAdvancedProperty("AddUserMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_USER_PASSWORD' : '?','UM_SALT_VALUE' : '?','UM_REQUIRE_CHANGE' : '?','UM_CHANGED_TIME' : '?','UM_TENANT_ID' : '?'}","");
 			setAdvancedProperty("AddUserToRoleMONGO_QUERY", "{'collection' : 'UM_USER_ROLE','UM_USER_ID' : '?','UM_ROLE_ID' : '?','UM_TENANT_ID' : '?'}","");
 			setAdvancedProperty("AddRoleMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?'}","");
-			setAdvancedProperty("AddSharedRoleMONGO_QUERY", "UPDATE UM_ROLE SET UM_SHARED_ROLE = ? WHERE UM_ROLE_NAME = ? AND UM_TENANT_ID = ?","");
+			setAdvancedProperty("AddSharedRoleMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'$set' : {'UM_SHARED_ROLE' : '?'}}}","");
+
 			setAdvancedProperty("AddRoleToUserMONGO_QUERY", "{'collection' : 'UM_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_TENANT_ID' : '?'}","");
 			setAdvancedProperty("AddSharedRoleToUserMONGO_QUERY", "{'collection' : 'UM_SHARED_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_USER_TENANT_ID' : '?','UM_ROLE_TENANT_ID' : '?'}","");
 
@@ -104,19 +105,19 @@ public class MongoDBUserStoreConstants {
 			setAdvancedProperty("OnDeleteUserRemoveUserRoleMappingMONGO_QUERY", "{'collection' : 'UM_USER_ROLE','UM_USER_ID' : '?','UM_TENANT_ID' : '?'}","");
 			setAdvancedProperty("OnDeleteUserRemoveUserAttributeMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','UM_USER_ID' : '?',UM_TENANT_ID : '?'}","");
 
-			setAdvancedProperty("UpdateUserPasswordMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'$set'  : '{'UM_USER_PASSWORD' : '?','UM_SALT_VALUE' : '?','UM_REQUIRE_CHANGE' : '?','UM_CHANGED_TIME' : '?'}'}'}","");
-			setAdvancedProperty("UpdateRoleNameMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'$set' : '{'UM_ROLE_NAME' : '?'}'}'}","");
+			setAdvancedProperty("UpdateUserPasswordMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'$set'  : {'UM_USER_PASSWORD' : '?','UM_SALT_VALUE' : '?','UM_REQUIRE_CHANGE' : '?','UM_CHANGED_TIME' : '?'}}}","");
+			setAdvancedProperty("UpdateRoleNameMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'$set' : {'UM_ROLE_NAME' : '?'}}}","");
 
 			setAdvancedProperty("AddUserPropertyMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','UM_USER_ID' : '?','UM_ATTR_NAME' : '?','UM_ATTR_VALUE' : '?','UM_PROFILE_ID' : '?','UM_TENANT_ID' : '?'}","");
-			setAdvancedProperty("UpdateUserPropertyMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','UM_USER_ID' : '?','UM_ATTR_NAME' : '?','UM_PROFILE_ID' : '?','UM_TENANT_ID' : '?','projection' : '{$set' : '{'UM_ATTR_VALUE' : '?'}}'}","");
+			setAdvancedProperty("UpdateUserPropertyMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','UM_USER_ID' : '?','UM_ATTR_NAME' : '?','UM_PROFILE_ID' : '?','UM_TENANT_ID' : '?','projection' : {'$set' : {'UM_ATTR_VALUE' : '?'}}}","");
 			setAdvancedProperty("DeleteUserPropertyMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','UM_USER_ID' : '?','UM_ATTR_NAME' : '?','UM_PROFILE_ID' : '?','UM_TENANT_ID' : '?'}","");
 			setAdvancedProperty("UserNameUniqueAcrossTenantsMONGO_QUERY", "{'collection' : 'UM_USER_ATTRIBUTE','UM_USER_ID' : '?','UM_ATTR_NAME' : '?','UM_PROFILE_ID' : '?','UM_TENANT_ID' : '?'}","");
 
-			setAdvancedProperty("IsDomainExistingMONGO_QUERY","{'collection' : 'UM_DOMAIN','UM_DOMAIN_NAME' : '?','UM_TENANT_ID' : '?','projection' : '{'UM_DOMAIN_ID' : '1'}'}","");
+			setAdvancedProperty("IsDomainExistingMONGO_QUERY","{'collection' : 'UM_DOMAIN','UM_DOMAIN_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'UM_DOMAIN_ID' : 1}}","");
 
 			setAdvancedProperty("AddDomainMONGO_QUERY", "{'collection' : 'UM_DOMAIN','UM_DOMAIN_NAME' : '?','UM_TENANT_ID' : '?'}","");
 
-			setAdvancedProperty("UserSharedRoleMONGO_QUERY","{'collection' : 'UM_SHARED_USER_ROLE','user.UM_USER_NAME' : '?','UM_USER_TENANT_ID' : '?','UM_USER_TENANT_ID' : 'user.UM_TENANT_ID','UM_ROLE_TENANT_ID' : 'role.UM_TENANT_ID','$lookup' : '[{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'user'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'roles'}]','projection' : '{'UM_ROLE_NAME' : '1','roles.UM_TENANT_ID' : '1','UM_SHARED_ROLE' : '1'}'}","");
-            setAdvancedProperty("GetUserListOfSharedRoleMONGO_QUERY","{'collection' : 'UM_SHARED_USER_ROLE','UM_ROLE_NAME' : '?','UM_USER_TENANT_ID' : 'user.UM_TENANT_ID','UM_ROLE_TENANT_ID' : 'role.UM_TENANT_ID','$lookup' : '[{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'users'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','projection' : '{'UM_USER_NAME','1'}'}]'}","");
+			setAdvancedProperty("UserSharedRoleMONGO_QUERY","{'collection' : 'UM_SHARED_USER_ROLE',{'$match' : {'user.UM_USER_NAME' : '?','UM_USER_TENANT_ID' : '?','UM_USER_TENANT_ID' : '$user.UM_TENANT_ID','UM_ROLE_TENANT_ID' : '$role.UM_TENANT_ID'},'$lookup' : '[{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'user'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'roles'}]',{'$unwind' : '$user'},{'$unwind' : '$roles'},'$project' : {'name' : '$_id','UM_ROLE_NAME' : 1,'roles.UM_TENANT_ID' : 1,'UM_SHARED_ROLE' : 1}}","");
+            setAdvancedProperty("GetUserListOfSharedRoleMONGO_QUERY","{'collection' : 'UM_SHARED_USER_ROLE',$match : {'UM_ROLE_NAME' : '?','UM_USER_TENANT_ID' : '$user.UM_TENANT_ID','UM_ROLE_TENANT_ID' : '$role.UM_TENANT_ID'},'$lookup' : '[{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'users'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','$project' : {'name' : '$_id','UM_USER_NAME',1}}]'}","");
 		}
 }

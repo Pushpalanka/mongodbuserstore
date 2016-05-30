@@ -18,7 +18,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 	private DBObject query=null;
 	private DBObject projection;
 	private String defaultQuery;
-	private Map<String, Object> parameterValue;
+	private HashMap<String, Object> parameterValue;
 	private JSONObject queryJson;
 	private int parameterCount;
 	private Map<String,Object> mapQuery = null;
@@ -29,6 +29,10 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 	private Map<String,Object> mapLookUp = null;
 	private Map<String,Object> mapGroup = null;
 	private Map<String,Object> mapUnwind = null;
+    private boolean multiInsertTrue = false;
+    private List<DBObject> queryList = null;
+    private List<DBObject> projectionList = null;
+    private BulkWriteOperation bulkWrite = null;
 	
 	public MongoPreparedStatementImpl(DB db,String query){
 	
@@ -70,6 +74,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		this.mapSort = null;
 		this.mapGroup = null;
 		this.mapUnwind = null;
+        this.bulkWrite =null;
 	}
 
 
@@ -198,13 +203,18 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         JSONObject defaultObject = new JSONObject(defaultQuery);
         getAggregrationObjects(defaultObject);
         try{
-
-            DBObject match = new BasicDBObject("$match",new BasicDBObject(mapMatch));
-            DBObject lookup = new BasicDBObject("$lookup",new BasicDBObject(mapLookUp));
-            DBObject project = new BasicDBObject("$project",new BasicDBObject(mapProject));
             List<DBObject> pipeline = new ArrayList<DBObject>();
-            pipeline.add(match);
-            pipeline.add(lookup);
+            if(mapMatch != null) {
+
+                DBObject match = new BasicDBObject("$match", new BasicDBObject(mapMatch));
+                pipeline.add(match);
+            }
+            if(mapLookUp != null) {
+
+                DBObject lookup = new BasicDBObject("$lookup", new BasicDBObject(mapLookUp));
+                pipeline.add(lookup);
+            }
+            DBObject project = new BasicDBObject("$project",new BasicDBObject(mapProject));
             pipeline.add(project);
             if(mapSort != null){
 
@@ -367,6 +377,56 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 			}
 		}
 	}
+
+	public BulkWriteResult insertBulk() throws MongoQueryException {
+
+        return this.bulkWrite.execute();
+	}
+
+	public BulkWriteResult updateBulk() throws MongoQueryException {
+
+        BulkWriteResult result = this.bulkWrite.execute();
+        return result;
+    }
+
+    public void addBatch() throws MongoQueryException{
+
+        if(!matchArguments(this.queryJson)){
+
+            throw new MongoQueryException("Parameter count not matched with query parameters");
+        }
+        else {
+
+            if(convertToDBObject(defaultQuery)) {
+
+                bulkWrite = this.collection.initializeUnorderedBulkOperation();
+                bulkWrite.insert(this.query);
+            }else{
+
+                throw new MongoQueryException("Query format is invalid no collection found");
+            }
+        }
+    }
+
+    public void updateBatch() throws MongoQueryException{
+
+        if(!matchArguments(this.queryJson)){
+
+            throw new MongoQueryException("Parameter count not matched with query parameters");
+        }
+        else {
+            if(convertToDBObject(defaultQuery)) {
+
+                BulkWriteRequestBuilder bulkWriteRequestBuilder = bulkWrite.find(this.query);
+                BulkUpdateRequestBuilder updateReq = bulkWriteRequestBuilder.upsert();
+                updateReq.replaceOne(this.projection);
+            }else{
+
+                throw new MongoQueryException("Query format is invalid no collection found");
+            }
+        }
+    }
+
 	private boolean matchArguments(JSONObject query){
 		
 		Iterator<String> keys = query.keys();
@@ -417,12 +477,11 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
                     val = parameterValue.get(key);
                 }
             }
-            if(val != null){
-                if(!hasProjection){
-                    mapQuery.put(key,val);
-                }else{
-                    mapProjection.put(key, val);
-                }
+            if(val != null && !val.equals("%")){
+                mapQuery.put(key,val);
+            }
+            if(hasProjection && !key.equals("projection")){
+                mapProjection.put(key,object.get(key));
             }
         }
         this.query = new BasicDBObject(mapQuery);
@@ -449,7 +508,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
             }
             if(key.equals("collection")){
 
-                this.collection = db.getCollection(key);
+                this.collection = db.getCollection(stmt.get(key).toString());
             }else if(key.equals("$lookup")){
 
                 mapLookUp = toMap(value);
@@ -474,12 +533,12 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 
     public void setMatchObject(JSONObject stmt){
 
-        Iterator<String> keys = stmt.keys();
-        while(keys.hasNext()){
-            String key = keys.next();
-            if(parameterValue.containsKey(key)){
-                Object val= parameterValue.get(key);
-                mapMatch.put(key, val);
+        String[] elementNames = JSONObject.getNames(stmt);
+        for (String elementName : elementNames) {
+            String value = stmt.getString(elementName);
+            if (parameterValue.containsKey(elementName)) {
+                Object val = parameterValue.get(elementName);
+                mapMatch.put(elementName, val);
             }
         }
     }

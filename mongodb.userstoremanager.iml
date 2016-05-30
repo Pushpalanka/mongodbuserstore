@@ -6,8 +6,8 @@
         <additionalProperties>
           <property key="Bundle-Name" value="mongodb.userstoremanager" />
           <property key="Private-Package" value="org.wso2.carbon.mongodb.userstoremanager.internal" />
-          <property key="Export-Package" value="!org.wso2.carbon.mongodb.userstoremanager.internal,org.wso2.carbon.mongodb.*," />
-          <property key="Import-Package" value="javax.servlet; version=2.4.0,javax.servlet.http; version=2.4.0,org.wso2.carbon.base.*,org.wso2.carbon.user.core.*; version=3.2.3,*;resolution:=optional" />
+          <property key="Export-Package" value="!org.wso2.carbon.mongodb.userstoremanager.internal,org.wso2.carbon.mongodb.*;org.wso2.carbon.user.core.internal;" />
+          <property key="Import-Package" value="javax.servlet; version=2.4.0,javax.servlet.http; version=2.4.0,org.wso2.carbon.base.*,org.wso2.carbon.user.core.*; version=4.4.3,*;resolution:=optional" />
           <property key="DynamicImport-Package" value="*" />
         </additionalProperties>
         <additionalJARContents />

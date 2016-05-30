@@ -9,7 +9,7 @@ public class MongoTenantConstants {
     public static final String UPDATE_TENANT_CONFIG_MONGOQUERY = "{'collection' : 'UM_TENANT','UM_ID' : '?','projection' : '{'$set' : '{'UM_USER_CONFIG' : '?'}'}'}";
     public static final String UPDATE_TENANT_MONGOQUERY = "{'collection' : 'UM_TENANT' ,'UM_ID' : '?','projection' : '{'$set' : '{'UM_DOMAIN_NAME' : '?','UM_EMAIL' : '?','UM_CREATED_DATE' : '?'}'}'";
     public static final String GET_TENANT_MONGOQUERY = "{'collection' : 'UM_TENANT' , 'UM_ID' : '?','projection' : '{'UM_CREATED_DATE' : '1','UM_ACTIVE' : '1','UM_USER_CONFIG' : '1','UM_ID' : '1','UM_DOMAIN_NAME' : '1','UM_EMAIL' : '1'}' }";
-    public static final String GET_ALL_TENANTS_MONGOQUERY = "{'collection' : 'UM_TENANT_ID','projection' : '{'UM_ID' : '1','UM_DOMAIN_NAME' : '1','UM_EMAIL' : '1','UM_CREATED_DATE' : '1','UM_ACTIVE' : '1'}','$orderby' : '{'age' : '1'}'}";
+    public static final String GET_ALL_TENANTS_MONGOQUERY = "{'collection' : 'UM_TENANT','projection' : '{'UM_ID' : '1','UM_DOMAIN_NAME' : '1','UM_EMAIL' : '1','UM_CREATED_DATE' : '1','UM_ACTIVE' : '1'}','$orderby' : '{'age' : '1'}'}";
     public static final String GET_DOMAIN_MONGOQUERY = "{'collection' : 'UM_TENANT','UM_ID' : '?','projection' : '{'UM_DOMAIN_NAME' : '1'}'}";
     public static final String GET_TENANT_ID_MONGOQUERY = "{'collection' : 'UM_TENANT','UM_DOMAIN_NAME' : '?','projection' : '{'UM_ID' : '1'}'}";
     public static final String ACTIVATE_MONGOQUERY = "{'collection' : 'UM_TENANT','UM_ID' : '?','projection' : '{'$set' : '{'UM_ACTIVE' : '?'}'}'}";

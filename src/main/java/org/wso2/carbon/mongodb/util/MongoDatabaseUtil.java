@@ -74,26 +74,31 @@ public class MongoDatabaseUtil {
 		return dataSource;
 	}
 	
-	public static int getIntegerValueFromDatabase(DB dbConnection,String stmt,Object... params) throws UserStoreException{
+	public static int getIntegerValueFromDatabase(DB dbConnection,String stmt,Map<String,Object> params) throws UserStoreException{
 		
 		MongoPreparedStatement prepStmt = null;
 		int value = -1;
 		JSONObject jsonKeys = new JSONObject(stmt);
 		List<String> keys = getKeys(jsonKeys);
 		try{
-			if(params != null && params.length > 0){
-				for(int i=0;i<params.length;i++){
-					Object param = params[i];
-					prepStmt = new MongoPreparedStatementImpl(dbConnection, stmt);
-					if(param==null){
-						throw new UserStoreException("Null Data Provided");
-					}else if(param instanceof String){
-						prepStmt.setString(keys.get(i),(String)param);
-					}else if(param instanceof Integer){
-						prepStmt.setInt(keys.get(i), (Integer)param);
-					}
-				}
-			}
+            prepStmt = new MongoPreparedStatementImpl(dbConnection,stmt);
+            Iterator<String> searchKeys = keys.iterator();
+            while(searchKeys.hasNext()){
+                String key = searchKeys.next();
+                if(!key.equals("collection")||!key.equals("projection")||!key.equals("$set")) {
+                    for (Map.Entry<String, Object> entry : params.entrySet()) {
+                        if (entry.getKey().equals(key)) {
+                            if (entry.getValue() == null) {
+                                throw new UserStoreException("Null Data Provided");
+                            } else if (entry.getValue() instanceof String) {
+                                prepStmt.setString(key, (String) entry.getValue());
+                            } else if (entry.getValue() instanceof Integer) {
+                                prepStmt.setInt(key, (Integer) entry.getValue());
+                            }
+                        }
+                    }
+                }
+            }
 			DBCursor cursor=prepStmt.find();
 			while(cursor.hasNext()){
 				value = Integer.parseInt(cursor.next().toString());
@@ -139,9 +144,22 @@ public class MongoDatabaseUtil {
 				String[] values = (String[])params[batchParamIndex];
 				for(String value:values){
 					prepStmt.setString(keys.get(batchParamIndex),value);
-					prepStmt.insert();
+                    if(updateTrue(keys)){
+                        prepStmt.updateBatch();
+                    }
+                    else{
+                        prepStmt.addBatch();
+                    }
 				}
 			}
+            if(updateTrue(keys)){
+
+                prepStmt.updateBulk();
+            }
+            else{
+
+                prepStmt.insertBulk();
+            }
             localConnection = true;
 			if (log.isDebugEnabled()) {
                 log.debug("Executed a batch update. Querry is : " + stmt + ": and result is"
@@ -171,7 +189,7 @@ public class MongoDatabaseUtil {
             Iterator<String> searchKeys = keys.iterator();
             while(searchKeys.hasNext()){
                 String key = searchKeys.next();
-                if(!key.equals("collection")||!key.equals("projection")||!key.equals("$set")) {
+                if(!key.equals("collection") || !key.equals("projection") || !key.equals("$set")) {
                     for(Map.Entry<String,Object> entry : params.entrySet()) {
                         if(entry.getKey().equals(key)) {
                             if (entry.getValue() == null) {
@@ -247,7 +265,7 @@ public class MongoDatabaseUtil {
         }
     }
 
-    private static boolean updateTrue(List<String> keys){
+    public static boolean updateTrue(List<String> keys){
 
         for(String key : keys){
 
@@ -259,7 +277,7 @@ public class MongoDatabaseUtil {
         return false;
     }
 	
-	private static List<String> getKeys(JSONObject stmt){
+	public static List<String> getKeys(JSONObject stmt){
 		
 		int index = 0;
 		List<String> keys=new ArrayList<String>();

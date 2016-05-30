@@ -62,4 +62,12 @@ public interface MongoPreparedStatement {
 	WriteResult remove(WriteConcern concern) throws MongoQueryException;
 	
 	WriteResult remove(WriteConcern concern, DBEncoder encoder) throws MongoQueryException;
+
+	BulkWriteResult insertBulk() throws MongoQueryException;
+
+	BulkWriteResult updateBulk() throws MongoQueryException;
+
+    void addBatch() throws MongoQueryException;
+
+    void updateBatch() throws MongoQueryException;
 }

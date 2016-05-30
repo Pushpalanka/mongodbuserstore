@@ -100,13 +100,14 @@
                         </Private-Package>
                         <Export-Package>
                             !org.wso2.carbon.mongodb.userstoremanager.internal,
-                            org.wso2.carbon.mongodb.*,
+                            org.wso2.carbon.mongodb.*;
+                            org.wso2.carbon.user.core.internal;
                         </Export-Package>
                         <Import-Package>
                             javax.servlet; version=2.4.0,
                             javax.servlet.http; version=2.4.0,
                             org.wso2.carbon.base.*,
-                            org.wso2.carbon.user.core.*; version=3.2.3,
+                            org.wso2.carbon.user.core.*; version=4.4.3,
                             *;resolution:=optional
                         </Import-Package>
                         <DynamicImport-Package>*</DynamicImport-Package>
