@@ -214,8 +214,11 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
                 DBObject lookup = new BasicDBObject("$lookup", new BasicDBObject(mapLookUp));
                 pipeline.add(lookup);
             }
-            DBObject project = new BasicDBObject("$project",new BasicDBObject(mapProject));
-            pipeline.add(project);
+			if(mapProject != null) {
+
+				DBObject project = new BasicDBObject("$project", new BasicDBObject(mapProject));
+				pipeline.add(project);
+			}
             if(mapSort != null){
 
                 DBObject sort = new BasicDBObject("$sort",new BasicDBObject(mapSort));
@@ -391,40 +394,35 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 
     public void addBatch() throws MongoQueryException{
 
-        if(!matchArguments(this.queryJson)){
+        if (convertToDBObject(defaultQuery)) {
 
-            throw new MongoQueryException("Parameter count not matched with query parameters");
-        }
-        else {
-
-            if(convertToDBObject(defaultQuery)) {
-
+            if (bulkWrite == null) {
                 bulkWrite = this.collection.initializeUnorderedBulkOperation();
-                bulkWrite.insert(this.query);
-            }else{
-
-                throw new MongoQueryException("Query format is invalid no collection found");
             }
+            bulkWrite.insert(this.query);
+        } else {
+
+            throw new MongoQueryException("Query format is invalid no collection found");
         }
+
     }
 
     public void updateBatch() throws MongoQueryException{
 
-        if(!matchArguments(this.queryJson)){
+        if (convertToDBObject(defaultQuery)) {
 
-            throw new MongoQueryException("Parameter count not matched with query parameters");
-        }
-        else {
-            if(convertToDBObject(defaultQuery)) {
+            if(bulkWrite == null){
 
-                BulkWriteRequestBuilder bulkWriteRequestBuilder = bulkWrite.find(this.query);
-                BulkUpdateRequestBuilder updateReq = bulkWriteRequestBuilder.upsert();
-                updateReq.replaceOne(this.projection);
-            }else{
-
-                throw new MongoQueryException("Query format is invalid no collection found");
+                bulkWrite = this.collection.initializeUnorderedBulkOperation();
             }
+            BulkWriteRequestBuilder bulkWriteRequestBuilder = bulkWrite.find(this.query);
+            BulkUpdateRequestBuilder updateReq = bulkWriteRequestBuilder.upsert();
+            updateReq.replaceOne(this.projection);
+        } else {
+
+            throw new MongoQueryException("Query format is invalid no collection found");
         }
+
     }
 
 	private boolean matchArguments(JSONObject query){
@@ -538,7 +536,9 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
             String value = stmt.getString(elementName);
             if (parameterValue.containsKey(elementName)) {
                 Object val = parameterValue.get(elementName);
-                mapMatch.put(elementName, val);
+				if(!val.equals("%")) {
+					mapMatch.put(elementName, val);
+				}
             }
         }
     }

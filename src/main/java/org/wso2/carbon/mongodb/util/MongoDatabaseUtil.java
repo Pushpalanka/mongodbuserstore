@@ -101,7 +101,7 @@ public class MongoDatabaseUtil {
             }
 			DBCursor cursor=prepStmt.find();
 			while(cursor.hasNext()){
-				value = Integer.parseInt(cursor.next().toString());
+				value = (int)Double.parseDouble(cursor.next().get("UM_ID").toString());
 			}
 			return value;
 		}catch(NullPointerException ex){
@@ -116,34 +116,41 @@ public class MongoDatabaseUtil {
 		}
 	}
 	
-	public static void updateUserRoleMappingInBatchMode(DB dbConnection,String stmt,Object... params) throws UserStoreException{
+	public static void updateUserRoleMappingInBatchMode(DB dbConnection,String stmt,Map<String,Object> params) throws UserStoreException{
 		
 		MongoPreparedStatement prepStmt = null;
 		boolean localConnection = false;
-		JSONObject jsonKeys = new JSONObject(stmt);
-		List<String> keys = getKeys(jsonKeys);
+        JSONObject jsonKeys = new JSONObject(stmt);
+        List<String> keys = getKeys(jsonKeys);
 		try{
 			prepStmt = new MongoPreparedStatementImpl(dbConnection, stmt);
 			int batchParamIndex = -1;
-			if(params != null && params.length > 0){	
-				for(int i=0;i<params.length;i++){
-					
-					Object param = params[i];
-					if(param == null){
-						throw new UserStoreException("Null data provided");
-					}else if(param instanceof String[]){
-						batchParamIndex = i;
-					}else if(param instanceof String){
-						prepStmt.setString(keys.get(i),(String)param);
-					}else if(param instanceof Integer){
-						prepStmt.setInt(keys.get(i),(Integer)param);
-					}
-				}
+            Iterator<String> searchKeys = keys.iterator();
+            int[] values = null;
+            String listKey = "";
+            while(searchKeys.hasNext()){
+                String key = searchKeys.next();
+                if(!key.equals("collection")&&!key.equals("projection")&&!key.equals("$set")) {
+                    for (Map.Entry<String, Object> entry : params.entrySet()) {
+                        if (entry.getKey().equals(key)) {
+                            if (entry.getValue() == null) {
+                                throw new UserStoreException("Null data provided");
+                            } else if (entry.getValue() instanceof int[]) {
+                                batchParamIndex = 1;
+                                values = (int[])entry.getValue();
+                                listKey = key;
+                            } else if (entry.getValue() instanceof String) {
+                                prepStmt.setString(key, (String) entry.getValue());
+                            } else if (entry.getValue() instanceof Integer) {
+                                prepStmt.setInt(key, (Integer) entry.getValue());
+                            }
+                        }
+                    }
+                }
 			}
 			if(batchParamIndex != -1){
-				String[] values = (String[])params[batchParamIndex];
-				for(String value:values){
-					prepStmt.setString(keys.get(batchParamIndex),value);
+				for(int value:values){
+					prepStmt.setInt(listKey,value);
                     if(updateTrue(keys)){
                         prepStmt.updateBatch();
                     }
@@ -422,33 +429,60 @@ public class MongoDatabaseUtil {
         }
     }
 
-	public static String[] getStringValuesFromDatabase(DB dbConnection, String mongoQuery,Object... params) throws UserStoreException{
+	public static String[] getStringValuesFromDatabase(DB dbConnection, String mongoQuery,Map<String,Object> params,boolean isAggregrate) throws UserStoreException{
 
         MongoPreparedStatement prepStmt = null;
         String[] values = new String[0];
         JSONObject jsonKeys = new JSONObject(mongoQuery);
-        List<String> keys = getKeys(jsonKeys);
+        List<String> keys = null;
+        if(isAggregrate){
+
+            keys = getKeys(jsonKeys.getJSONObject("$match"));
+        }
+        else {
+
+            keys = getKeys(jsonKeys);
+        }
         try{
-            if(params != null && params.length > 0){
-                for(int i=0;i<params.length;i++){
-                    Object param = params[i];
-                    prepStmt = new MongoPreparedStatementImpl(dbConnection, mongoQuery);
-                    if(param==null){
-                        prepStmt.setString(keys.get(i+1),null);
-                    }else if(param instanceof String){
-                        prepStmt.setString(keys.get(i+1),(String)param);
-                    }else if(param instanceof Integer){
-                        prepStmt.setInt(keys.get(i+1), (Integer)param);
+            Iterator<String> searchKeys = keys.iterator();
+            prepStmt = new MongoPreparedStatementImpl(dbConnection, mongoQuery);
+            while(searchKeys.hasNext()){
+                String key = searchKeys.next();
+                if(!key.equals("collection") || !key.equals("projection") || !key.equals("$set")) {
+                    for(Map.Entry<String,Object> entry : params.entrySet()) {
+                        if (entry.getKey().equals(key)) {
+                            if (params.get(key)== null) {
+                                prepStmt.setString(key, null);
+                            } else if (params.get(key) instanceof String) {
+                                prepStmt.setString(key, (String) params.get(key));
+                            } else if (params.get(key) instanceof Integer) {
+                                prepStmt.setInt(key, (Integer) params.get(key));
+                            }
+                        }
                     }
                 }
             }
-            DBCursor cursor=prepStmt.find();
-            List<String> lst = new ArrayList<String>();
-            while(cursor.hasNext()){
-                lst.add(cursor.next().toString());
-            }
-            if (lst.size() > 0) {
-                values = lst.toArray(new String[lst.size()]);
+            if(!isAggregrate) {
+                DBCursor cursor = prepStmt.find();
+                List<String> lst = new ArrayList<String>();
+                while (cursor.hasNext()) {
+                    lst.add(cursor.next().toString());
+                }
+                if (lst.size() > 0) {
+                    values = lst.toArray(new String[lst.size()]);
+                }
+            }else{
+
+                AggregationOutput result = prepStmt.aggregate();
+                Iterable<DBObject> ite = result.results();
+                List<String> lst = new ArrayList<String>();
+                while (ite.iterator().hasNext()){
+
+                    lst.add(ite.iterator().next().toString());
+                }
+                if (lst.size() > 0) {
+                    values = lst.toArray(new String[lst.size()]);
+                }
             }
             return values;
         }catch(NullPointerException ex){
@@ -458,7 +492,11 @@ public class MongoDatabaseUtil {
             log.error(ex.getMessage(),ex);
             log.error("Using JSON Query :"+mongoQuery);
             throw new UserStoreException(ex.getMessage(),ex);
-        }finally {
+        } catch (org.wso2.carbon.user.api.UserStoreException ex) {
+            log.error(ex.getMessage(),ex);
+            log.error("Using JSON Query :"+mongoQuery);
+            throw new UserStoreException(ex.getMessage(),ex);
+        } finally {
             MongoDatabaseUtil.closeAllConnections(dbConnection, prepStmt);
         }
 	}

@@ -100,8 +100,10 @@ public class SystemMongoUserRoleManager {
         DB dbConnection = null;
         try {
             dbConnection = dataSource;
+            Map<String,Object> map = new HashMap<String, Object>();
+            map.put("UM_TENANT_ID",tenantId);
             String[] roles = MongoDatabaseUtil.getStringValuesFromDatabase(dbConnection, mongoStmt,
-                    tenantId);
+                    map,false);
             return MongoUserCoreUtil.addDomainToNames(roles, UserCoreConstants.SYSTEM_DOMAIN_NAME);
         } catch (Exception e) {
             String errorMessage = "Error occurred while getting system roles";
@@ -120,9 +122,21 @@ public class SystemMongoUserRoleManager {
         DB dbConnection = null;
         try {
             dbConnection = datasource;
+            MongoPreparedStatement prepStmt = new MongoPreparedStatementImpl(dbConnection,SystemMongoDBConstants.GET_ROLE_ID);
+            prepStmt.setInt("UM_TENANT_ID",tenantId);
+            prepStmt.setString("UM_ROLE_NAME",roleName);
+            DBCursor cursor = prepStmt.find();
+            int roleId = 0;
+            if(cursor.hasNext()){
+
+                roleId = Integer.parseInt(cursor.next().get("UM_ID").toString());
+            }
+            Map<String,Object> map = new HashMap<String, Object>();
+            map.put("UM_ROLE_ID",roleId);
+            map.put("UM_TENANT_ID",tenantId);
             String[] users = MongoDatabaseUtil.getStringValuesFromDatabase(dbConnection, mongoStmt,
-                    roleName, tenantId, tenantId);
-            return UserCoreUtil.addDomainToNames(users, UserCoreConstants.SYSTEM_DOMAIN_NAME);
+                    map,false);
+            return MongoUserCoreUtil.addDomainToNames(users, UserCoreConstants.SYSTEM_DOMAIN_NAME);
         } catch (Exception e) {
             String errorMessage = "Error occurred while getting user list of system role : " + roleName;
             if (log.isDebugEnabled()) {
@@ -172,8 +186,12 @@ public class SystemMongoUserRoleManager {
         DB dbConnection = null;
         try {
             dbConnection = dataSource;
+            Map<String,Object> map = new HashMap<String, Object>();
+            map.put("UM_USER_NAME",userName);
+            map.put("UM_TENANT_ID",tenantId);
+            map.put("userRole.UM_TENANT_ID",tenantId);
             String[] roles = MongoDatabaseUtil.getStringValuesFromDatabase(dbConnection, mongoStmt,
-                    userName, tenantId, tenantId);
+                    map,true);
             return MongoUserCoreUtil.addDomainToNames(roles, UserCoreConstants.SYSTEM_DOMAIN_NAME);
         } catch (Exception e) {
             String errorMessage = "Error occurred while getting system role list of user : " + userName;

@@ -32,7 +32,7 @@ public class SystemMongoDBConstants {
     public static final String GET_USER_LIST_OF_ROLE_SQL = "{'collection' : 'UM_SYSTEM_USER_ROLE','UM_ROLE_ID' : '?','UM_TENANT_ID' : '?','projection' : {'UM_USER_NAME' : '1'}}";
     //public static final String GET_ROLE_LIST_OF_USER_SQL = "SELECT UM_ROLE_NAME FROM UM_SYSTEM_USER_ROLE, UM_SYSTEM_ROLE WHERE UM_USER_NAME=? AND UM_SYSTEM_USER_ROLE.UM_ROLE_ID=UM_SYSTEM_ROLE.UM_ID";
 
-    public static final String GET_ROLE_LIST_OF_USER_SQL = "{'collection' : 'UM_SYSTEM_ROLE','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','userRole.UM_TENANT_ID' : '?','$lookup' : {'from' : 'UM_SYSTEM_USER_ROLE','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','as' : 'userRole'},'projection' : {'UM_ROLE_NAME' : '1'}}";
+    public static final String GET_ROLE_LIST_OF_USER_SQL = "{'collection' : 'UM_SYSTEM_ROLE',$match : {'UM_USER_NAME' : '?','UM_TENANT_ID' : '?','userRole.UM_TENANT_ID' : '?'},'$lookup' : {'from' : 'UM_SYSTEM_USER_ROLE','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','as' : 'userRole'},'$project' : {'UM_ROLE_NAME' : 1}}";
 
     public static final String IS_USER_IN_ROLE_SQL = "{'collection' : 'UM_SYSTEM_USER_ROLE','UM_USER_NAME' : '?','UM_ROLE_ID' : '?','UM_TENANT_ID' : '?','projection' : {'UM_ROLE_ID' : '1'}}";
 

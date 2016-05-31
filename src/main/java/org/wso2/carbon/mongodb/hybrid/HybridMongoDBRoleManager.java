@@ -11,6 +11,7 @@ import org.wso2.carbon.mongodb.query.MongoQueryException;
 import org.wso2.carbon.mongodb.userstoremanager.MongoDBRealmConstants;
 import org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager;
 import org.wso2.carbon.mongodb.util.MongoDatabaseUtil;
+import org.wso2.carbon.mongodb.util.MongoUserCoreUtil;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserRealm;
@@ -417,24 +418,39 @@ public class HybridMongoDBRoleManager {
      */
     public String[] getHybridRoleListOfUser(String userName, String filter) throws UserStoreException {
 
-        String getRoleListOfUserSQLConfig = realmConfig.getRealmProperty(HybridMongoDBConstants.GET_ROLE_LIST_OF_USER);
+        String getRoleListOfUserMongoConfig = realmConfig.getRealmProperty(HybridMongoDBConstants.GET_ROLE_LIST_OF_USER);
         String mongoStmt;
         mongoStmt = HybridMongoDBConstants.GET_ROLE_LIST_OF_USER_MONGO_QUERY;
-        if (getRoleListOfUserSQLConfig != null && !getRoleListOfUserSQLConfig.equals("")) {
-            mongoStmt = getRoleListOfUserSQLConfig;
+        if (getRoleListOfUserMongoConfig != null && !getRoleListOfUserMongoConfig.equals("")) {
+            mongoStmt = getRoleListOfUserMongoConfig;
         }
         DB dbConnection = null;
         try{
 
-            userName = UserCoreUtil.addDomainToName(userName, getMyDomainName());
-            String domain = UserCoreUtil.extractDomainFromName(userName);
+            userName = MongoUserCoreUtil.addDomainToName(userName, getMyDomainName());
+            String domain = MongoUserCoreUtil.extractDomainFromName(userName);
             // ########### Domain-less Roles and Domain-aware Users from here onwards #############
             dbConnection = MongoDatabaseUtil.getRealmDataSource(realmConfig);
+            MongoPreparedStatement prepStmt = new MongoPreparedStatementImpl(dbConnection,HybridMongoDBConstants.USER_DOMAIN_CONDITION_MONGO_QUERY);
+            prepStmt.setString("UM_DOMAIN_NAME",domain);
+            prepStmt.setInt("UM_TENANT_ID",tenantId);
+            DBCursor cursor = prepStmt.find();
+            int domainId = 0;
+            if(cursor.hasNext()){
+
+                domainId = Integer.parseInt(cursor.next().get("UM_DOMAIN_ID").toString());
+            }
             if(domain != null){
                 domain = domain.toUpperCase();
             }
+            Map<String,Object> map = new HashMap<String, Object>();
+            map.put("UM_USER_NAME",MongoUserCoreUtil.removeDomainFromName(userName));
+            map.put("UM_TENANT_ID",tenantId);
+            map.put("UM_DOMAIN_NAME",domain);
+            map.put("roles.UM_TENANT_ID",tenantId);
+            map.put("roles.UM_DOMAIN_ID",domainId);
             String[] roles = MongoDatabaseUtil.getStringValuesFromDatabase(dbConnection, mongoStmt,
-                    UserCoreUtil.removeDomainFromName(userName), tenantId, tenantId, tenantId, domain);
+                    map,true);
 
             if (!CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME.equals(userName)) {
                 // Adding everyone role
@@ -463,6 +479,12 @@ public class HybridMongoDBRoleManager {
             }
         }catch (org.wso2.carbon.user.api.UserStoreException e) {
 
+            String errorMessage = "Error occurred while getting hybrid role list of user : " + userName;
+            if (log.isDebugEnabled()) {
+                log.debug(errorMessage, e);
+            }
+            throw new UserStoreException(errorMessage, e);
+        } catch (MongoQueryException e) {
             String errorMessage = "Error occurred while getting hybrid role list of user : " + userName;
             if (log.isDebugEnabled()) {
                 log.debug(errorMessage, e);

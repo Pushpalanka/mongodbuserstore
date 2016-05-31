@@ -29,7 +29,7 @@ public class HybridMongoDBConstants {
 
     //public static final String GET_ROLE_LIST_OF_USER_SQL = "SELECT UM_ROLE_NAME FROM UM_HYBRID_USER_ROLE, UM_HYBRID_ROLE WHERE UM_USER_NAME=? AND UM_HYBRID_USER_ROLE.UM_ROLE_ID=UM_HYBRID_ROLE.UM_ID";
 
-    public static final String GET_ROLE_LIST_OF_USER_MONGO_QUERY = "{'collection' : 'UM_HYBRID_USER_ROLE','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','UM_DOMAIN_NAME' : '?','roles.UM_TENANT_ID' : '?','roles.UM_DOMAIN_ID' : '?','$lookup' : {'from' : 'UM_HYBRID_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'roles'}}";
+    public static final String GET_ROLE_LIST_OF_USER_MONGO_QUERY = "{'collection' : 'UM_HYBRID_USER_ROLE',$match : {'UM_USER_NAME' : '?','UM_TENANT_ID' : '?','UM_DOMAIN_NAME' : '?','roles.UM_TENANT_ID' : '?','roles.UM_DOMAIN_ID' : '?'},'$lookup' : {'from' : 'UM_HYBRID_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'roles'}}";
 
     public static final String IS_USER_IN_ROLE_MONGO_QUERY = "{'collection' : 'UM_HYBRID_USER_ROLE','UM_USER_NAME' : '?','UM_ROLE_ID' : '?','UM_TENANT_ID' : '?','UM_DOMAIN_ID' : '?'}";
 
