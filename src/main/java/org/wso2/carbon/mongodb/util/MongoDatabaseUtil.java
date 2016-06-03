@@ -429,7 +429,7 @@ public class MongoDatabaseUtil {
         }
     }
 
-	public static String[] getStringValuesFromDatabase(DB dbConnection, String mongoQuery,Map<String,Object> params,boolean isAggregrate) throws UserStoreException{
+	public static String[] getStringValuesFromDatabase(DB dbConnection, String mongoQuery,Map<String,Object> params,boolean isAggregrate,boolean multipleLookUp) throws UserStoreException{
 
         MongoPreparedStatement prepStmt = null;
         String[] values = new String[0];
@@ -472,13 +472,24 @@ public class MongoDatabaseUtil {
                     values = lst.toArray(new String[lst.size()]);
                 }
             }else{
-
+                MongoPreparedStatementImpl.multipleLookUp = multipleLookUp;
                 AggregationOutput result = prepStmt.aggregate();
                 Iterable<DBObject> ite = result.results();
                 List<String> lst = new ArrayList<String>();
-                while (ite.iterator().hasNext()){
+                Iterator<DBObject> foundResults = ite.iterator();
+                List<String> projection = getKeys(jsonKeys.getJSONObject("$project"));
+                String projectionKey = "";
+                for(String pkey : projection){
 
-                    lst.add(ite.iterator().next().toString());
+                    if(pkey.equals("_id")){
+
+                        continue;
+                    }
+                    projectionKey = pkey;
+                }
+                while (foundResults.hasNext()){
+
+                    lst.add(foundResults.next().get(projectionKey).toString());
                 }
                 if (lst.size() > 0) {
                     values = lst.toArray(new String[lst.size()]);

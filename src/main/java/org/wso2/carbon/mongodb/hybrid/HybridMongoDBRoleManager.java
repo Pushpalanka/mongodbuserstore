@@ -450,7 +450,7 @@ public class HybridMongoDBRoleManager {
             map.put("roles.UM_TENANT_ID",tenantId);
             map.put("roles.UM_DOMAIN_ID",domainId);
             String[] roles = MongoDatabaseUtil.getStringValuesFromDatabase(dbConnection, mongoStmt,
-                    map,true);
+                    map,true,false);
 
             if (!CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME.equals(userName)) {
                 // Adding everyone role

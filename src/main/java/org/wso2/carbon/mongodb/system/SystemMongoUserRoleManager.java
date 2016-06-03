@@ -103,7 +103,7 @@ public class SystemMongoUserRoleManager {
             Map<String,Object> map = new HashMap<String, Object>();
             map.put("UM_TENANT_ID",tenantId);
             String[] roles = MongoDatabaseUtil.getStringValuesFromDatabase(dbConnection, mongoStmt,
-                    map,false);
+                    map,false,false);
             return MongoUserCoreUtil.addDomainToNames(roles, UserCoreConstants.SYSTEM_DOMAIN_NAME);
         } catch (Exception e) {
             String errorMessage = "Error occurred while getting system roles";
@@ -135,7 +135,7 @@ public class SystemMongoUserRoleManager {
             map.put("UM_ROLE_ID",roleId);
             map.put("UM_TENANT_ID",tenantId);
             String[] users = MongoDatabaseUtil.getStringValuesFromDatabase(dbConnection, mongoStmt,
-                    map,false);
+                    map,false,false);
             return MongoUserCoreUtil.addDomainToNames(users, UserCoreConstants.SYSTEM_DOMAIN_NAME);
         } catch (Exception e) {
             String errorMessage = "Error occurred while getting user list of system role : " + roleName;
@@ -191,7 +191,7 @@ public class SystemMongoUserRoleManager {
             map.put("UM_TENANT_ID",tenantId);
             map.put("userRole.UM_TENANT_ID",tenantId);
             String[] roles = MongoDatabaseUtil.getStringValuesFromDatabase(dbConnection, mongoStmt,
-                    map,true);
+                    map,true,false);
             return MongoUserCoreUtil.addDomainToNames(roles, UserCoreConstants.SYSTEM_DOMAIN_NAME);
         } catch (Exception e) {
             String errorMessage = "Error occurred while getting system role list of user : " + userName;

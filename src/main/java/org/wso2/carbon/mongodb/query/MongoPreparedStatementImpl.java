@@ -33,6 +33,10 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
     private List<DBObject> queryList = null;
     private List<DBObject> projectionList = null;
     private BulkWriteOperation bulkWrite = null;
+	public static boolean multipleLookUp = false;
+    private ArrayList<Map<String,Object>> multiMapLookup = null;
+    private ArrayList<Map<String,Object>> multiMapUnwind = null;
+    private static boolean dependencyTrue = false;
 	
 	public MongoPreparedStatementImpl(DB db,String query){
 	
@@ -47,11 +51,14 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		if(mapMatch == null){
 			mapMatch = new HashMap<String, Object>();
 		}
+        this.multiMapLookup = new ArrayList<Map<String, Object>>();
+        this.multiMapUnwind = new ArrayList<Map<String, Object>>();
 		this.defaultQuery = query;
 		this.queryJson = new JSONObject(defaultQuery);
 		parameterValue = new HashMap<String, Object>();
 		this.projection = null;
 		this.parameterCount = 0;
+        dependencyTrue = false;
 	}
 	
 	
@@ -75,6 +82,10 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		this.mapGroup = null;
 		this.mapUnwind = null;
         this.bulkWrite =null;
+		this.multipleLookUp = false;
+        this.multiMapUnwind = null;
+        this.multiMapLookup = null;
+        this.dependencyTrue = false;
 	}
 
 
@@ -204,21 +215,64 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         getAggregrationObjects(defaultObject);
         try{
             List<DBObject> pipeline = new ArrayList<DBObject>();
-            if(mapMatch != null) {
+            if(mapLookUp != null) {
+
+                if(!multipleLookUp) {
+
+                    DBObject lookup = new BasicDBObject("$lookup", new BasicDBObject(mapLookUp));
+                    pipeline.add(lookup);
+                }else{
+                    int track = 0;
+                    while(track < multiMapLookup.size()) {
+                        for (Map<String, Object> map : multiMapLookup) {
+                            if (map.containsKey("dependency")) {
+                                map.remove("dependency");
+                                DBObject lookup = new BasicDBObject("$lookup", new BasicDBObject(map));
+                                if (!pipeline.contains(lookup)) {
+                                    for (Map<String, Object> unwindSearch : multiMapUnwind) {
+                                        String key = "$" + map.get("as");
+                                        if (unwindSearch.containsValue(key) && !pipeline.isEmpty()) {
+
+                                            DBObject unwind = new BasicDBObject("$unwind", new BasicDBObject(unwindSearch));
+                                            pipeline.add(unwind);
+                                            pipeline.add(lookup);
+                                            track++;
+                                        }
+                                    }
+                                }
+                            } else {
+
+                                DBObject lookup = new BasicDBObject("$lookup", new BasicDBObject(map));
+                                if (!pipeline.contains(lookup)) {
+                                    pipeline.add(lookup);
+                                    for (Map<String, Object> unwindSearch : multiMapUnwind) {
+
+                                        String key = "$" + map.get("as");
+                                        if (unwindSearch.containsValue(key)) {
+
+                                            DBObject unwind = new BasicDBObject("$unwind", new BasicDBObject(unwindSearch));
+                                            pipeline.add(unwind);
+                                            track++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+			if(mapUnwind != null){
+
+				if(!multipleLookUp) {
+					DBObject unwind = new BasicDBObject("$unwind", new BasicDBObject(mapUnwind));
+					pipeline.add(unwind);
+				}
+			}
+            if(mapMatch != null){
 
                 DBObject match = new BasicDBObject("$match", new BasicDBObject(mapMatch));
                 pipeline.add(match);
             }
-            if(mapLookUp != null) {
-
-                DBObject lookup = new BasicDBObject("$lookup", new BasicDBObject(mapLookUp));
-                pipeline.add(lookup);
-            }
-			if(mapProject != null) {
-
-				DBObject project = new BasicDBObject("$project", new BasicDBObject(mapProject));
-				pipeline.add(project);
-			}
             if(mapSort != null){
 
                 DBObject sort = new BasicDBObject("$sort",new BasicDBObject(mapSort));
@@ -229,11 +283,12 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
                 DBObject group = new BasicDBObject("$group",new BasicDBObject(mapGroup));
                 pipeline.add(group);
             }
-            if(mapUnwind != null){
+            if(mapProject != null) {
 
-                DBObject unwind = new BasicDBObject("$unwind",new BasicDBObject(mapUnwind));
-                pipeline.add(unwind);
+                DBObject project = new BasicDBObject("$project", new BasicDBObject(mapProject));
+                pipeline.add(project);
             }
+
             return this.collection.aggregate(pipeline);
         }catch(MongoException e){
 
@@ -507,9 +562,16 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
             if(key.equals("collection")){
 
                 this.collection = db.getCollection(stmt.get(key).toString());
-            }else if(key.equals("$lookup")){
+            }else if(key.equals("$lookup") || key.equals("$lookup_sub")){
 
-                mapLookUp = toMap(value);
+                if(!multipleLookUp) {
+
+                    mapLookUp = toMap(value);
+                }else{
+
+                    mapLookUp = toMap(value);
+                    multiMapLookup.add(mapLookUp);
+                }
             }else if(key.equals("$project")){
 
                 mapProject = toMap(value);
@@ -519,9 +581,13 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
             }else if(key.equals("$group")){
 
                 mapGroup = toMap(value);
-            }else if(key.equals("$unwind")){
-
-                mapUnwind =toMap(value);
+            }else if(key.equals("$unwind") || key.equals("$unwind_sub")){
+                if(!multipleLookUp) {
+                    mapUnwind = toMap(value);
+                }else{
+                    mapUnwind = toMap(value);
+                    multiMapUnwind.add(mapUnwind);
+                }
             }else{
 
                 setMatchObject(value);
