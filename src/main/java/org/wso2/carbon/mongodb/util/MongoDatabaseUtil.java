@@ -136,8 +136,9 @@ public class MongoDatabaseUtil {
                             if (entry.getValue() == null) {
                                 throw new UserStoreException("Null data provided");
                             } else if (entry.getValue() instanceof int[]) {
-                                batchParamIndex = 1;
+
                                 values = (int[])entry.getValue();
+                                batchParamIndex = 1;
                                 listKey = key;
                             } else if (entry.getValue() instanceof String) {
                                 prepStmt.setString(key, (String) entry.getValue());
@@ -148,24 +149,23 @@ public class MongoDatabaseUtil {
                     }
                 }
 			}
-			if(batchParamIndex != -1){
-				for(int value:values){
-					prepStmt.setInt(listKey,value);
-                    if(updateTrue(keys)){
+			if(batchParamIndex != -1) {
+                for (int value : values) {
+                    prepStmt.setInt(listKey, value);
+                    if (updateTrue(keys)) {
                         prepStmt.updateBatch();
-                    }
-                    else{
+                    } else {
                         prepStmt.addBatch();
                     }
-				}
-			}
-            if(updateTrue(keys)){
+                }
+                if(updateTrue(keys)){
 
-                prepStmt.updateBulk();
-            }
-            else{
+                    prepStmt.updateBulk();
+                }
+                else{
 
-                prepStmt.insertBulk();
+                    prepStmt.insertBulk();
+                }
             }
             localConnection = true;
 			if (log.isDebugEnabled()) {
