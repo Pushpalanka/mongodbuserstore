@@ -1,7 +1,7 @@
 # mongodbuserstore
 
 First create a Database in MongoDB named wso2_carbon_db 
-In mongodb if you create a empty database without a collections it will store it in RAM and not store permanelty therefore create a samle connection using below script
+In mongodb if you create a empty database without a collections it will store it in RAM and not store permanelty therefore create a samle collection using below script
 db.system.js.save(
 
    {
