@@ -50,6 +50,7 @@ db.UM_DOMAIN.insert({
 
 here this getNextSequence is to auto_increment id in UM_DOMAIN collection since MongoDB doesn't have auto_increment i implement it using a simple script and COUNTERS is for store the current sequence of collection
 
-after that create a new user store in IS admin console with giving appropriate connection configuration
+after that go to add user store in IS admin console and select MongoDBUserStoreManager from UserStoreManager class dropdown 
+then create a new user store with giving appropriate connection configuration
 
 and thats all it will create a new mongodb userstore in Identity Server
