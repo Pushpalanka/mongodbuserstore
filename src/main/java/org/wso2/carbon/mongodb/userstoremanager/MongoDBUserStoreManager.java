@@ -29,6 +29,7 @@ import org.wso2.carbon.user.core.claim.ClaimManager;
 import org.wso2.carbon.user.core.claim.ClaimMapping;
 import org.wso2.carbon.user.core.common.*;
 import org.wso2.carbon.user.core.dto.RoleDTO;
+import org.wso2.carbon.user.core.hybrid.HybridRoleManager;
 import org.wso2.carbon.user.core.internal.UMListenerServiceComponent;
 import org.wso2.carbon.user.core.ldap.LDAPConstants;
 import org.wso2.carbon.user.core.listener.UserOperationEventListener;
@@ -40,11 +41,15 @@ import org.wso2.carbon.user.api.Property;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.jdbc.JDBCRoleContext;
 import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.carbon.user.core.system.SystemUserRoleManager;
 import org.wso2.carbon.user.core.tenant.Tenant;
 import org.wso2.carbon.mongodb.util.MongoDBRealmUtil;
+import org.wso2.carbon.user.core.util.DatabaseUtil;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.mongodb.query.MongoQueryException;
+
+import javax.sql.DataSource;
 
 public class MongoDBUserStoreManager implements UserStoreManager{
 
@@ -96,6 +101,8 @@ public class MongoDBUserStoreManager implements UserStoreManager{
     private static final String SHA_1_PRNG = "SHA1PRNG";
     protected HybridMongoDBRoleManager mongoDBRoleManager = null;
     protected SystemMongoUserRoleManager systemMongoUserRoleManager = null;
+    protected SystemUserRoleManager systemUserRoleManager = null;
+    protected HybridRoleManager hybridRoleManager = null;
     private static final String MULIPLE_ATTRIBUTE_ENABLE = "MultipleAttributeEnable";
 	private org.apache.commons.logging.Log log = LogFactory.getLog(MongoDBUserStoreManager.class);
     private static final ThreadLocal<Boolean> isSecureCall = new ThreadLocal<Boolean>() {
@@ -3731,7 +3738,6 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                     roleList, claims, profileName, requirePasswordChange);
             return;
         }
-
         if (userStore.isSystemStore()) {
             systemMongoUserRoleManager.addSystemUser(userName, credential, roleList,this.db);
             return;

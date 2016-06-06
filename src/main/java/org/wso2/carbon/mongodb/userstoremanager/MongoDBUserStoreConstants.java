@@ -34,6 +34,7 @@ public class MongoDBUserStoreConstants {
 	        setMandatoryProperty(MongoDBRealmConstants.URL, "127.0.0.1", "location of webservice");
 	        setMandatoryProperty(MongoDBRealmConstants.USER_NAME, "admin", "User Name to connect to mongodb (if provided)");
 	        setMandatoryProperty(MongoDBRealmConstants.PASSWORD, "admin123", "Password to connect to mongodb server (if provided any)");
+			setMandatoryProperty(MongoDBRealmConstants.PORT,"27017","Port of MongoDB server running");
 
             setProperty("PasswordDigest", "SHA-256", UserStoreConfigConstants.passwordHashMethodDescription);
             setProperty(UserStoreConfigConstants.readGroups, "true", UserStoreConfigConstants.readLDAPGroupsDescription);

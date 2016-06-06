@@ -117,6 +117,7 @@ public class MongoDBRealmConstants {
 	    public static final String URL = "url";
 	    public static final String USER_NAME = "userName";
 	    public static final String PASSWORD = "password";
+		public static final String PORT = "port";
 	    public static final String DRIVER_NAME = "driverName";
 	    public static final String MAX_ACTIVE = "maxActive";
 	    public static final String MAX_WAIT = "maxWait";

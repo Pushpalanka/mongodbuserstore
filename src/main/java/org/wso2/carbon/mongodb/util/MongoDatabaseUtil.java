@@ -7,6 +7,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.mongodb.*;
+import org.apache.commons.codec.language.DoubleMetaphone;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.BSONTimestamp;
@@ -49,8 +50,8 @@ public class MongoDatabaseUtil {
 	public static DB createRealmDataSource(RealmConfiguration realmConfiguration) {
 		// TODO Auto-generated method stub
 		List<ServerAddress> seeds = new ArrayList<ServerAddress>();
-		seeds.add(new ServerAddress(realmConfiguration.getUserStoreProperty(MongoDBRealmConstants.URL)));
         char[] pass;
+        int port;
         if(realmConfiguration.getUserStoreProperty(MongoDBRealmConstants.PASSWORD)!=null) {
             pass = realmConfiguration.getUserStoreProperty(MongoDBRealmConstants.PASSWORD).toCharArray();
 
@@ -65,6 +66,14 @@ public class MongoDatabaseUtil {
         }else{
             userName = "admin";
         }
+        if(realmConfiguration.getUserStoreProperty(MongoDBRealmConstants.PORT).length() > 0){
+
+            port = Integer.parseInt(realmConfiguration.getUserStoreProperty(MongoDBRealmConstants.PORT));
+        }
+        else{
+            port = 27017;
+        }
+        seeds.add(new ServerAddress(realmConfiguration.getUserStoreProperty(MongoDBRealmConstants.URL),port));
 		credentials.add(
 				MongoCredential.createCredential(userName,"wso2_carbon_db", pass)
 		);
@@ -685,7 +694,8 @@ public class MongoDatabaseUtil {
         int seq = 0;
         while (cursor.hasNext()){
 
-            seq = Integer.parseInt(cursor.next().get("seq").toString());
+            double value = Double.parseDouble(cursor.next().get("seq").toString());
+            seq = (int)value;
         }
         collect.insert(new BasicDBObject("name",collection).append("seq",++seq));
         return seq;
