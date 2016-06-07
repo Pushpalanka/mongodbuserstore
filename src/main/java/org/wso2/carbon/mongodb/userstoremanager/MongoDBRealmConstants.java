@@ -64,7 +64,7 @@ public class MongoDBRealmConstants {
 	    public static final String GET_PROPS_FOR_PROFILE_MONGO_QUERY = "{'collection' : 'UM_USER_ATTRIBUTE','$match' : {'UM_PROFILE_ID' : '?','UM_TENANT_ID' : '?','users.UM_USER_NAME' : '?','users.UM_TENANT_ID' : '?'},'$lookup' : {'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'users'},'$unwind' : {'path' : '$users','preserveNullAndEmptyArrays' : false},'$project' : {'UM_ATTR_NAME' : 1,'UM_PROFILE_VALUE' : 1,'_id' : 0}}";
 	    public static final String GET_PROP_FOR_PROFILE_MONGO_QUERY = "{'collection' : 'UM_USER_ATTRIBUTE','UM_ATTR_NAME' : '?','UM_PROFILE_ID' : '?','UM_TENANT_ID' : '?','users.UM_USER_NAME' : '?','users.UM_TENANT_ID' : '?','$lookup' : {'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'users'},'projection' : {'UM_ATTR_VALUE' : '1'}}";
 	    public static final String GET_PROFILE_NAMES_MONGO_QUERY = "{'collection' : 'UM_USER_ATTRIBUTE','UM_TENANT_ID' : '?','projection' : {'UM_PROFILE_ID' : '1'},'distinct' : 'UM_PROFILE_ID'}";
-	    public static final String GET_PROFILE_NAMES_FOR_USER_MONGO_QUERY = "{'collection' : 'UM_USER_ATTRIBUTE','UM_USER_ID' : '?','projection' : {'UM_PROFILE_ID' : '1'},'distinct' : 'UM_PROFILE_ID'}";
+	    public static final String GET_PROFILE_NAMES_FOR_USER_MONGO_QUERY = "{'collection' : 'UM_USER_ATTRIBUTE','UM_USER_ID' : '?','projection' : {'UM_PROFILE_ID' : 1,_id : 0},'distinct' : 'UM_PROFILE_ID'}";
 	    public static final String GET_PROFILE_NAMES_FOR_USER_MONGO_QUERY_CONDITION = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'UM_ID' : '1'}}";
 	    public static final String GET_USERID_FROM_USERNAME_MONGO_QUERY = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'UM_ID' : '1'}}";
 	    public static final String GET_USERNAME_FROM_TENANT_ID_MONGO_QUERY = "{'collection' : 'UM_USER','UM_TENANT_ID' : '?','projection' : {'UM_USER_NAME' : '1'}}";
@@ -78,7 +78,7 @@ public class MongoDBRealmConstants {
 	    public static final String ADD_USER_TO_ROLE_MONGO_QUERY_CONDITION1 = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'UM_ID' : '1'}}";
 	    public static final String ADD_USER_TO_ROLE_MONGO_QUERY_CONDITION2	= "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'UM_ID' : '1'}}";
 	    public static final String ADD_USER_PERMISSION_MONGO_QUERY = "AddUserPermission";
-	    public static final String ADD_ROLE_MONGO_QUERY = "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','UM_ID' : '?'}";
+	    public static final String ADD_ROLE_MONGO_QUERY = "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','UM_ID' : '?',''UM_SHARED_ROLE' : '?'}";
 	    public static final String ADD_ROLE_TO_USER_MONGO_QUERY = "{'collection' : 'UM_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_TENANT_ID' : '?'}";
 	    public static final String ADD_ROLE_PERMISSION_MONGO_QUERY = "AddRolePermissionMONGO_QUERY";
 	    public static final String REMOVE_USER_FROM_ROLE_MONGO_QUERY = "{'collection' : 'UM_USER_ROLE','UM_USER_ID' : '?','UM_ROLE_ID' : '?','UM_TENANT_ID' : '?'}";

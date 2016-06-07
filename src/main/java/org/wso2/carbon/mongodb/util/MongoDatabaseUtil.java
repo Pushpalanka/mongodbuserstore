@@ -692,12 +692,71 @@ public class MongoDatabaseUtil {
         DBCollection collect = dbConnection.getCollection("COUNTERS");
         DBCursor cursor = collect.find(checkObject);
         int seq = 0;
+        boolean isEmpty = true;
         while (cursor.hasNext()){
 
             double value = Double.parseDouble(cursor.next().get("seq").toString());
             seq = (int)value;
+            isEmpty = false;
         }
-        collect.insert(new BasicDBObject("name",collection).append("seq",++seq));
+        if(isEmpty) {
+            collect.insert(new BasicDBObject("name", collection).append("seq", ++seq));
+        }
+        else{
+
+            collect.update(new BasicDBObject("seq",++seq),new BasicDBObject("$set",new BasicDBObject("name",collection)));
+        }
         return seq;
+    }
+
+    public static String[] getDistinctStringValuesFromDatabase(DB dbConnection, String mongoQuery, Map<String, Object> params) throws UserStoreException{
+
+        MongoPreparedStatement prepStmt = null;
+        String[] values = new String[0];
+        JSONObject jsonKeys = new JSONObject(mongoQuery);
+        List<String> keys = null;
+        keys = getKeys(jsonKeys);
+        try{
+            Iterator<String> searchKeys = keys.iterator();
+            prepStmt = new MongoPreparedStatementImpl(dbConnection, mongoQuery);
+            while(searchKeys.hasNext()){
+                String key = searchKeys.next();
+                if(!key.equals("collection") || !key.equals("projection") || !key.equals("$set")) {
+                    for(Map.Entry<String,Object> entry : params.entrySet()) {
+                        if (entry.getKey().equals(key)) {
+                            if (params.get(key)== null) {
+                                prepStmt.setString(key, null);
+                            } else if (params.get(key) instanceof String) {
+                                prepStmt.setString(key, (String) params.get(key));
+                            } else if (params.get(key) instanceof Integer) {
+                                prepStmt.setInt(key, (Integer) params.get(key));
+                            }
+                        }
+                    }
+                }
+            }
+            List result = prepStmt.distinct();
+            if(!result.isEmpty()){
+
+                values = new String[result.size()];
+                int index=0;
+                for(Object res : result){
+
+                    values[index] = res.toString();
+                    index++;
+                }
+            }
+            return values;
+        }catch(NullPointerException ex){
+            log.error(ex.getMessage(),ex);
+            throw new UserStoreException(ex.getMessage(),ex);
+        }catch(MongoQueryException ex){
+            log.error(ex.getMessage(),ex);
+            log.error("Using JSON Query :"+mongoQuery);
+            throw new UserStoreException(ex.getMessage(),ex);
+        }finally {
+            MongoDatabaseUtil.closeAllConnections(dbConnection, prepStmt);
+        }
+
     }
 }

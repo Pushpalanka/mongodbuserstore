@@ -6,8 +6,10 @@ import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager;
 import org.wso2.carbon.user.api.UserStoreManager;
+import org.wso2.carbon.user.core.common.DefaultRealmService;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.tracker.UserStoreManagerRegistry;
+import org.wso2.carbon.user.core.util.DatabaseUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 
 
@@ -25,6 +27,8 @@ public class MongoDBUserStoreDSComponent{
         carbonContext.setTenantId(MultitenantConstants.SUPER_TENANT_ID);
         carbonContext.setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
         UserStoreManager userStoreManager = new MongoDBUserStoreManager();
+        RealmService service = new DefaultRealmService(cc.getBundleContext());
+        MongoDBUserStoreManager.dataSource = DatabaseUtil.getRealmDataSource(service.getBootstrapRealmConfiguration());
         cc.getBundleContext().registerService(UserStoreManager.class.getName(), userStoreManager, null);
         log.info("MongoDB User Store bundle activated successfully..");
         UserStoreManagerRegistry.init(cc.getBundleContext());

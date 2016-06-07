@@ -2,6 +2,7 @@ package org.wso2.carbon.mongodb.query;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import com.mongodb.*;
 import org.bson.types.BSONTimestamp;
@@ -70,4 +71,6 @@ public interface MongoPreparedStatement {
     void addBatch() throws MongoQueryException;
 
     void updateBatch() throws MongoQueryException;
+
+	public List distinct() throws MongoQueryException;
 }

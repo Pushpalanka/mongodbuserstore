@@ -37,6 +37,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
     private ArrayList<Map<String,Object>> multiMapLookup = null;
     private ArrayList<Map<String,Object>> multiMapUnwind = null;
     private static boolean dependencyTrue = false;
+    private String distinctKey = "";
 	
 	public MongoPreparedStatementImpl(DB db,String query){
 	
@@ -59,6 +60,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		this.projection = null;
 		this.parameterCount = 0;
         dependencyTrue = false;
+        this.distinctKey = "";
 	}
 	
 	
@@ -86,6 +88,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         this.multiMapUnwind = null;
         this.multiMapLookup = null;
         this.dependencyTrue = false;
+        this.distinctKey = "";
 	}
 
 
@@ -196,18 +199,33 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		}
 		else{
 			if(convertToDBObject(defaultQuery)){
-				if(this.projection==null && this.query==null){
-					return this.collection.find();
-				}else if(this.projection==null){
-					return this.collection.find(this.query);
-				}else{
-					return this.collection.find(this.query,this.projection);
-				}
+
+                    if (this.projection == null && this.query == null) {
+                        return this.collection.find();
+                    } else if (this.projection == null) {
+                        return this.collection.find(this.query);
+                    } else {
+                        return this.collection.find(this.query, this.projection);
+                    }
 			}else{
 				throw new MongoQueryException("Query format is invalid no collection found");
 			}
 		}
 	}
+
+    public List distinct() throws MongoQueryException {
+
+        if(!matchArguments(this.queryJson)){
+            throw new MongoQueryException("Parameter count not matched with query parameters");
+        }
+        else {
+            if(convertToDBObject(defaultQuery)) {
+                return this.collection.distinct(this.distinctKey, this.query);
+            }else{
+                throw new MongoQueryException("Query format is invalid no collection found");
+            }
+        }
+    }
 
     public AggregationOutput aggregate() throws UserStoreException{
 
@@ -504,6 +522,10 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 			String collection = queryObject.getString("collection");
 			this.collection = this.db.getCollection(collection);
 			queryObject.remove("collection");
+            if(queryObject.has("distinct")){
+
+                this.distinctKey = queryObject.getString("distinct");
+            }
 			setQueryObject(queryObject,false);
 			return true;
 		}

@@ -103,6 +103,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
     protected SystemMongoUserRoleManager systemMongoUserRoleManager = null;
     protected SystemUserRoleManager systemUserRoleManager = null;
     protected HybridRoleManager hybridRoleManager = null;
+    public static DataSource dataSource = null;
     private static final String MULIPLE_ATTRIBUTE_ENABLE = "MultipleAttributeEnable";
 	private org.apache.commons.logging.Log log = LogFactory.getLog(MongoDBUserStoreManager.class);
     private static final ThreadLocal<Boolean> isSecureCall = new ThreadLocal<Boolean>() {
@@ -111,6 +112,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             return Boolean.FALSE;
         }
     };
+
 
 	public MongoDBUserStoreManager(){
 
@@ -1341,12 +1343,41 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         }
 
         String[] values = new String[0];
-        MongoPreparedStatement prepStmt = null;
         DB dbConnection = null;
         try{
 
             dbConnection = loadUserStoreSpacificDataSoruce();
             values = MongoDatabaseUtil.getStringValuesFromDatabase(dbConnection,mongoQuery,params,findStatus,multipleLookUps);
+        }catch(Exception e){
+
+            String msg = "Error occurred while retrieving string values.";
+            if (log.isDebugEnabled()) {
+                log.debug(msg, e);
+            }
+            throw new UserStoreException(msg, e);
+        }finally {
+
+            MongoDatabaseUtil.closeConnection(dbConnection);
+        }
+        return values;
+    }
+
+    private String[] getDistinctStringValues(String mongoQuery, Map<String,Object> params) throws UserStoreException{
+
+        if (log.isDebugEnabled()) {
+            log.debug("Executing Query: " + mongoQuery);
+            for (int i = 0; i < params.size(); i++) {
+                Object param = params.get(i);
+                log.debug("Input value: " + param);
+            }
+        }
+
+        String[] values = new String[0];
+        DB dbConnection = null;
+        try{
+
+            dbConnection = loadUserStoreSpacificDataSoruce();
+            values = MongoDatabaseUtil.getDistinctStringValuesFromDatabase(dbConnection,mongoQuery,params);
         }catch(Exception e){
 
             String msg = "Error occurred while retrieving string values.";
@@ -1401,7 +1432,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                 int tenant = Integer.parseInt(cursor.next().get("UM_TENANT_ID").toString());
                 String role = name;
                 if (appendDn) {
-                    name = MongoUserCoreUtil.addTenantDomainToEntry(name, String.valueOf(tenant));
+                    name = UserCoreUtil.addTenantDomainToEntry(name, String.valueOf(tenant));
                 }
                 roles.add(role);
             }
@@ -1435,6 +1466,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             map.put("UM_ROLE_NAME",roleName);
             int roleId = MongoDatabaseUtil.getIncrementedSequence(dbConnection,"UM_ROLE");
             map.put("UM_ID",roleId);
+            map.put("UM_SHARED_ROLE",0);
             if (mongoQuery.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
                 map.put("UM_TENANT_ID",tenantId);
                 this.updateStringValuesToDatabase(dbConnection, mongoQuery, map);
@@ -1571,7 +1603,11 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             prepStmt.setString("UM_USER_NAME",user);
             DBCursor cursor = prepStmt.find();
             if(cursor.hasNext()) {
-                userID[index] = (int) Double.parseDouble(cursor.next().get("UM_ID").toString());
+
+                int id = (int) Double.parseDouble(cursor.next().get("UM_ID").toString());
+                if(id > 0) {
+                    userID[index] = (int) Double.parseDouble(cursor.next().get("UM_ID").toString());
+                }
             }
             index++;
             prepStmt.close();
@@ -1697,7 +1733,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                         // append the domain if exist
                         String domain =
                                 realmConfig.getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
-                        name = MongoUserCoreUtil.addDomainToName(name, domain);
+                        name = UserCoreUtil.addDomainToName(name, domain);
                         lst.add(name);
                     }
                 }
@@ -1811,7 +1847,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                     // append the domain if exist
                     String domain = realmConfig
                             .getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
-                    name = MongoUserCoreUtil.addDomainToName(name, domain);
+                    name = UserCoreUtil.addDomainToName(name, domain);
                     lst.add(name);
                 }
             }
@@ -2011,9 +2047,9 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                 map.put("UM_USER_ID",userId);
                 if (mongoQuery.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
                     map.put("UM_TENANT_ID",tenantId);
-                    names = getStringValuesFromDatabase(mongoQuery, map,false,false);
+                    names = getDistinctStringValues(mongoQuery, map);
                 } else {
-                    names = getStringValuesFromDatabase(mongoQuery, map,false,false);
+                    names = getDistinctStringValues(mongoQuery, map);
                 }
                 if (names.length == 0) {
                     names = new String[]{UserCoreConstants.DEFAULT_PROFILE};
@@ -2051,9 +2087,9 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         Map<String,Object> map = new HashMap<String, Object>();
         if (mongoQuery.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
             map.put("UM_TENANT_ID",tenantId);
-            names = getStringValuesFromDatabase(mongoQuery,map,false,false);
+            names = getDistinctStringValues(mongoQuery,map);
         } else {
-            names = getStringValuesFromDatabase(mongoQuery,map,false,false);
+            names = getDistinctStringValues(mongoQuery,map);
         }
 
         return names;
@@ -2331,7 +2367,11 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             prepStmt.setString("UM_ROLE_NAME",role);
             DBCursor cursor = prepStmt.find();
             if(cursor.hasNext()) {
-                rolesID[index] = (int) Double.parseDouble(cursor.next().get("UM_ID").toString());
+
+                int id = (int) Double.parseDouble(cursor.next().get("UM_ID").toString());
+                if(id > 0) {
+                    rolesID[index] = id;
+                }
             }
             index++;
             prepStmt.close();
@@ -2559,9 +2599,10 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
     protected void persistDomain() throws UserStoreException{
 
-        String domain = MongoUserCoreUtil.getDomainName(this.realmConfig);
+        String domain = UserCoreUtil.getDomainName(this.realmConfig);
         if (domain != null) {
-            MongoUserCoreUtil.persistDomain(domain, this.tenantId, this.db);
+          //  MongoUserCoreUtil.persistDomain(domain, this.tenantId, this.db);
+            UserCoreUtil.persistDomain(domain,this.tenantId,dataSource);
         }
     }
 
@@ -2572,8 +2613,8 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             throw new UserStoreException(
                     "Admin user name or role name is not valid. Please provide valid values.");
         }
-        String adminUserName = MongoUserCoreUtil.removeDomainFromName(realmConfig.getAdminUserName());
-        String adminRoleName = MongoUserCoreUtil.removeDomainFromName(realmConfig.getAdminRoleName());
+        String adminUserName = UserCoreUtil.removeDomainFromName(realmConfig.getAdminUserName());
+        String adminRoleName = UserCoreUtil.removeDomainFromName(realmConfig.getAdminRoleName());
         boolean userExist = false;
         boolean roleExist = false;
         boolean isInternalRole = false;
@@ -2588,7 +2629,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
         if (!roleExist) {
             try {
-                roleExist = mongoDBRoleManager.isExistingRole(adminRoleName);
+                roleExist = hybridRoleManager.isExistingRole(adminRoleName);
             } catch (Exception e) {
                 //ignore
             }
@@ -2657,7 +2698,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                 } else {
                     // creates internal role
                     try {
-                        mongoDBRoleManager.addHybridRole(adminRoleName, new String[]{adminUserName});
+                        hybridRoleManager.addHybridRole(adminRoleName, new String[]{adminUserName});
                         isInternalRole = true;
                     } catch (Exception e) {
                         String message = "Admin role has not been created. " +
@@ -2682,9 +2723,9 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         }
 
         if (isInternalRole) {
-            if (!mongoDBRoleManager.isUserInRole(adminUserName, adminRoleName)) {
+            if (!hybridRoleManager.isUserInRole(adminUserName, adminRoleName)) {
                 try {
-                    mongoDBRoleManager.updateHybridRoleListOfUser(adminUserName, null,
+                    hybridRoleManager.updateHybridRoleListOfUser(adminUserName, null,
                             new String[]{adminRoleName});
                 } catch (Exception e) {
                     String message = "Admin user has not been assigned to Admin role. " +
@@ -2696,7 +2737,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                     }
                 }
             }
-            realmConfig.setAdminRoleName(MongoUserCoreUtil.addInternalDomainName(adminRoleName));
+            realmConfig.setAdminRoleName(UserCoreUtil.addInternalDomainName(adminRoleName));
         } else if (!isReadOnly() && writeGroupsEnabled) {
             if (!this.doCheckIsUserInRole(adminUserName, adminRoleName)) {
                 if (addAdmin) {
@@ -2730,6 +2771,8 @@ public class MongoDBUserStoreManager implements UserStoreManager{
     protected void doInitialSetup() throws UserStoreException {
         systemMongoUserRoleManager = new SystemMongoUserRoleManager(this.db, tenantId);
         mongoDBRoleManager = new HybridMongoDBRoleManager(this.db, tenantId, realmConfig, userRealm);
+        systemUserRoleManager = new SystemUserRoleManager(dataSource,tenantId);
+        hybridRoleManager = new HybridRoleManager(dataSource,tenantId,realmConfig,userRealm);
     }
 
     protected String[] doGetInternalRoleListOfUser(String userName, String filter) throws UserStoreException {
@@ -2741,7 +2784,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             }
         }
         log.debug("Retrieving internal roles for user name :  " + userName + " and search filter " + filter);
-        return mongoDBRoleManager.getHybridRoleListOfUser(userName, filter);
+        return hybridRoleManager.getHybridRoleListOfUser(userName, filter);
     }
 
 
@@ -2821,16 +2864,16 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         // #################### Domain Name Free Zone Starts Here ################################
 
         if (userStore.isSystemStore()) {
-            return systemMongoUserRoleManager.isExistingRole(userStore.getDomainFreeName(),this.db);
+            return systemUserRoleManager.isExistingRole(userStore.getDomainFreeName());
         }
 
         if (userStore.isHybridRole()) {
             boolean exist;
 
             if (!UserCoreConstants.INTERNAL_DOMAIN.equalsIgnoreCase(userStore.getDomainName())) {
-                exist = mongoDBRoleManager.isExistingRole(userStore.getDomainAwareName());
+                exist = hybridRoleManager.isExistingRole(userStore.getDomainAwareName());
             } else {
-                exist = mongoDBRoleManager.isExistingRole(userStore.getDomainFreeName());
+                exist = hybridRoleManager.isExistingRole(userStore.getDomainFreeName());
             }
 
             return exist;
@@ -2847,11 +2890,11 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         boolean isExisting = doCheckExistingRole(roleName);
 
         if (!isExisting && (isReadOnly() || !readGroupsEnabled)) {
-            isExisting = mongoDBRoleManager.isExistingRole(roleName);
+            isExisting = hybridRoleManager.isExistingRole(roleName);
         }
 
         if (!isExisting) {
-            if (systemMongoUserRoleManager.isExistingRole(roleName,this.db)) {
+            if (systemUserRoleManager.isExistingRole(roleName)) {
                 isExisting = true;
             }
         }
@@ -3155,7 +3198,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             }
         }
 
-        claimValue = MongoUserCoreUtil.removeDomainFromName(claimValue);
+        claimValue = UserCoreUtil.removeDomainFromName(claimValue);
         //if domain is present, then we search within that domain only
         if (!extractedDomain.equals(UserCoreConstants.PRIMARY_DEFAULT_DOMAIN_NAME)) {
             try{
@@ -3177,7 +3220,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                 MongoDBUserStoreManager userStoreManager = (MongoDBUserStoreManager)
                         getSecondaryUserStoreManager(extractedDomain);
                 String[] userArray = userStoreManager.getUserListFromProperties(property, claimValue, profileName);
-                return MongoUserCoreUtil.addDomainToNames(userArray, extractedDomain);
+                return UserCoreUtil.addDomainToNames(userArray, extractedDomain);
             }
         }
         //if no domain is given then search all the user stores
@@ -3440,14 +3483,14 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
         String loggedInUser = CarbonContext.getThreadLocalCarbonContext().getUsername();
         if (loggedInUser != null) {
-            loggedInUser = MongoUserCoreUtil.addDomainToName(loggedInUser, MongoUserCoreUtil.getDomainFromThreadLocal());
+            loggedInUser = UserCoreUtil.addDomainToName(loggedInUser, UserCoreUtil.getDomainFromThreadLocal());
             if ((loggedInUser.indexOf(UserCoreConstants.DOMAIN_SEPARATOR)) < 0) {
                 loggedInUser = UserCoreConstants.PRIMARY_DEFAULT_DOMAIN_NAME +
                         CarbonConstants.DOMAIN_SEPARATOR + loggedInUser;
             }
         }
 
-        String deletingUser = MongoUserCoreUtil.addDomainToName(userName, getMyDomainName());
+        String deletingUser = UserCoreUtil.addDomainToName(userName, getMyDomainName());
         if ((deletingUser.indexOf(UserCoreConstants.DOMAIN_SEPARATOR)) < 0) {
             deletingUser = UserCoreConstants.PRIMARY_DEFAULT_DOMAIN_NAME +
                     CarbonConstants.DOMAIN_SEPARATOR + deletingUser;
@@ -3466,11 +3509,11 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
         // #################### Domain Name Free Zone Starts Here ################################
 
-        if (MongoUserCoreUtil.isPrimaryAdminUser(userName, realmConfig)) {
+        if (UserCoreUtil.isPrimaryAdminUser(userName, realmConfig)) {
             throw new UserStoreException(ADMIN_USER + "Cannot delete admin user");
         }
 
-        if (MongoUserCoreUtil.isRegistryAnnonymousUser(userName)) {
+        if (UserCoreUtil.isRegistryAnnonymousUser(userName)) {
             throw new UserStoreException(ANONYMOUS_USER + "Cannot delete anonymous user");
         }
 
@@ -3499,12 +3542,12 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         }
 
         // Remove users from internal role mapping
-        mongoDBRoleManager.deleteUser(UserCoreUtil.addDomainToName(userName, getMyDomainName()));
+        hybridRoleManager.deleteUser(UserCoreUtil.addDomainToName(userName, getMyDomainName()));
 
         doDeleteUser(userName);
 
         // Needs to clear roles cache upon deletion of a user
-        clearUserRolesCache(MongoUserCoreUtil.addDomainToName(userName, getMyDomainName()));
+        clearUserRolesCache(UserCoreUtil.addDomainToName(userName, getMyDomainName()));
 
         // #################### <Listeners> #####################################################
         for (UserOperationEventListener listener : UMListenerServiceComponent
@@ -3739,7 +3782,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             return;
         }
         if (userStore.isSystemStore()) {
-            systemMongoUserRoleManager.addSystemUser(userName, credential, roleList,this.db);
+            systemUserRoleManager.addSystemUser(userName, credential, roleList);
             return;
         }
 
@@ -3752,7 +3795,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         // This happens only once during first startup - adding administrator user/role.
         if (userName.indexOf(CarbonConstants.DOMAIN_SEPARATOR) > 0) {
             userName = userStore.getDomainFreeName();
-            roleList = MongoUserCoreUtil.removeDomainFromNames(roleList);
+            roleList = UserCoreUtil.removeDomainFromNames(roleList);
         }
         if (roleList == null) {
             roleList = new String[0];
@@ -3818,7 +3861,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                     if (index > 0) {
                         String domain = role.substring(0, index);
                         if (UserCoreConstants.INTERNAL_DOMAIN.equalsIgnoreCase(domain)) {
-                            internalRoles.add(MongoUserCoreUtil.removeDomainFromName(role));
+                            internalRoles.add(UserCoreUtil.removeDomainFromName(role));
                             continue;
                         } else if (APPLICATION_DOMAIN.equalsIgnoreCase(domain) ||
                                 WORKFLOW_DOMAIN.equalsIgnoreCase(domain)) {
@@ -3826,14 +3869,14 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                             continue;
                         }
                     }
-                    externalRoles.add(MongoUserCoreUtil.removeDomainFromName(role));
+                    externalRoles.add(UserCoreUtil.removeDomainFromName(role));
                 }
             }
         }
 
         // check existance of roles and claims before user is adding
         for (String internalRole : internalRoles) {
-            if (!mongoDBRoleManager.isExistingRole(internalRole)) {
+            if (!hybridRoleManager.isExistingRole(internalRole)) {
                 throw new UserStoreException("Internal role is not exist : " + internalRole);
             }
         }
@@ -3864,7 +3907,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                 claims, profileName, requirePasswordChange);
 
         if (internalRoles.size() > 0) {
-            mongoDBRoleManager.updateHybridRoleListOfUser(userName, null,
+            hybridRoleManager.updateHybridRoleListOfUser(userName, null,
                     internalRoles.toArray(new String[internalRoles.size()]));
         }
 
@@ -3878,7 +3921,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         // #################### </Listeners> #####################################################
 
         try {
-            roleList = MongoUserCoreUtil
+            roleList = UserCoreUtil
                     .combine(doGetInternalRoleListOfUser(userName, "*"), Arrays.asList(roleList));
             // If the newly created user has internal roles assigned from the UI wizard those internal roles
             // will be duplicated in the roles list. Duplcated roles are eliminated here.
@@ -3928,7 +3971,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         if (deletedUsers != null && deletedUsers.length > 0) {
             Arrays.sort(deletedUsers);
             // Updating the user list of a role belong to the primary domain.
-            if (MongoUserCoreUtil.isPrimaryAdminRole(roleName, realmConfig)) {
+            if (UserCoreUtil.isPrimaryAdminRole(roleName, realmConfig)) {
                 for (int i = 0; i < deletedUsers.length; i++) {
                     if (deletedUsers[i].equalsIgnoreCase(realmConfig.getAdminUserName())
                             || (primaryDomain + deletedUsers[i]).equalsIgnoreCase(realmConfig
@@ -3944,15 +3987,15 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
         if (userStore.isHybridRole()) {
             // Check whether someone is trying to update Everyone role.
-            if (MongoUserCoreUtil.isEveryoneRole(roleName, realmConfig)) {
+            if (UserCoreUtil.isEveryoneRole(roleName, realmConfig)) {
                 throw new UserStoreException("Cannot update everyone role");
             }
 
             if(UserCoreConstants.INTERNAL_DOMAIN.equalsIgnoreCase(userStore.getDomainName())) {
-                mongoDBRoleManager.updateUserListOfHybridRole(userStore.getDomainFreeName(),
+                hybridRoleManager.updateUserListOfHybridRole(userStore.getDomainFreeName(),
                         deletedUsers, newUsers);
             } else {
-                mongoDBRoleManager.updateUserListOfHybridRole(userStore.getDomainAwareName(),
+                hybridRoleManager.updateUserListOfHybridRole(userStore.getDomainAwareName(),
                         deletedUsers, newUsers);
             }
             clearUserRolesCacheByTenant(this.tenantId);
@@ -3960,16 +4003,16 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         }
 
         if (userStore.isSystemStore()) {
-            systemMongoUserRoleManager.updateUserListOfSystemRole(userStore.getDomainFreeName(),
-                    MongoUserCoreUtil.removeDomainFromNames(deletedUsers),
-                    MongoUserCoreUtil.removeDomainFromNames(newUsers),this.db);
+            systemUserRoleManager.updateUserListOfSystemRole(userStore.getDomainFreeName(),
+                    UserCoreUtil.removeDomainFromNames(deletedUsers),
+                    UserCoreUtil.removeDomainFromNames(newUsers));
             return;
         }
 
         if (userStore.isRecurssive()) {
             userStore.getUserStoreManager().updateUserListOfRole(userStore.getDomainFreeName(),
-                    MongoUserCoreUtil.removeDomainFromNames(deletedUsers),
-                    MongoUserCoreUtil.removeDomainFromNames(newUsers));
+                    UserCoreUtil.removeDomainFromNames(deletedUsers),
+                    UserCoreUtil.removeDomainFromNames(newUsers));
             return;
         }
 
@@ -3994,8 +4037,8 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                 || (newUsers != null && newUsers.length > 0)) {
             if (!isReadOnly() && writeGroupsEnabled) {
                 doUpdateUserListOfRole(userStore.getDomainFreeName(),
-                        MongoUserCoreUtil.removeDomainFromNames(deletedUsers),
-                        MongoUserCoreUtil.removeDomainFromNames(newUsers));
+                        UserCoreUtil.removeDomainFromNames(deletedUsers),
+                        UserCoreUtil.removeDomainFromNames(newUsers));
             } else {
                 throw new UserStoreException(
                         "Read-only user store.Roles cannot be added or modified");
@@ -4045,7 +4088,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
         if (deletedRoles != null && deletedRoles.length > 0) {
             Arrays.sort(deletedRoles);
-            if (MongoUserCoreUtil.isPrimaryAdminUser(userName, realmConfig)) {
+            if (UserCoreUtil.isPrimaryAdminUser(userName, realmConfig)) {
                 for (int i = 0; i < deletedRoles.length; i++) {
                     if (deletedRoles[i].equalsIgnoreCase(realmConfig.getAdminRoleName())
                             || (primaryDomain + deletedRoles[i]).equalsIgnoreCase(realmConfig
@@ -4059,15 +4102,15 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         UserStore userStore = getUserStore(userName);
         if (userStore.isRecurssive()) {
             userStore.getUserStoreManager().updateRoleListOfUser(userStore.getDomainFreeName(),
-                    MongoUserCoreUtil.removeDomainFromNames(deletedRoles),
-                    MongoUserCoreUtil.removeDomainFromNames(newRoles));
+                    UserCoreUtil.removeDomainFromNames(deletedRoles),
+                    UserCoreUtil.removeDomainFromNames(newRoles));
             return;
         }
 
         if (userStore.isSystemStore()) {
-            systemMongoUserRoleManager.updateSystemRoleListOfUser(userStore.getDomainFreeName(),
-                    MongoUserCoreUtil.removeDomainFromNames(deletedRoles),
-                    MongoUserCoreUtil.removeDomainFromNames(newRoles));
+            systemUserRoleManager.updateSystemRoleListOfUser(userStore.getDomainFreeName(),
+                    UserCoreUtil.removeDomainFromNames(deletedRoles),
+                    UserCoreUtil.removeDomainFromNames(newRoles));
             return;
         }
 
@@ -4081,8 +4124,8 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         // This happens only once during first startup - adding administrator user/role.
         if (userName.indexOf(CarbonConstants.DOMAIN_SEPARATOR) > 0) {
             userName = userStore.getDomainFreeName();
-            deletedRoles = MongoUserCoreUtil.removeDomainFromNames(deletedRoles);
-            newRoles = MongoUserCoreUtil.removeDomainFromNames(newRoles);
+            deletedRoles = UserCoreUtil.removeDomainFromNames(deletedRoles);
+            newRoles = UserCoreUtil.removeDomainFromNames(newRoles);
         }
 
         List<String> internalRoleDel = new ArrayList<String>();
@@ -4093,7 +4136,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
         if (deletedRoles != null && deletedRoles.length > 0) {
             for (String deleteRole : deletedRoles) {
-                if (MongoUserCoreUtil.isEveryoneRole(deleteRole, realmConfig)) {
+                if (UserCoreUtil.isEveryoneRole(deleteRole, realmConfig)) {
                     throw new UserStoreException("Everyone role cannot be updated");
                 }
                 String domain = null;
@@ -4102,12 +4145,12 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                     domain = deleteRole.substring(0, index1);
                 }
                 if (UserCoreConstants.INTERNAL_DOMAIN.equalsIgnoreCase(domain) || this.isReadOnly()) {
-                    internalRoleDel.add(MongoUserCoreUtil.removeDomainFromName(deleteRole));
+                    internalRoleDel.add(UserCoreUtil.removeDomainFromName(deleteRole));
                 } else if (APPLICATION_DOMAIN.equalsIgnoreCase(domain) || WORKFLOW_DOMAIN.equalsIgnoreCase(domain)) {
                     internalRoleDel.add(deleteRole);
                 } else {
                     // This is domain free role name.
-                    roleDel.add(MongoUserCoreUtil.removeDomainFromName(deleteRole));
+                    roleDel.add(UserCoreUtil.removeDomainFromName(deleteRole));
                 }
             }
             deletedRoles = roleDel.toArray(new String[roleDel.size()]);
@@ -4115,7 +4158,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
         if (newRoles != null && newRoles.length > 0) {
             for (String newRole : newRoles) {
-                if (MongoUserCoreUtil.isEveryoneRole(newRole, realmConfig)) {
+                if (UserCoreUtil.isEveryoneRole(newRole, realmConfig)) {
                     throw new UserStoreException("Everyone role cannot be updated");
                 }
                 String domain = null;
@@ -4124,18 +4167,18 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                     domain = newRole.substring(0, index2);
                 }
                 if (UserCoreConstants.INTERNAL_DOMAIN.equalsIgnoreCase(domain) || this.isReadOnly()) {
-                    internalRoleNew.add(MongoUserCoreUtil.removeDomainFromName(newRole));
+                    internalRoleNew.add(UserCoreUtil.removeDomainFromName(newRole));
                 } else if (APPLICATION_DOMAIN.equalsIgnoreCase(domain) || WORKFLOW_DOMAIN.equalsIgnoreCase(domain)) {
                     internalRoleNew.add(newRole);
                 } else {
-                    roleNew.add(MongoUserCoreUtil.removeDomainFromName(newRole));
+                    roleNew.add(UserCoreUtil.removeDomainFromName(newRole));
                 }
             }
             newRoles = roleNew.toArray(new String[roleNew.size()]);
         }
 
         if (internalRoleDel.size() > 0 || internalRoleNew.size() > 0) {
-            mongoDBRoleManager.updateHybridRoleListOfUser(userStore.getDomainFreeName(),
+            hybridRoleManager.updateHybridRoleListOfUser(userStore.getDomainFreeName(),
                     internalRoleDel.toArray(new String[internalRoleDel.size()]),
                     internalRoleNew.toArray(new String[internalRoleNew.size()]));
         }
@@ -4182,18 +4225,18 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             return;
         }
 
-        if (MongoUserCoreUtil.isPrimaryAdminRole(newRoleName, realmConfig)) {
+        if (UserCoreUtil.isPrimaryAdminRole(newRoleName, realmConfig)) {
             throw new UserStoreException("Cannot rename admin role");
         }
 
-        if (MongoUserCoreUtil.isEveryoneRole(newRoleName, realmConfig)) {
+        if (UserCoreUtil.isEveryoneRole(newRoleName, realmConfig)) {
             throw new UserStoreException("Cannot rename everyone role");
         }
 
         UserStore userStore = getUserStore(roleName);
         UserStore userStoreNew = getUserStore(newRoleName);
 
-        if (!MongoUserCoreUtil.canRoleBeRenamed(userStore, userStoreNew, realmConfig)) {
+        if (!UserCoreUtil.canRoleBeRenamed(userStore, userStoreNew, realmConfig)) {
             throw new UserStoreException("The role cannot be renamed");
         }
 
@@ -4207,10 +4250,10 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
         if (userStore.isHybridRole()) {
             if(UserCoreConstants.INTERNAL_DOMAIN.equalsIgnoreCase(userStore.getDomainName())) {
-                mongoDBRoleManager.updateHybridRoleName(userStore.getDomainFreeName(),
+                hybridRoleManager.updateHybridRoleName(userStore.getDomainFreeName(),
                         userStoreNew.getDomainFreeName());
             } else {
-                mongoDBRoleManager.updateHybridRoleName(userStore.getDomainAwareName(),
+                hybridRoleManager.updateHybridRoleName(userStore.getDomainAwareName(),
                         userStoreNew.getDomainAwareName());
             }
 
@@ -4300,13 +4343,13 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         UserStore userStore = getUserStore(userName);
         UserStoreManager manager = userStore.getUserStoreManager();
 
-        if (!((AbstractUserStoreManager) manager).isSharedGroupEnabled()) {
+        if (!((MongoDBUserStoreManager) manager).isSharedGroupEnabled()) {
             throw new UserStoreException("Share Groups are not supported by user store");
         }
 
         String[] sharedRoles = ((MongoDBUserStoreManager) manager).
                 doGetSharedRoleListOfUser(userStore.getDomainFreeName(), tenantDomain, filter);
-        return MongoUserCoreUtil.removeDomainFromNames(sharedRoles);
+        return UserCoreUtil.removeDomainFromNames(sharedRoles);
     }
 
     /**
@@ -4350,7 +4393,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         } catch (UserStoreException e) {
             throw new UserStoreException("Error while retrieving shared roles", e);
         }
-        return MongoUserCoreUtil.removeDomainFromNames(sharedRoles);
+        return UserCoreUtil.removeDomainFromNames(sharedRoles);
     }
 
     /**
@@ -4374,7 +4417,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         } catch (UserStoreException e) {
             throw new UserStoreException("Error while retrieving shared roles", e);
         }
-        return MongoUserCoreUtil.removeDomainFromNames(sharedRoles);
+        return UserCoreUtil.removeDomainFromNames(sharedRoles);
     }
 
 
@@ -4440,8 +4483,8 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
         if (!CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME.equalsIgnoreCase(userName) &&
                 realmConfig.getEveryOneRoleName().equalsIgnoreCase(roleName) &&
-                !systemMongoUserRoleManager.isExistingSystemUser(UserCoreUtil.
-                        removeDomainFromName(userName),this.db)) {
+                !systemUserRoleManager.isExistingSystemUser(UserCoreUtil.
+                        removeDomainFromName(userName))) {
             return true;
         }
 
@@ -4465,12 +4508,12 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         }
 
         if (UserCoreConstants.INTERNAL_DOMAIN.
-                equalsIgnoreCase(MongoUserCoreUtil.extractDomainFromName(roleName))
-                || APPLICATION_DOMAIN.equalsIgnoreCase(MongoUserCoreUtil.extractDomainFromName(roleName)) ||
-                WORKFLOW_DOMAIN.equalsIgnoreCase(MongoUserCoreUtil.extractDomainFromName(roleName))) {
+                equalsIgnoreCase(UserCoreUtil.extractDomainFromName(roleName))
+                || APPLICATION_DOMAIN.equalsIgnoreCase(UserCoreUtil.extractDomainFromName(roleName)) ||
+                WORKFLOW_DOMAIN.equalsIgnoreCase(UserCoreUtil.extractDomainFromName(roleName))) {
 
             String[] internalRoles = doGetInternalRoleListOfUser(userName, "*");
-            if (MongoUserCoreUtil.isContain(roleName, internalRoles)) {
+            if (UserCoreUtil.isContain(roleName, internalRoles)) {
                 addToIsUserHasRole(modifiedUserName, roleName, roles);
                 return true;
             }
@@ -4486,8 +4529,8 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         // #################### Domain Name Free Zone Starts Here ################################
 
         if (userStore.isSystemStore()) {
-            return systemMongoUserRoleManager.isUserInRole(userStore.getDomainFreeName(),
-                    MongoUserCoreUtil.removeDomainFromName(roleName),this.db);
+            return systemUserRoleManager.isUserInRole(userStore.getDomainFreeName(),
+                    UserCoreUtil.removeDomainFromName(roleName));
         }
         // admin user is always assigned to admin role if it is in primary user store
         if (realmConfig.isPrimary() && roleName.equalsIgnoreCase(realmConfig.getAdminRoleName()) &&
@@ -4495,7 +4538,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             return true;
         }
 
-        String roleDomainName = MongoUserCoreUtil.extractDomainFromName(roleName);
+        String roleDomainName = UserCoreUtil.extractDomainFromName(roleName);
 
         String roleDomainNameForForest = realmConfig.
                 getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_GROUP_SEARCH_DOMAINS);
@@ -4513,7 +4556,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         boolean success = false;
         if (readGroupsEnabled) {
             success = doCheckIsUserInRole(userStore.getDomainFreeName(),
-                    MongoUserCoreUtil.removeDomainFromName(roleName));
+                    UserCoreUtil.removeDomainFromName(roleName));
         }
 
         // add to cache
@@ -4554,7 +4597,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             return (Boolean) object;
         }
 
-        if (MongoUserCoreUtil.isRegistrySystemUser(userName)) {
+        if (UserCoreUtil.isRegistrySystemUser(userName)) {
             return true;
         }
 
@@ -4566,7 +4609,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         // #################### Domain Name Free Zone Starts Here ################################
 
         if (userStore.isSystemStore()) {
-            return systemMongoUserRoleManager.isExistingSystemUser(userStore.getDomainFreeName(),this.db);
+            return systemUserRoleManager.isExistingSystemUser(userStore.getDomainFreeName());
         }
 
 
@@ -4627,14 +4670,14 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                     try {
                         String[] secondUserList = ((MongoDBUserStoreManager) storeManager)
                                 .doListUsers(filter, maxItemLimit);
-                        userList = MongoUserCoreUtil.combineArrays(userList, secondUserList);
+                        userList = UserCoreUtil.combineArrays(userList, secondUserList);
                     } catch (UserStoreException ex) {
                         // We can ignore and proceed. Ignore the results from this user store.
                         log.error(ex);
                     }
                 } else {
                     String[] secondUserList = storeManager.listUsers(filter, maxItemLimit);
-                    userList = MongoUserCoreUtil.combineArrays(userList, secondUserList);
+                    userList = UserCoreUtil.combineArrays(userList, secondUserList);
                 }
             }
         }
@@ -4671,16 +4714,16 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         // ################################
 
         if (userStore.isSystemStore()) {
-            return systemMongoUserRoleManager.getUserListOfSystemRole(userStore.getDomainFreeName(),this.db);
+            return systemUserRoleManager.getUserListOfSystemRole(userStore.getDomainFreeName());
         }
 
         String[] userNamesInHybrid = new String[0];
         if (userStore.isHybridRole()) {
             if (UserCoreConstants.INTERNAL_DOMAIN.equalsIgnoreCase(userStore.getDomainName())) {
                 userNamesInHybrid =
-                    mongoDBRoleManager.getUserListOfHybridRole(userStore.getDomainFreeName());
+                        hybridRoleManager.getUserListOfHybridRole(userStore.getDomainFreeName());
             } else {
-                userNamesInHybrid = mongoDBRoleManager.getUserListOfHybridRole(userStore.getDomainAwareName());
+                userNamesInHybrid = hybridRoleManager.getUserListOfHybridRole(userStore.getDomainAwareName());
             }
 
             // remove domain
@@ -4691,12 +4734,12 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             if (userNamesInHybrid != null && userNamesInHybrid.length > 0) {
                 if (displayNameAttribute != null && displayNameAttribute.trim().length() > 0) {
                     for (String userName : userNamesInHybrid) {
-                        String domainName = MongoUserCoreUtil.extractDomainFromName(userName);
+                        String domainName = UserCoreUtil.extractDomainFromName(userName);
                         if (domainName == null || domainName.trim().length() == 0) {
                             finalNameList.add(userName);
                         }
                         UserStoreManager userManager = userStoreManagerHolder.get(domainName);
-                        userName = MongoUserCoreUtil.removeDomainFromName(userName);
+                        userName = UserCoreUtil.removeDomainFromName(userName);
                         if (userManager != null) {
                             String[] displayNames = null;
                             if (userManager instanceof MongoDBUserStoreManager) {
@@ -4710,7 +4753,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                             for (String displayName : displayNames) {
                                 // if domain names are not added by above method, add it
                                 // here
-                                String nameWithDomain = MongoUserCoreUtil.addDomainToName(displayName, domainName);
+                                String nameWithDomain = UserCoreUtil.addDomainToName(displayName, domainName);
                                 finalNameList.add(nameWithDomain);
                             }
                         }
@@ -4759,7 +4802,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         }
 
         if (userStore.isSystemStore()) {
-            return systemMongoUserRoleManager.getSystemRoleListOfUser(userStore.getDomainFreeName(),this.db);
+            return systemUserRoleManager.getSystemRoleListOfUser(userStore.getDomainFreeName());
         }
         // #################### Domain Name Free Zone Starts Here ################################
 
@@ -4800,7 +4843,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
         if (userStore.isRecurssive()) {
             userStore.getUserStoreManager().addRole(userStore.getDomainFreeName(),
-                    MongoUserCoreUtil.removeDomainFromNames(userList), permissions, isSharedRole);
+                    UserCoreUtil.removeDomainFromNames(userList), permissions, isSharedRole);
             return;
         }
 
@@ -4814,7 +4857,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         // This happens only once during first startup - adding administrator user/role.
         if (roleName.indexOf(CarbonConstants.DOMAIN_SEPARATOR) > 0) {
             roleName = userStore.getDomainFreeName();
-            userList = MongoUserCoreUtil.removeDomainFromNames(userList);
+            userList = UserCoreUtil.removeDomainFromNames(userList);
         }
 
 
@@ -4851,7 +4894,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             // add role in to actual user store
             doAddRole(roleName, userList, isSharedRole);
 
-            roleWithDomain = MongoUserCoreUtil.addDomainToName(roleName, getMyDomainName());
+            roleWithDomain = UserCoreUtil.addDomainToName(roleName, getMyDomainName());
         } else {
             throw new UserStoreException(
                     NO_READ_WRITE_PERMISSIONS + " Role cannot be added. User store is read only or cannot write groups.");
@@ -4939,10 +4982,10 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             return;
         }
 
-        if (MongoUserCoreUtil.isPrimaryAdminRole(roleName, realmConfig)) {
+        if (UserCoreUtil.isPrimaryAdminRole(roleName, realmConfig)) {
             throw new UserStoreException("Cannot delete admin role");
         }
-        if (MongoUserCoreUtil.isEveryoneRole(roleName, realmConfig)) {
+        if (UserCoreUtil.isEveryoneRole(roleName, realmConfig)) {
             throw new UserStoreException("Cannot delete everyone role");
         }
 
@@ -4952,15 +4995,15 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             return;
         }
 
-        String roleWithDomain = MongoUserCoreUtil.addDomainToName(roleName, getMyDomainName());
+        String roleWithDomain = UserCoreUtil.addDomainToName(roleName, getMyDomainName());
         // #################### Domain Name Free Zone Starts Here ################################
 
         if (userStore.isHybridRole()) {
             if (APPLICATION_DOMAIN.equalsIgnoreCase(userStore.getDomainName()) ||
                     WORKFLOW_DOMAIN.equalsIgnoreCase(userStore.getDomainName())) {
-                mongoDBRoleManager.deleteHybridRole(roleName);
+                hybridRoleManager.deleteHybridRole(roleName);
             } else {
-                mongoDBRoleManager.deleteHybridRole(userStore.getDomainFreeName());
+                hybridRoleManager.deleteHybridRole(userStore.getDomainFreeName());
             }
             clearUserRolesCacheByTenant(tenantId);
             return;
@@ -5184,7 +5227,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
      * {@inheritDoc}                  doAddInternalRole
      */
     public final String[] getHybridRoles() throws UserStoreException {
-        return mongoDBRoleManager.getHybridRoles("*");
+        return hybridRoleManager.getHybridRoles("*");
     }
 
     /**
@@ -5216,20 +5259,20 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
         if (roleName.contains(UserCoreConstants.DOMAIN_SEPARATOR)
                 && roleName.toLowerCase().startsWith(APPLICATION_DOMAIN.toLowerCase())) {
-            if (mongoDBRoleManager.isExistingRole(roleName)) {
+            if (hybridRoleManager.isExistingRole(roleName)) {
                 throw new UserStoreException("Role name: " + roleName
                         + " in the system. Please pick another role name.");
             }
 
-            mongoDBRoleManager.addHybridRole(roleName, userList);
+            hybridRoleManager.addHybridRole(roleName, userList);
 
         } else {
-            if (mongoDBRoleManager.isExistingRole(MongoUserCoreUtil.removeDomainFromName(roleName))) {
+            if (hybridRoleManager.isExistingRole(UserCoreUtil.removeDomainFromName(roleName))) {
                 throw new UserStoreException("Role name: " + roleName
                         + " in the system. Please pick another role name.");
             }
 
-            mongoDBRoleManager.addHybridRole(MongoUserCoreUtil.removeDomainFromName(roleName), userList);
+            hybridRoleManager.addHybridRole(UserCoreUtil.removeDomainFromName(roleName), userList);
         }
 
 
@@ -5240,7 +5283,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                 String action = permission.getAction();
                 // This is a special case. We need to pass domain aware name.
                 userRealm.getAuthorizationManager().authorizeRole(
-                        MongoUserCoreUtil.addInternalDomainName(roleName), resourceId, action);
+                        UserCoreUtil.addInternalDomainName(roleName), resourceId, action);
             }
         }
 
@@ -5274,14 +5317,14 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         String[] roleList = new String[0];
 
         if (!noInternalRoles && (filter.toLowerCase().startsWith(APPLICATION_DOMAIN.toLowerCase()))) {
-            roleList = mongoDBRoleManager.getHybridRoles(filter);
+            roleList = hybridRoleManager.getHybridRoles(filter);
         } else if (!noInternalRoles) {
-            roleList = mongoDBRoleManager.getHybridRoles(MongoUserCoreUtil.removeDomainFromName(filter));
+            roleList = hybridRoleManager.getHybridRoles(UserCoreUtil.removeDomainFromName(filter));
         }
 
         if (!noSystemRole) {
-            String[] systemRoles = systemMongoUserRoleManager.getSystemRoles(this.db);
-            roleList = MongoUserCoreUtil.combineArrays(roleList, systemRoles);
+            String[] systemRoles = systemUserRoleManager.getSystemRoles();
+            roleList = UserCoreUtil.combineArrays(roleList, systemRoles);
         }
 
         int index;
@@ -5304,11 +5347,11 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                     if (readGroupsEnabled) {
                         String[] externalRoles = ((MongoDBUserStoreManager) secManager)
                                 .doGetRoleNames(filter, maxItemLimit);
-                        return MongoUserCoreUtil.combineArrays(roleList, externalRoles);
+                        return UserCoreUtil.combineArrays(roleList, externalRoles);
                     }
                 } else {
                     String[] externalRoles = secManager.getRoleNames();
-                    return MongoUserCoreUtil.combineArrays(roleList, externalRoles);
+                    return UserCoreUtil.combineArrays(roleList, externalRoles);
                 }
             } else {
                 throw new UserStoreException("Invalid Domain Name");
@@ -5316,13 +5359,13 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         } else if (index == 0) {
             if (readGroupsEnabled) {
                 String[] externalRoles = doGetRoleNames(filter.substring(index + 1), maxItemLimit);
-                return MongoUserCoreUtil.combineArrays(roleList, externalRoles);
+                return UserCoreUtil.combineArrays(roleList, externalRoles);
             }
         }
 
         if (readGroupsEnabled) {
             String[] externalRoles = doGetRoleNames(filter, maxItemLimit);
-            roleList = MongoUserCoreUtil.combineArrays(externalRoles, roleList);
+            roleList = UserCoreUtil.combineArrays(externalRoles, roleList);
         }
 
         String primaryDomain = getMyDomainName();
@@ -5333,19 +5376,19 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                     continue;
                 }
                 UserStoreManager storeManager = entry.getValue();
-                if (storeManager instanceof AbstractUserStoreManager) {
+                if (storeManager instanceof MongoDBUserStoreManager) {
                     try {
                         if (readGroupsEnabled) {
                             String[] secondRoleList = ((MongoDBUserStoreManager) storeManager)
                                     .doGetRoleNames(filter, maxItemLimit);
-                            roleList = MongoUserCoreUtil.combineArrays(roleList, secondRoleList);
+                            roleList = UserCoreUtil.combineArrays(roleList, secondRoleList);
                         }
                     } catch (UserStoreException e) {
                         // We can ignore and proceed. Ignore the results from this user store.
                         log.error(e);
                     }
                 } else {
-                    roleList = MongoUserCoreUtil.combineArrays(roleList, storeManager.getRoleNames());
+                    roleList = UserCoreUtil.combineArrays(roleList, storeManager.getRoleNames());
                 }
             }
         }
@@ -5627,7 +5670,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
      */
     protected String[] getRoleListOfUserFromCache(int tenantID, String userName) {
         if (userRolesCache != null) {
-            String usernameWithDomain = MongoUserCoreUtil.addDomainToName(userName, getMyDomainName());
+            String usernameWithDomain = UserCoreUtil.addDomainToName(userName, getMyDomainName());
             return userRolesCache.getRolesListOfUser(cacheIdentifier, tenantID, usernameWithDomain);
         }
         return null;
@@ -5648,7 +5691,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
      * @param userName
      */
     protected void clearUserRolesCache(String userName) {
-        String usernameWithDomain = MongoUserCoreUtil.addDomainToName(userName, getMyDomainName());
+        String usernameWithDomain = UserCoreUtil.addDomainToName(userName, getMyDomainName());
         if (userRolesCache != null) {
             userRolesCache.clearCacheEntry(cacheIdentifier, tenantId, usernameWithDomain);
         }
@@ -5663,7 +5706,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
      */
     protected void addToUserRolesCache(int tenantID, String userName, String[] roleList) {
         if (userRolesCache != null) {
-            String usernameWithDomain = MongoUserCoreUtil.addDomainToName(userName, getMyDomainName());
+            String usernameWithDomain = UserCoreUtil.addDomainToName(userName, getMyDomainName());
             userRolesCache.addToCache(cacheIdentifier, tenantID, usernameWithDomain, roleList);
             AuthorizationCache authorizationCache = AuthorizationCache.getInstance();
             authorizationCache.clearCacheByTenant(tenantID);
@@ -5776,7 +5819,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                     UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
             String[] roles = secondary.getRoleNames(true);
             if (roles != null && roles.length > 0) {
-                Collections.addAll(roleList, MongoUserCoreUtil.convertRoleNamesToRoleDTO(roles, domain));
+                Collections.addAll(roleList,UserCoreUtil.convertRoleNamesToRoleDTO(roles, domain));
             }
             secondary = secondary.getSecondaryUserStoreManager();
         }
@@ -5800,11 +5843,11 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                             + regEx);
         }
 
-        if (systemMongoUserRoleManager.isExistingRole(roleName,this.db)) {
+        if (systemUserRoleManager.isExistingRole(roleName)) {
             throw new UserStoreException("Role name: " + roleName
                     + " in the system. Please pick another role name.");
         }
-        systemMongoUserRoleManager.addSystemRole(roleName, userList,this.db);
+        systemUserRoleManager.addSystemRole(roleName, userList);
     }
 
     /**
@@ -5839,11 +5882,11 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                 }
             }
             modifiedExternalRoleList =
-                    MongoUserCoreUtil.addDomainToNames(roles.toArray(new String[roles.size()]),
+                    UserCoreUtil.addDomainToNames(roles.toArray(new String[roles.size()]),
                             getMyDomainName());
         }
 
-        roleList = MongoUserCoreUtil.combine(internalRoles, Arrays.asList(modifiedExternalRoleList));
+        roleList = UserCoreUtil.combine(internalRoles, Arrays.asList(modifiedExternalRoleList));
 
         addToUserRolesCache(this.tenantId, userName, roleList);
 
@@ -5882,36 +5925,36 @@ public class MongoDBUserStoreManager implements UserStoreManager{
      */
     protected void doInitialUserAdding() throws UserStoreException {
 
-        String systemUser = MongoUserCoreUtil.removeDomainFromName(CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME);
-        String systemRole = MongoUserCoreUtil.removeDomainFromName(CarbonConstants.REGISTRY_ANONNYMOUS_ROLE_NAME);
+        String systemUser = UserCoreUtil.removeDomainFromName(CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME);
+        String systemRole = UserCoreUtil.removeDomainFromName(CarbonConstants.REGISTRY_ANONNYMOUS_ROLE_NAME);
 
-        if (!systemMongoUserRoleManager.isExistingSystemUser(systemUser,this.db)) {
-            systemMongoUserRoleManager.addSystemUser(systemUser,
-                    MongoUserCoreUtil.getPolicyFriendlyRandomPassword(systemUser), null,this.db);
+        if (!systemUserRoleManager.isExistingSystemUser(systemUser)) {
+            systemUserRoleManager.addSystemUser(systemUser,
+                    UserCoreUtil.getPolicyFriendlyRandomPassword(systemUser), null);
         }
 
-        if (!systemMongoUserRoleManager.isExistingRole(systemRole,this.db)) {
-            systemMongoUserRoleManager.addSystemRole(systemRole, new String[]{systemUser},this.db);
+        if (!systemUserRoleManager.isExistingRole(systemRole)) {
+            systemUserRoleManager.addSystemRole(systemRole, new String[]{systemUser});
         }
 
-        if (!mongoDBRoleManager.isExistingRole(MongoUserCoreUtil.removeDomainFromName(realmConfig
+        if (!hybridRoleManager.isExistingRole(UserCoreUtil.removeDomainFromName(realmConfig
                 .getEveryOneRoleName()))) {
-            mongoDBRoleManager.addHybridRole(
-                    MongoUserCoreUtil.removeDomainFromName(realmConfig.getEveryOneRoleName()), null);
+            hybridRoleManager.addHybridRole(
+                    UserCoreUtil.removeDomainFromName(realmConfig.getEveryOneRoleName()), null);
         }
     }
 
     protected boolean isInitSetupDone() throws UserStoreException {
 
         boolean isInitialSetUp = false;
-        String systemUser = MongoUserCoreUtil.removeDomainFromName(CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME);
-        String systemRole = MongoUserCoreUtil.removeDomainFromName(CarbonConstants.REGISTRY_ANONNYMOUS_ROLE_NAME);
+        String systemUser = UserCoreUtil.removeDomainFromName(CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME);
+        String systemRole = UserCoreUtil.removeDomainFromName(CarbonConstants.REGISTRY_ANONNYMOUS_ROLE_NAME);
 
-        if (systemMongoUserRoleManager.isExistingSystemUser(systemUser,this.db)) {
+        if (systemUserRoleManager.isExistingSystemUser(systemUser)) {
             isInitialSetUp = true;
         }
 
-        if (systemMongoUserRoleManager.isExistingRole(systemRole,this.db)) {
+        if (systemUserRoleManager.isExistingRole(systemRole)) {
             isInitialSetUp = true;
         }
 
@@ -5976,7 +6019,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
      * @return
      */
     protected String getMyDomainName() {
-        return MongoUserCoreUtil.getDomainName(realmConfig);
+        return UserCoreUtil.getDomainName(realmConfig);
     }
 
     public void deletePersistedDomain(String domain) throws UserStoreException {
@@ -5984,7 +6027,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             if (log.isDebugEnabled()) {
                 log.debug("Deleting persisted domain " + domain);
             }
-            MongoUserCoreUtil.deletePersistedDomain(domain, this.tenantId, this.db);
+            UserCoreUtil.deletePersistedDomain(domain, this.tenantId,dataSource);
         }
     }
 
@@ -6004,7 +6047,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             if (log.isDebugEnabled()) {
                 log.debug("Renaming persisted domain " + oldDomain + " to " + newDomain);
             }
-            MongoUserCoreUtil.updatePersistedDomain(oldDomain, newDomain, this.tenantId, this.db);
+            UserCoreUtil.updatePersistedDomain(oldDomain, newDomain, this.tenantId, dataSource);
 
         }
     }
@@ -6267,8 +6310,8 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         }
     }
 
-    public HybridMongoDBRoleManager getInternalRoleManager() {
-        return mongoDBRoleManager;
+    public HybridRoleManager getInternalRoleManager() {
+        return hybridRoleManager;
     }
 
     public Claim[] getUserClaimValues(String userName, String profileName) throws UserStoreException {
