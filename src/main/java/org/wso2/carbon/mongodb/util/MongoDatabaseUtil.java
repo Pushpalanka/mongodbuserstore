@@ -285,7 +285,7 @@ public class MongoDatabaseUtil {
 
         for(String key : keys){
 
-            if(key.equals("$set")){
+            if(key.contains("$set")){
 
                 return true;
             }
@@ -304,6 +304,15 @@ public class MongoDatabaseUtil {
             if ( stmt.get(key) instanceof JSONObject ) {
                 JSONObject value = stmt.getJSONObject(key);
                 key = value.keys().next();
+                if(key.equals("$set")){
+
+                    String names[] = JSONObject.getNames(value.getJSONObject(key));
+                    for(String name : names){
+
+                        keys.add(index,name);
+                        index++;
+                    }
+                }
                 keys.add(index,key);
             }
             index++;

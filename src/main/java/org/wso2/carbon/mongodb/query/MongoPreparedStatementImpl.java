@@ -526,7 +526,13 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 
                 this.distinctKey = queryObject.getString("distinct");
             }
-			setQueryObject(queryObject,false);
+            if(query.contains("$set")){
+
+                getUpdateObject(queryObject);
+            }else {
+
+                setQueryObject(queryObject, false);
+            }
 			return true;
 		}
 		else{
@@ -556,7 +562,8 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
                 mapQuery.put(key,val);
             }
             if(hasProjection && !key.equals("projection")){
-                mapProjection.put(key,object.get(key));
+
+                mapProjection.put(key, object.get(key));
             }
         }
         this.query = new BasicDBObject(mapQuery);
@@ -564,6 +571,27 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
             this.projection = new BasicDBObject(mapProjection);
         }
 	}
+
+    private void getUpdateObject(JSONObject object){
+
+        Iterator<String> keys = object.keys();
+        while(keys.hasNext()) {
+            String key = keys.next();
+            Object val = null;
+            if(key.equals("projection")){
+
+                JSONObject setObject = object.getJSONObject(key);
+                setUpdateObject(setObject.getJSONObject("$set"));
+            }else{
+
+                if(parameterValue.containsKey(key)){
+                    val = parameterValue.get(key);
+                    mapQuery.put(key,val);
+                }
+            }
+        }
+        this.query = new BasicDBObject(mapQuery);
+    }
 
     private void getAggregrationObjects(JSONObject stmt){
 
@@ -584,7 +612,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
             if(key.equals("collection")){
 
                 this.collection = db.getCollection(stmt.get(key).toString());
-            }else if(key.equals("$lookup") || key.equals("$lookup_sub")){
+            }else if(key.equals("$lookup") || key.contains("$lookup_sub")){
 
                 if(!multipleLookUp) {
 
@@ -628,6 +656,21 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 					mapMatch.put(elementName, val);
 				}
             }
+        }
+    }
+
+    public void setUpdateObject(JSONObject stmt){
+
+        String[] elementNames = JSONObject.getNames(stmt);
+        for (String elementName : elementNames) {
+            String value = stmt.getString(elementName);
+            if (parameterValue.containsKey(elementName)) {
+                Object val = parameterValue.get(elementName);
+                mapProjection.put(elementName, val);
+            }
+        }
+        if(!mapProjection.isEmpty()){
+            this.projection = new BasicDBObject(mapProjection);
         }
     }
     public static Map<String, Object> toMap(JSONObject object) throws JSONException {

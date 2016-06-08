@@ -265,8 +265,9 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             Iterator<DBObject> cursor = ite.iterator();
             while(cursor.hasNext()){
 
-                String name = cursor.next().get("UM_ATTR_NAME").toString();
-                String value = cursor.next().get("UM_PROFILE_VALUE").toString();
+                DBObject object = cursor.next();
+                String name = object.get("UM_ATTR_NAME").toString();
+                String value = object.get("UM_ATTR_VALUE").toString();
                 if(Arrays.binarySearch(propertyNamesSorted,name)<0){
                     continue;
                 }
@@ -465,7 +466,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         }catch(Exception ex){
 
             log.error("Using MongoDB Query : " + mongoQuery);
-            throw new UserStoreException("Authentication Failure");
+            throw new UserStoreException("Authentication Failure",ex);
         }finally {
             prepStmt.close();
         }
@@ -795,7 +796,6 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                 throw new UserStoreException("The mng statement for add user property mongo query is null");
             }
             String value = null;
-            DBCursor cursor = null;
             prepStmt = new MongoPreparedStatementImpl(dbConnection, mongoQuery);
             prepStmt.setString("users.UM_USER_NAME", userName);
             prepStmt.setString("UM_PROFILE_ID", profileName);
@@ -805,20 +805,14 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                 prepStmt.setInt("UM_TENANT_ID", tenantId);
                 prepStmt.setInt("users.UM_TENANT_ID", tenantId);
             }
-            cursor = prepStmt.find();
-            while(cursor.hasNext()){
+            AggregationOutput cursor = prepStmt.aggregate();
+            Iterable<DBObject> ite = cursor.results();
+            Iterator<DBObject> iterator = ite.iterator();
+            while(iterator.hasNext()){
 
-                value = cursor.next().get("UM_ATTR_VALUE").toString();
+                value = iterator.next().get("UM_ATTR_VALUE").toString();
             }
             return value;
-        }catch (MongoQueryException ex){
-
-            String msg = "Error occurred while retrieving user profile property for user : " + userName +
-                    " & property name : " + property + " & profile name : " + profileName;
-            if (log.isDebugEnabled()) {
-                log.debug(msg, ex);
-            }
-            throw new UserStoreException(msg, ex);
         }catch(Exception e){
 
             String msg = "Error ocuured :";
@@ -2769,8 +2763,8 @@ public class MongoDBUserStoreManager implements UserStoreManager{
     }
 
     protected void doInitialSetup() throws UserStoreException {
-        systemMongoUserRoleManager = new SystemMongoUserRoleManager(this.db, tenantId);
-        mongoDBRoleManager = new HybridMongoDBRoleManager(this.db, tenantId, realmConfig, userRealm);
+       // systemMongoUserRoleManager = new SystemMongoUserRoleManager(this.db, tenantId);
+        //mongoDBRoleManager = new HybridMongoDBRoleManager(this.db, tenantId, realmConfig, userRealm);
         systemUserRoleManager = new SystemUserRoleManager(dataSource,tenantId);
         hybridRoleManager = new HybridRoleManager(dataSource,tenantId,realmConfig,userRealm);
     }
