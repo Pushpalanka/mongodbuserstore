@@ -266,12 +266,18 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             while(cursor.hasNext()){
 
                 DBObject object = cursor.next();
-                String name = object.get("UM_ATTR_NAME").toString();
-                String value = object.get("UM_ATTR_VALUE").toString();
-                if(Arrays.binarySearch(propertyNamesSorted,name)<0){
-                    continue;
+                object.removeField("_id");
+                object.removeField("users");
+                Set<String> keys = object.keySet();
+                for(String key : keys){
+
+                    String name = key;
+                    String value = object.get(key).toString();
+                    if(Arrays.binarySearch(propertyNamesSorted,name)<0){
+                        continue;
+                    }
+                    map.put(name,value);
                 }
-                map.put(name,value);
             }
         }catch(Exception e){
 
@@ -646,6 +652,76 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         }
     }
 
+    private void updateUserClaimValuesToDatabase(DB dbConnection,Map<String,Object> map,boolean isUpdateTrue) throws UserStoreException{
+
+
+        if(map == null){
+
+            throw new UserStoreException("Parameters cannot be null");
+        }
+        else {
+            DBCollection collection = dbConnection.getCollection("UM_USER_ATTRIBUTE");
+            try {
+                if (!isUpdateTrue) {
+
+                    int id = MongoDatabaseUtil.getIncrementedSequence(dbConnection, "UM_USER_ATTRIBUTE");
+                    BasicDBObject query = new BasicDBObject("UM_ID", id);
+                    for (Map.Entry<String, Object> entry : map.entrySet()) {
+
+                        query.append(entry.getKey(), entry.getValue());
+                    }
+                    collection.insert(query);
+
+                } else {
+
+                    BasicDBObject condition = null;
+                    BasicDBObject setQuery = null;
+                    for (Map.Entry<String, Object> entry : map.entrySet()) {
+
+                        if (entry.getKey().equals("UM_USER_ID") || entry.getKey().equals("UM_PROFILE_ID")) {
+
+                            if (condition == null) {
+
+                                condition = new BasicDBObject(entry.getKey(), entry.getValue());
+                            } else {
+
+                                condition.append(entry.getKey(), entry.getValue());
+                            }
+                        } else {
+
+                            if (setQuery == null) {
+
+                                setQuery = new BasicDBObject(entry.getKey(), entry.getValue());
+                            } else {
+
+                                setQuery.append(entry.getKey(), entry.getValue());
+                            }
+                        }
+                    }
+
+                    if (condition != null && setQuery != null) {
+                        setQuery = new BasicDBObject("$set", setQuery);
+                        collection.update(condition, setQuery);
+                    }
+                }
+            }catch(com.mongodb.MongoQueryException ex){
+
+                if(log.isDebugEnabled()){
+
+                    log.debug("Exception occur while querying :"+ex.getMessage());
+                }
+                throw new UserStoreException("Error occured cannot add user store property :"+ex.getMessage());
+            }catch(Exception ex){
+
+                if(log.isDebugEnabled()){
+
+                    log.debug("Exception occur while querying :"+ex.getMessage());
+                }
+                throw new UserStoreException("Error occured cannot add user store property :"+ex.getMessage());
+            }
+        }
+    }
+
     private void deleteStringValuesFromDatabase(DB dbConnection, String mongoQuery,
                                                 Object... params) throws  UserStoreException{
 
@@ -761,9 +837,18 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
             dbConnection = loadUserStoreSpacificDataSoruce();
             String property = getClaimAtrribute(claimURI,userName,null);
-            String value = getProperty(dbConnection,userName,property,profileName);
+            int userId = getUserId(userName);
+            String value = getProperty(dbConnection,userId);
+            Map<String,Object> map = new HashMap<String, Object>();
+            map.put("UM_USER_ID",userId);
+            map.put("UM_PROFILE_ID",profileName);
+            if(value.length() > 0) {
+                map.put(property, value);
+            }
             if(value == null){
-                addProperty(dbConnection,userName,property,claimValue,profileName);
+                addProperty(dbConnection,map);
+            }else{
+                updateProperty(dbConnection,map);
             }
         }catch (org.wso2.carbon.user.api.UserStoreException e) {
             String errorMessage =
@@ -785,7 +870,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         }
 	}
 
-    protected String getProperty(DB dbConnection, String userName, String property, String profileName) throws UserStoreException{
+    protected String getProperty(DB dbConnection,int userId) throws UserStoreException{
 
         MongoPreparedStatement prepStmt = null;
         try {
@@ -797,20 +882,15 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             }
             String value = null;
             prepStmt = new MongoPreparedStatementImpl(dbConnection, mongoQuery);
-            prepStmt.setString("users.UM_USER_NAME", userName);
-            prepStmt.setString("UM_PROFILE_ID", profileName);
-            prepStmt.setString("UM_ATTR_NAME", property);
+            prepStmt.setInt("UM_USER_ID", userId);
             if (mongoQuery.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
 
                 prepStmt.setInt("UM_TENANT_ID", tenantId);
-                prepStmt.setInt("users.UM_TENANT_ID", tenantId);
             }
-            AggregationOutput cursor = prepStmt.aggregate();
-            Iterable<DBObject> ite = cursor.results();
-            Iterator<DBObject> iterator = ite.iterator();
-            while(iterator.hasNext()){
+            DBCursor cursor = prepStmt.find();
+            while(cursor.hasNext()){
 
-                value = iterator.next().get("UM_ATTR_VALUE").toString();
+                value = cursor.next().get("UM_ID").toString();
             }
             return value;
         }catch(Exception e){
@@ -836,18 +916,27 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
             dbConnection = loadUserStoreSpacificDataSoruce();
             Iterator<Map.Entry<String,String>> ite = claims.entrySet().iterator();
+            Map<String,Object> map = new HashMap<String, Object>();
             while(ite.hasNext()){
 
                 Map.Entry<String,String> entry = ite.next();
                 String claimUri = entry.getKey();
                 String property = getClaimAtrribute(claimUri,userName,null);
                 String value = entry.getValue();
-                String exsistingValue = getProperty(dbConnection,userName,property,profileName);
-                if(exsistingValue==null){
-                    addProperty(dbConnection, userName, property, value, profileName);
-                }else{
-                    updateProperty(dbConnection, userName, property, value, profileName);
+                if(value.length() > 0) {
+                    map.put(property, value);
                 }
+            }
+            int userId = getUserId(userName);
+            map.put("UM_USER_ID",userId);
+            map.put("UM_PROFILE_ID",profileName);
+            String userValueExsists = getProperty(dbConnection,userId);
+            if(userValueExsists == null){
+
+                addProperty(dbConnection,map);
+            }else{
+
+                updateProperty(dbConnection,map);
             }
         }catch(org.wso2.carbon.user.api.UserStoreException e){
 
@@ -869,34 +958,20 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
     }
 
-    private void updateProperty(DB dbConnection, String userName, String property, String value, String profileName) throws UserStoreException, MongoQueryException {
+    private void updateProperty(DB dbConnection,Map<String,Object> map) throws UserStoreException, MongoQueryException {
 
         String mongoQuery=null;
-        Map<String,Object> map = new HashMap<String, Object>();
         mongoQuery = realmConfig.getUserStoreProperty(MongoDBRealmConstants.UPDATE_USER_PROPERTY);
         if (mongoQuery == null) {
 
             throw new UserStoreException("The sql statement for add user property sql is null");
         }
-        String conditionQuery = MongoDBRealmConstants.ADD_USER_TO_ROLE_MONGO_QUERY_CONDITION1;
-        MongoPreparedStatement prepStmt = new MongoPreparedStatementImpl(dbConnection,conditionQuery);
-        prepStmt.setString("UM_USER_NAME",userName);
-        prepStmt.setInt("UM_TENANT_ID",tenantId);
-        DBCursor cursor = prepStmt.find();
-        if(cursor.hasNext()) {
-            int userId = Integer.parseInt(cursor.next().get("UM_ID").toString());
-            map.put("UM_USER_ID",userId);
-            map.put("UM_ATTR_NAME",property);
-            map.put("UM_PROFILE_ID",profileName);
-            map.put("UM_ATTR_VALUE",value);
-            if (mongoQuery.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
+        if (mongoQuery.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
 
-                map.put("UM_TENANT_ID",tenantId);
-                updateStringValuesToDatabase(dbConnection, mongoQuery, map);
-            } else {
-
-                updateStringValuesToDatabase(dbConnection, mongoQuery, map);
-            }
+            map.put("UM_TENANT_ID", tenantId);
+            updateUserClaimValuesToDatabase(dbConnection,map,true);
+        } else {
+            updateUserClaimValuesToDatabase(dbConnection,map,true);
         }
     }
 
@@ -2339,7 +2414,14 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                     String claimURI = entry.getKey();
                     String propName = claimManager.getAttributeName(claimURI);
                     String propValue = entry.getValue();
-                    addProperty(dbConnection, userName, propName, propValue, profileName);
+                    int userId = getUserId(userName);
+                    Map<String,Object> mapProperties = new HashMap<String, Object>();
+                    mapProperties.put("UM_USER_ID",userId);
+                    mapProperties.put("UM_PROFILE_ID",profileName);
+                    if(propValue.length() > 0) {
+                        mapProperties.put(propName, propValue);
+                    }
+                    addProperty(dbConnection,mapProperties);
                 }
             }
         } catch (Throwable e) {
@@ -2426,40 +2508,24 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
     }
 
-    public void addProperty(DB dbConnection, String userName, String propertyName,
-                            String value, String profileName) throws UserStoreException {
+    public void addProperty(DB dbConnection, Map<String,Object> map) throws UserStoreException {
 
         try {
 
             String mongoStmt = realmConfig.getUserStoreProperty(MongoDBRealmConstants.ADD_USER_PROPERTY);
-            String query = MongoDBRealmConstants.ADD_USER_TO_ROLE_MONGO_QUERY_CONDITION1;
-            MongoPreparedStatement prepStmt = new MongoPreparedStatementImpl(dbConnection,query);
-            prepStmt.setString("UM_USER_NAME",userName);
-            prepStmt.setInt("UM_TENANT_ID",tenantId);
-            DBCursor cursor = prepStmt.find();
-            if(cursor.hasNext()) {
+            if (mongoStmt == null) {
+                throw new UserStoreException("The mongo query statement for add user property sql is null");
+            }
 
-                int userId = Integer.parseInt(cursor.next().get("UM_ID").toString());
-                Map<String, Object> map = new HashMap<String, Object>();
-                map.put("UM_USER_ID",userId);
-                map.put("UM_ATTR_NAME",propertyName);
-                map.put("UM_ATTR_VALUE",value);
-                map.put("UM_PROFILE_ID",profileName);
-                if (mongoStmt == null) {
-                    throw new UserStoreException("The mongo query statement for add user property sql is null");
-                }
+            if (mongoStmt.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
 
-                if(mongoStmt.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
-
-                    map.put("UM_TENANT_ID",tenantId);
-                        updateStringValuesToDatabase(dbConnection, mongoStmt,map);
-                }else{
-                        updateStringValuesToDatabase(dbConnection, mongoStmt, map);
-                }
+                map.put("UM_TENANT_ID", tenantId);
+                updateUserClaimValuesToDatabase(dbConnection,map,false);
+            } else {
+                updateUserClaimValuesToDatabase(dbConnection,map,false);
             }
         } catch (Exception e) {
-            String msg = "Error occurred while adding user property for user : " + userName + " & property name : " +
-                    propertyName + " & value : " + value;
+            String msg = "Error occurred while adding user property for user : " + map.get("UM_USER_ID");
             if (log.isDebugEnabled()) {
                 log.debug(msg, e);
             }
