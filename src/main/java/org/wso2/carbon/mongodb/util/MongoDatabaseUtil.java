@@ -160,11 +160,16 @@ public class MongoDatabaseUtil {
 			}
 			if(batchParamIndex != -1) {
                 for (int value : values) {
-                    prepStmt.setInt(listKey, value);
-                    if (updateTrue(keys)) {
-                        prepStmt.updateBatch();
-                    } else {
-                        prepStmt.addBatch();
+
+                    if(value > 0) {
+                        prepStmt.setInt(listKey, value);
+                        if (updateTrue(keys)) {
+                            prepStmt.updateBatch();
+                        } else {
+                            int Id = MongoDatabaseUtil.getIncrementedSequence(dbConnection, "UM_USER_ROLE");
+                            prepStmt.setInt("UM_ID", Id);
+                            prepStmt.addBatch();
+                        }
                     }
                 }
                 if(updateTrue(keys)){
@@ -713,7 +718,7 @@ public class MongoDatabaseUtil {
         }
         else{
 
-            collect.update(new BasicDBObject("seq",++seq),new BasicDBObject("$set",new BasicDBObject("name",collection)));
+            collect.update(new BasicDBObject("name",collection),new BasicDBObject("$set",new BasicDBObject("seq",++seq)));
         }
         return seq;
     }

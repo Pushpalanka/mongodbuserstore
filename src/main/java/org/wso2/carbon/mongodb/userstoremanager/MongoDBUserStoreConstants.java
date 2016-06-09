@@ -69,7 +69,7 @@ public class MongoDBUserStoreConstants {
 			setAdvancedProperty("SelectUserMONGO_QUERY", "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?'}", "");
 			setAdvancedProperty("GetRoleListMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_TENANT_ID' : '?','UM_ROLE_NAME' : '?','UM_SHARED_ROLE' : '0','projection': {'UM_ROLE_NAME' : '1','UM_TENANT_ID' : 1,'UM_SHARED_ROLE' : 1,'_id' : '0'}}", "");
 			setAdvancedProperty("GetSharedRoleListMONGO_QUERY","{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_SHARED_ROLE' : '1','projection' : {'UM_ROLE_NAME' : '1','UM_TENANT_ID' : '1','UM_SHARED_ROLE' : '1'}}", "");
-			setAdvancedProperty("UserFilterMONGO_QUERY", "{'collection' : 'UM_USER','$match' : {'UM_USER_NAME' : '?','UM_TENANT_ID' : '?'},'$project' : {'UM_USER_NAME' : 1,'_id' : 0},'$sort' : {'UM_USER_NAME' : '1'}}", "");
+			setAdvancedProperty("UserFilterMONGO_QUERY", "{'collection' : 'UM_USER','$match' : {'UM_USER_NAME' : '?','UM_TENANT_ID' : '?'},'$project' : {'UM_USER_NAME' : 1,'_id' : 0},'$sort' : {'UM_USER_NAME' : 1}}", "");
 			setAdvancedProperty("UserRoleMONGO_QUERY", "{'collection' : 'UM_ROLE',$match : {'UM_TENANT_ID' : '?','userRole.UM_TENANT_ID' : '?','users.UM_TENANT_ID' : '?','users.UM_ID' : '?'},'$project' : {'UM_ROLE_NAME' : 1,'_id' : 0},'$lookup' : {'from' : 'UM_USER_ROLE','localField' : 'UM_ID','foreignField' : 'UM_ROLE_ID','as' : 'userRole'},'$unwind' : {'path' : '$userRole','preserveNullAndEmptyArrays' : false},'$lookup_sub' : {'from' : 'UM_USER','localField' : 'userRole.UM_USER_ID','foreignField' : 'UM_ID','as' : 'users','dependency' : 'userRole'},'$unwind_sub' : {'path' : '$users','preserveNullAndEmptyArrays' : false}}", "");
 			setAdvancedProperty("UserSharedRoleMONGO_QUERY","{'collection' : 'UM_SHARED_USER_ROLE','$match' : {'user.UM_USER_NAME' : '?','UM_USER_TENANT_ID' : '$role.UM_TENANT_ID','UM_USER_TENANT_ID' : '?'},'$unwind' : '$role','$lookup' : [{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'user'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'role'}]}","");
 
@@ -92,7 +92,7 @@ public class MongoDBUserStoreConstants {
 			setAdvancedProperty("AddRoleMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','UM_ID' : '?'}","");
 			setAdvancedProperty("AddSharedRoleMONGO_QUERY", "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'$set' : {'UM_SHARED_ROLE' : '?'}}}","");
 
-			setAdvancedProperty("AddRoleToUserMONGO_QUERY", "{'collection' : 'UM_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_TENANT_ID' : '?'}","");
+			setAdvancedProperty("AddRoleToUserMONGO_QUERY", "{'collection' : 'UM_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_TENANT_ID' : '?','UM_ID' : '?'}","");
 			setAdvancedProperty("AddSharedRoleToUserMONGO_QUERY", "{'collection' : 'UM_SHARED_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_USER_TENANT_ID' : '?','UM_ROLE_TENANT_ID' : '?'}","");
 
 			setAdvancedProperty("RemoveUserFromSharedRoleMONGO_QUERY", "{'collection' : 'UM_SHARED_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_USER_TENANT_ID' : '?','UM_ROLE_TENANT_ID' : '?'}","");

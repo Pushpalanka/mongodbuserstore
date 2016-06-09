@@ -1600,7 +1600,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
 
                 int id = (int) Double.parseDouble(cursor.next().get("UM_ID").toString());
                 if(id > 0) {
-                    userID[index] = (int) Double.parseDouble(cursor.next().get("UM_ID").toString());
+                    userID[index] = id;
                 }
             }
             index++;
@@ -2259,6 +2259,8 @@ public class MongoDBUserStoreManager implements UserStoreManager{
             map.put("UM_USER_NAME",userName);
             map.put("UM_REQUIRE_CHANGE",requirePasswordChange);
             map.put("UM_CHANGED_TIME",new Date());
+            int Id = MongoDatabaseUtil.getIncrementedSequence(dbConnection,"UM_USER");
+            map.put("UM_ID",Id);
             // do all 4 possibilities
             if (sqlStmt1.contains(UserCoreConstants.UM_TENANT_COLUMN) && (saltValue == null)) {
                 map.put("UM_SALT_VALUE","");
@@ -2378,7 +2380,6 @@ public class MongoDBUserStoreManager implements UserStoreManager{
         JSONObject jsonKeys = new JSONObject(query);
         List<String> keys = MongoDatabaseUtil.getKeys(jsonKeys);
         try{
-            int id = MongoDatabaseUtil.getIncrementedSequence(connection,"UM_USER");
             MongoPreparedStatement prepStmt = new MongoPreparedStatementImpl(connection,query);
             Iterator<String> searchKeys = keys.iterator();
             while(searchKeys.hasNext()) {
@@ -2406,7 +2407,6 @@ public class MongoDBUserStoreManager implements UserStoreManager{
                 prepStmt.update();
             }
             else{
-                prepStmt.setInt("UM_ID",id);
                 prepStmt.insert();
             }
 
@@ -5228,7 +5228,7 @@ public class MongoDBUserStoreManager implements UserStoreManager{
      * {@inheritDoc}
      */
     public final String[] getRoleNames() throws UserStoreException {
-        return getRoleNames(false);
+        return getRoleNames(true);
     }
 
     /**
