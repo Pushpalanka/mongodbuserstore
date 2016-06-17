@@ -18,11 +18,22 @@ public class MongoDBUserStoreConstants {
 
 	    }
 
-	    private static void setMandatoryProperty(String name, String value, String description) {
+	    /*private static void setMandatoryProperty(String name, String value, String description) {
 	        Property property = new Property(name, value, description, null);
 	        CUSTOM_UM_MANDATORY_PROPERTIES.add(property);
 
-	    }
+	    }*/
+
+        private static void setMandatoryProperty(String name, String displayName, String value,
+                                                 String description, boolean encrypt) {
+            String propertyDescription = displayName + "#" + description;
+            if (encrypt) {
+                propertyDescription += "#encrypt";
+            }
+            Property property = new Property(name, value, propertyDescription, null);
+            CUSTOM_UM_MANDATORY_PROPERTIES.add(property);
+
+        }
 
 	    private static void setAdvancedProperty(String name, String value, String description) {
 	        Property property = new Property(name, value,description, null);
@@ -31,10 +42,10 @@ public class MongoDBUserStoreConstants {
 	    }
 
 	    static {
-	        setMandatoryProperty(MongoDBRealmConstants.URL, "127.0.0.1", "location of webservice");
-	        setMandatoryProperty(MongoDBRealmConstants.USER_NAME, "admin", "User Name to connect to mongodb (if provided)");
-	        setMandatoryProperty(MongoDBRealmConstants.PASSWORD, "admin123", "Password to connect to mongodb server (if provided any)");
-			setMandatoryProperty(MongoDBRealmConstants.PORT,"27017","Port of MongoDB server running");
+	        setMandatoryProperty(MongoDBRealmConstants.URL, "Connection URL","127.0.0.1", "URL of the user store database",false);
+	        setMandatoryProperty(MongoDBRealmConstants.USER_NAME,"Connection Name","admin", "Username for the database",false);
+	        setMandatoryProperty(MongoDBRealmConstants.PASSWORD,"Connection Password","admin123", "Password for the database",true);
+			setMandatoryProperty(MongoDBRealmConstants.PORT,"Connection port","27017","Port of MongoDB server running",false);
 
             setProperty("PasswordDigest", "SHA-256", UserStoreConfigConstants.passwordHashMethodDescription);
             setProperty(UserStoreConfigConstants.readGroups, "true", UserStoreConfigConstants.readLDAPGroupsDescription);

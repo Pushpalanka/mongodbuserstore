@@ -388,7 +388,8 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
                 }
 
                 boolean requireChange = Boolean.parseBoolean(object.get("UM_REQUIRE_CHANGE").toString());
-                Date timestamp =(Date) object.get("UM_CHANGED_TIME");
+                BSONTimestamp time = (BSONTimestamp) object.get("UM_CHANGED_TIME");
+                Date timestamp = new Date(time.getTime());
                 GregorianCalendar gc = new GregorianCalendar();
                 gc.add(GregorianCalendar.HOUR, -24);
                 Date date = gc.getTime();
