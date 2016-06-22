@@ -1,0 +1,742 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="https://localhost:9443/carbon" />
+<title>testcase1</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">testcase1</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/carbon/admin/login.jsp</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=txtUserName</td>
+	<td>admin</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=txtPassword</td>
+	<td>admin</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=List</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Users</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Add</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Add New Role</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>id=domain</td>
+	<td>label=MONGOSTORE</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=roleName</td>
+	<td>stafftestcase</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=ygtvcheck3</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=ygtvt3</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=#ygtvcheck3 &gt; div.ygtvspacer</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.dataForm.roleUsers[6]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.dataForm.roleUsers[7]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.dataForm.roleUsers[8]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=td.buttonRow &gt; input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'View Users')])[14]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@value='Finish']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'Assign Users')])[14]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.selectedUsers[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.selectedUsers[5]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=td.buttonRow &gt; input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@value='Finish']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'View Users')])[14]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@value='Finish']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Add</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Add New User</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>id=domain</td>
+	<td>label=mongostore</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=username</td>
+	<td>testcaseuser</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=password</td>
+	<td>test123</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=retype</td>
+	<td>test123</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.userRoles[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.userRoles[3]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.userRoles[4]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=td.buttonRow &gt; input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'2')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'1')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'2')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'View Roles')])[4]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@value='Finish']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'2')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'Assign Roles')])[4]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.selectedRoles[4]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.selectedRoles[5]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.selectedRoles[5]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.selectedRoles[4]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.selectedRoles[8]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.selectedRoles[7]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@value='Finish']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'2')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'View Roles')])[4]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@value='Finish']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'2')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'User<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Profile')])[4]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=default</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=http://wso2.org/claims/givenname</td>
+	<td>Asantha</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=http://wso2.org/claims/lastname</td>
+	<td>Thilina</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=http://wso2.org/claims/organization</td>
+	<td>wso2</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=http://wso2.org/claims/emailaddress</td>
+	<td>asanthathilina@gmail.com</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=http://wso2.org/claims/username</td>
+	<td>testcaseuser</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>name=updateprofile</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=default</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=http://wso2.org/claims/streetaddress</td>
+	<td>dehiwala</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=http://wso2.org/claims/country</td>
+	<td>srilanka</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>name=updateprofile</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=default</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=List</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Users</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'2')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'Change Password')])[4]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=newPassword</td>
+	<td>test123</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=checkPassword</td>
+	<td>test123</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Sign-out</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=txtUserName</td>
+	<td>testcaseuser</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=txtPassword</td>
+	<td>test123</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Sign-out</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=txtUserName</td>
+	<td>admin</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=txtPassword</td>
+	<td>admin</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'List')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'Edit')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=h2.trigger</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=propertyValue_20</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Add</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Add New User</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Add</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Add New Role</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>id=domain</td>
+	<td>label=MONGOSTORE</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=roleName</td>
+	<td>teststaff</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=#ygtvcheck3 &gt; div.ygtvspacer</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.dataForm.roleUsers[4]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.dataForm.roleUsers[5]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=td.buttonRow &gt; input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'2')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=View Users</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@value='Finish']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'2')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Assign Users</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.selectedUsers[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.selectedUsers[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>document.edit_users.selectedUsers[3]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=td.buttonRow &gt; input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@value='Finish']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'2')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=View Users</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@value='Finish']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'2')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Permissions</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button[type=&quot;button&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Add</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Add New User</td>
+	<td></td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>id=domain</td>
+	<td>label=mongostore</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=username</td>
+	<td>testcase</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=password</td>
+	<td>test123</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=retype</td>
+	<td>test123</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'2')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'1')])[2]</td>
+	<td></td>
+</tr>
+
+</tbody></table>
+</body>
+</html>
