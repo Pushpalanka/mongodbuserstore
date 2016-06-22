@@ -38,7 +38,9 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
     private ArrayList<Map<String,Object>> multiMapUnwind = null;
     private static boolean dependencyTrue = false;
     private String distinctKey = "";
-	
+    private boolean isCaseSensitive = true;
+	private Map<String,Object> mapMatchCaseInSensitive = null;
+    private Map<String,Object> mapCaseQuery = null;
 	public MongoPreparedStatementImpl(DB db,String query){
 	
 		if(this.db == null){
@@ -61,6 +63,14 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		this.parameterCount = 0;
         dependencyTrue = false;
         this.distinctKey = "";
+        this.isCaseSensitive = true;
+        if(mapMatchCaseInSensitive == null){
+
+            this.mapMatchCaseInSensitive = new HashMap<String, Object>();
+        }
+        if(mapCaseQuery == null) {
+            this.mapCaseQuery = new HashMap<String, Object>();
+        }
 	}
 	
 	
@@ -89,6 +99,9 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         this.multiMapLookup = null;
         this.dependencyTrue = false;
         this.distinctKey = "";
+        this.isCaseSensitive = true;
+        this.mapMatchCaseInSensitive = null;
+        this.mapCaseQuery = null;
 	}
 
 
@@ -288,7 +301,13 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 			}
             if(mapMatch != null){
 
-                DBObject match = new BasicDBObject("$match", new BasicDBObject(mapMatch));
+                DBObject match = null;
+                if(this.isCaseSensitive) {
+                    match = new BasicDBObject("$match", new BasicDBObject(mapMatch));
+                }else{
+
+                    match = new BasicDBObject("$match",new BasicDBObject(mapMatch).append("UM_USER_NAME",new BasicDBObject(mapMatchCaseInSensitive)));
+                }
                 pipeline.add(match);
             }
             if(mapSort != null){
@@ -554,19 +573,42 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
                 }
                 setQueryObject(value,hasProjection);
             }catch(Exception e){
+
+				if(key.equals("$regex")){
+
+					key = "UM_USER_NAME";
+                    this.isCaseSensitive = false;
+				}
                 if(parameterValue.containsKey(key)){
                     val = parameterValue.get(key);
                 }
             }
             if(val != null && !val.equals("%")){
-                mapQuery.put(key,val);
+
+                if(!this.isCaseSensitive){
+
+                    if(key.equals("UM_USER_NAME")) {
+                        mapCaseQuery.put("$regex", val);
+                        mapCaseQuery.put("$options", "i");
+                    }
+                    else{
+                        mapQuery.put(key,val);
+                    }
+
+                }else {
+                    mapQuery.put(key, val);
+                }
             }
             if(hasProjection && !key.equals("projection")){
 
                 mapProjection.put(key, object.get(key));
             }
         }
-        this.query = new BasicDBObject(mapQuery);
+        if(this.isCaseSensitive) {
+            this.query = new BasicDBObject(mapQuery);
+        }else{
+            this.query = new BasicDBObject(mapQuery).append("UM_USER_NAME",mapCaseQuery);
+        }
         if(!mapProjection.isEmpty()){
             this.projection = new BasicDBObject(mapProjection);
         }
@@ -649,12 +691,34 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 
         String[] elementNames = JSONObject.getNames(stmt);
         for (String elementName : elementNames) {
-            String value = stmt.getString(elementName);
+
+            Object value = stmt.get(elementName);
             if (parameterValue.containsKey(elementName)) {
                 Object val = parameterValue.get(elementName);
-				if(!val.equals("%")) {
-					mapMatch.put(elementName, val);
-				}
+                if (!(value instanceof JSONObject) && !val.equals("%")) {
+                    mapMatch.put(elementName, val);
+                }else{
+
+                    if(value instanceof JSONObject) {
+                        JSONObject match = (JSONObject) value;
+                        String[] elements = match.getNames(match);
+                        for (String element : elements) {
+
+                            if (!val.equals("%")) {
+                                if (element.equals("$regex")) {
+                                    mapMatchCaseInSensitive.put(element, val);
+                                } else {
+                                    mapMatchCaseInSensitive.put(element, "i");
+                                }
+                                this.isCaseSensitive = false;
+                            }
+                        }
+                    }else{
+                        if(!val.equals("%")) {
+                            mapMatch.put(elementName, val);
+                        }
+                    }
+                }
             }
         }
     }
