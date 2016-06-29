@@ -83,10 +83,10 @@ public class MongoDBRealmConstants {
 	    public static final String ADD_ROLE_PERMISSION_MONGO_QUERY = "AddRolePermissionMONGO_QUERY";
 	    public static final String REMOVE_USER_FROM_ROLE_MONGO_QUERY = "{'collection' : 'UM_USER_ROLE','UM_USER_ID' : '?','UM_ROLE_ID' : '?','UM_TENANT_ID' : '?'}";
 	    public static final String REMOVE_ROLE_FROM_USER_MONGO_QUERY = "{'collection' : 'UM_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID': '?','UM_TENANT_ID' : '?'}";
-	    public static final String DELETE_ROLE_MONGO_QUERY = "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : '?','UM_TENANT_ID' : '?'}";
+	    public static final String DELETE_ROLE_MONGO_QUERY = "{'collection' : 'UM_ROLE','UM_ID' : '?','UM_TENANT_ID' : '?'}";
 	    public static final String ON_DELETE_ROLE_REMOVE_USER_ROLE_MONGO_QUERY = "{'collection' : 'UM_USER_ROLE','UM_ROLE_ID' : '?','UM_TENANT_ID' : '?'}" ;
 	    public static final String ON_DELETE_ROLE_DELETE_PERMISSION_MONGO_QUERY = "OnDeleteRoleRemovePermissionsMONGO_QUERY";
-	    public static final String DELETE_USER_MONGO_QUERY = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?'}";
+	    public static final String DELETE_USER_MONGO_QUERY = "{'collection' : 'UM_USER','UM_ID' : '?','UM_TENANT_ID' : '?'}";
 	    public static final String ON_DELETE_USER_REMOVE_USER_ROLE_MONGO_QUERY = "{'collection' : 'UM_USER_ROLE','UM_USER_ID' : '?','UM_TENANT_ID' : '?'}";
 	    public static final String ON_DELETE_USER_REMOVE_ATTRIBUTE_MONGO_QUERY = "{'collection' : 'UM_USER_ATTRIBUTE','UM_USER_ID' : '?',UM_TENANT_ID : '?'}";
 	    public static final String ON_DELETE_USER_DELETE_PERMISSION_MONGO_QUERY= "OnDeleteUserRemovePermissionsMONGO_QUERY";

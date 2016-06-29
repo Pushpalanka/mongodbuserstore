@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import com.mongodb.*;
 import org.apache.axiom.om.util.Base64;
 import org.apache.commons.logging.LogFactory;
+import org.bson.types.BSONTimestamp;
 import org.json.JSONObject;
 import org.wso2.carbon.CarbonConstants;
 import org.wso2.carbon.mongodb.query.*;
@@ -674,7 +675,7 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
     }
 
     private void deleteStringValuesFromDatabase(DB dbConnection, String mongoQuery,
-                                                Object... params) throws  UserStoreException{
+                                                Map<String,Object> params) throws  UserStoreException{
 
         MongoPreparedStatement prepStmt = null;
         boolean localConnection = false;
@@ -686,27 +687,22 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
                 dbConnection = loadUserStoreSpacificDataSoruce();
             }
             prepStmt = new MongoPreparedStatementImpl(dbConnection,mongoQuery);
-            if (params != null && params.length > 0) {
-
-                for (int i = 0; i < params.length; i++) {
-
-                    Object param = params[i];
-                    if (param == null) {
-
-                        throw new UserStoreException("Invalid data provided");
-                    }else if(param instanceof Integer){
-
-                        if(i==0){
-
-                            prepStmt.setInt("UM_ID",(Integer) param);
-                        }else{
-
-                            prepStmt.setInt("UM_TENANT_ID",(Integer) param);
-                        }
+            JSONObject jsonKeys = new JSONObject(mongoQuery);
+            List<String> keys = MongoDatabaseUtil.getKeys(jsonKeys);
+            Iterator<String> searchKeys = keys.iterator();
+            while(searchKeys.hasNext()){
+                String key = searchKeys.next();
+                if(!key.equals("collection")){
+                    if (params.get(key) == null) {
+                        prepStmt.setString(key, null);
+                    } else if (params.get(key) instanceof String) {
+                        prepStmt.setString(key, (String) params.get(key));
+                    } else if (params.get(key) instanceof Integer) {
+                        prepStmt.setInt(key, (Integer) params.get(key));
                     }
                 }
             }
-            WriteResult result = prepStmt.update();
+            WriteResult result = prepStmt.remove();
             if(!result.isUpdateOfExisting()){
 
                 if(log.isDebugEnabled()){
@@ -738,39 +734,29 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
 	protected void doDeleteUser(String userName) throws UserStoreException {
 
         int user_id=0;
-        if(isCaseSensitiveUsername()) {
-
-            userName = userName.toLowerCase();
-        }
         DB dbConnection = loadUserStoreSpacificDataSoruce();
         try {
             user_id = getUserId(userName);
             if (user_id == 0) {
 
-                log.warn("No registered usser found for given user name");
+                log.warn("No registered user found for given user name");
             } else {
 
                 String mongoQuery = null;
                 String mongoQuery2 = null;
                 String mongoQuery3 = null;
-                if(isCaseSensitiveUsername()) {
-
-                    mongoQuery = realmConfig.getUserStoreProperty(MongoDBRealmConstants.ON_DELETE_USER_REMOVE_USER_ROLE);
-                    mongoQuery2 = realmConfig.getUserStoreProperty(MongoDBRealmConstants.ON_DELETE_USER_REMOVE_ATTRIBUTE);
-                    mongoQuery3 = realmConfig.getUserStoreProperty(MongoDBRealmConstants.DELETE_USER);
-                }else {
-
-                    mongoQuery = realmConfig.getUserStoreProperty(MongoDBCaseInsensitiveConstants.ON_DELETE_USER_REMOVE_USER_ROLE_CASE_INSENSITIVE);
-                    mongoQuery2 = realmConfig.getUserStoreProperty(MongoDBCaseInsensitiveConstants.ON_DELETE_USER_REMOVE_ATTRIBUTE_CASE_INSENSITIVE);
-                    mongoQuery3 = realmConfig.getUserStoreProperty(MongoDBCaseInsensitiveConstants.DELETE_USER_CASE_INSENSITIVE);
-                }
+                Map<String,Object> map = new HashMap<String, Object>();
+                mongoQuery = realmConfig.getUserStoreProperty(MongoDBRealmConstants.ON_DELETE_USER_REMOVE_USER_ROLE);
+                mongoQuery2 = realmConfig.getUserStoreProperty(MongoDBRealmConstants.ON_DELETE_USER_REMOVE_ATTRIBUTE);
+                mongoQuery3 = realmConfig.getUserStoreProperty(MongoDBRealmConstants.DELETE_USER);
                 if (mongoQuery.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
-
-                    this.deleteStringValuesFromDatabase(dbConnection, mongoQuery, userName, tenantId,
-                            tenantId);
-                    this.deleteStringValuesFromDatabase(dbConnection, mongoQuery2, userName, tenantId,
-                            tenantId);
-                    this.deleteStringValuesFromDatabase(dbConnection, mongoQuery3, userName, tenantId);
+                    map.put("UM_USER_ID",user_id);
+                    map.put("UM_TENANT_ID",tenantId);
+                    map.put("UM_USER_NAME",userName);
+                    map.put("UM_ID",user_id);
+                    this.deleteStringValuesFromDatabase(dbConnection, mongoQuery,map);
+                    this.deleteStringValuesFromDatabase(dbConnection, mongoQuery2,map);
+                    this.deleteStringValuesFromDatabase(dbConnection, mongoQuery3,map);
                 }
             }
         } catch (Exception e) {
@@ -1725,15 +1711,19 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
         try{
 
             dbConnection = loadUserStoreSpacificDataSoruce();
-            map.put("UM_ROLE_NAME",roleName);
+            String roles[] = {roleName};
+            int roleIds[] = getRolesIDS(dbConnection,roles);
+            map.put("UM_ROLE_ID",roleIds[0]);
             if(mongoQuery1.contains(UserCoreConstants.UM_TENANT_COLUMN)){
 
                 map.put("UM_TENANT_ID",tenantId);
-                this.updateStringValuesToDatabase(dbConnection, mongoQuery1, map);
-                this.updateStringValuesToDatabase(dbConnection, mongoQuery2, map);
+                map.put("UM_ID",roleIds[0]);
+                this.deleteStringValuesFromDatabase(dbConnection, mongoQuery1, map);
+                this.deleteStringValuesFromDatabase(dbConnection, mongoQuery2, map);
             }else {
-                this.updateStringValuesToDatabase(dbConnection, mongoQuery1, map);
-                this.updateStringValuesToDatabase(dbConnection, mongoQuery2, map);
+                map.put("UM_ID",roleIds[0]);
+                this.deleteStringValuesFromDatabase(dbConnection, mongoQuery1, map);
+                this.deleteStringValuesFromDatabase(dbConnection, mongoQuery2, map);
             }
         }catch(Exception e){
 
