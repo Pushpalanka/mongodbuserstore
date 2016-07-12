@@ -495,7 +495,7 @@ public class MongoDatabaseUtil {
                     values = lst.toArray(new String[lst.size()]);
                 }
             }else{
-                MongoPreparedStatementImpl.multipleLookUp = multipleLookUp;
+                prepStmt.multiLookUp(multipleLookUp);
                 AggregationOutput result = prepStmt.aggregate();
                 Iterable<DBObject> ite = result.results();
                 List<String> lst = new ArrayList<String>();

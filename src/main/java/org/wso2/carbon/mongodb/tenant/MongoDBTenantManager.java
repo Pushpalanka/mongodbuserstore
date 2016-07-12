@@ -44,12 +44,12 @@ public class MongoDBTenantManager implements TenantManager {
      *
      * Key - tenant domain, value - tenantId
      */
-    private Map tenantDomainIdMap = new ConcurrentHashMap<String, Integer>();
+    //private Map tenantDomainIdMap = new ConcurrentHashMap<String, Integer>();
 
     /**
      * This is the reverse of the tenantDomainIdMap. Key - tenantId, value - tenant domain
      */
-    private Map tenantIdDomainMap = new ConcurrentHashMap<Integer, String>();
+    //private Map tenantIdDomainMap = new ConcurrentHashMap<Integer, String>();
 
     protected TenantCache tenantCacheManager = TenantCache.getInstance();
 

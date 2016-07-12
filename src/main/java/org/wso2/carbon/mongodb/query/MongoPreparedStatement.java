@@ -72,5 +72,7 @@ public interface MongoPreparedStatement {
 
     void updateBatch() throws MongoQueryException;
 
-	public List distinct() throws MongoQueryException;
+	List distinct() throws MongoQueryException;
+
+	void multiLookUp(boolean stat);
 }

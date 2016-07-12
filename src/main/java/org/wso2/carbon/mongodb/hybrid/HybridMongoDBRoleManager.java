@@ -47,11 +47,10 @@ public class HybridMongoDBRoleManager {
     public HybridMongoDBRoleManager(DB dataSource, int tenantId, RealmConfiguration realmConfig,
                                     UserRealm realm) throws UserStoreException {
         super();
-        this.dataSource = dataSource;
+        //this.dataSource = dataSource;
         this.tenantId = tenantId;
         this.realmConfig = realmConfig;
-        this.isCascadeDeleteEnabled = realmConfig.getRealmProperty(UserCoreDBConstants.CASCADE_DELETE_ENABLED);
-        this.userRealm = realm;
+        //this.userRealm = realm;
         //persist internal domain
         HybridMongoDBRoleManager.persistDomain(UserCoreConstants.INTERNAL_DOMAIN, tenantId, dataSource,realmConfig);
         HybridMongoDBRoleManager.persistDomain(APPLICATION_DOMAIN, tenantId, dataSource,realmConfig);

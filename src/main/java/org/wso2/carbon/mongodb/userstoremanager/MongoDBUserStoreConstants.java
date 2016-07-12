@@ -1,6 +1,8 @@
 package org.wso2.carbon.mongodb.userstoremanager;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.wso2.carbon.mongodb.userstoremanager.caseinsensitive.MongoDBCaseInsensitiveConstants;
 import org.wso2.carbon.user.api.Property;
@@ -8,9 +10,9 @@ import org.wso2.carbon.user.core.UserStoreConfigConstants;
 
 public class MongoDBUserStoreConstants {
 
-	 public static final ArrayList<Property> CUSTOM_UM_MANDATORY_PROPERTIES = new ArrayList<Property>();
-	    public static final ArrayList<Property> CUSTOM_UM_OPTIONAL_PROPERTIES = new ArrayList<Property>();
-	    public static final ArrayList<Property> CUSTOM_UM_ADVANCED_PROPERTIES = new ArrayList<Property>();
+	 protected static final ArrayList<Property> CUSTOM_UM_MANDATORY_PROPERTIES = new ArrayList<Property>();
+	    protected static final ArrayList<Property> CUSTOM_UM_OPTIONAL_PROPERTIES = new ArrayList<Property>();
+	    protected static final ArrayList<Property> CUSTOM_UM_ADVANCED_PROPERTIES = new ArrayList<Property>();
 
 
 	    private static void setProperty(String name,String value, String description) {

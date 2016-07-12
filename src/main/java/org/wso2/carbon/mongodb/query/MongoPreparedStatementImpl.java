@@ -29,11 +29,11 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 	private Map<String,Object> mapLookUp = null;
 	private Map<String,Object> mapGroup = null;
 	private Map<String,Object> mapUnwind = null;
-    private boolean multiInsertTrue = false;
-    private List<DBObject> queryList = null;
-    private List<DBObject> projectionList = null;
+    //private boolean multiInsertTrue = false;
+   // private List<DBObject> queryList = null;
+   // private List<DBObject> projectionList = null;
     private BulkWriteOperation bulkWrite = null;
-	public static boolean multipleLookUp = false;
+	private  boolean multipleLookUp = false;
     private ArrayList<Map<String,Object>> multiMapLookup = null;
     private ArrayList<Map<String,Object>> multiMapUnwind = null;
     private static boolean dependencyTrue = false;
@@ -61,7 +61,6 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		parameterValue = new HashMap<String, Object>();
 		this.projection = null;
 		this.parameterCount = 0;
-        dependencyTrue = false;
         this.distinctKey = "";
         this.isCaseSensitive = true;
         if(mapMatchCaseInSensitive == null){
@@ -72,10 +71,9 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
             this.mapCaseQuery = new HashMap<String, Object>();
         }
 	}
-	
-	
 
-	public void close() {
+
+    public void close() {
 		
 		this.db = null;
 		this.collection = null;
@@ -94,10 +92,8 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		this.mapGroup = null;
 		this.mapUnwind = null;
         this.bulkWrite =null;
-		this.multipleLookUp = false;
         this.multiMapUnwind = null;
         this.multiMapLookup = null;
-        this.dependencyTrue = false;
         this.distinctKey = "";
         this.isCaseSensitive = true;
         this.mapMatchCaseInSensitive = null;
@@ -240,6 +236,11 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         }
     }
 
+    public void multiLookUp(boolean status) {
+
+        multipleLookUp = status;
+    }
+
     public AggregationOutput aggregate() throws UserStoreException{
 
         JSONObject defaultObject = new JSONObject(defaultQuery);
@@ -248,7 +249,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
             List<DBObject> pipeline = new ArrayList<DBObject>();
             if(mapLookUp != null) {
 
-                if(!multipleLookUp) {
+                if(!isMultipleLookUp()) {
 
                     DBObject lookup = new BasicDBObject("$lookup", new BasicDBObject(mapLookUp));
                     pipeline.add(lookup);
@@ -294,7 +295,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
             }
 			if(mapUnwind != null){
 
-				if(!multipleLookUp) {
+				if(!isMultipleLookUp()) {
 					DBObject unwind = new BasicDBObject("$unwind", new BasicDBObject(mapUnwind));
 					pipeline.add(unwind);
 				}
@@ -656,7 +657,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
                 this.collection = db.getCollection(stmt.get(key).toString());
             }else if(key.equals("$lookup") || key.contains("$lookup_sub")){
 
-                if(!multipleLookUp) {
+                if(!isMultipleLookUp()) {
 
                     mapLookUp = toMap(value);
                 }else{
@@ -674,7 +675,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 
                 mapGroup = toMap(value);
             }else if(key.equals("$unwind") || key.equals("$unwind_sub")){
-                if(!multipleLookUp) {
+                if(!isMultipleLookUp()) {
                     mapUnwind = toMap(value);
                 }else{
                     mapUnwind = toMap(value);
@@ -772,4 +773,9 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         }
         return list;
     }
+
+    public boolean isMultipleLookUp() {
+        return multipleLookUp;
+    }
+
 }

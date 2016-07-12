@@ -204,7 +204,7 @@ public final class MongoUserCoreUtil {
      * @return
      */
     public static String getDummyPassword() {
-        Random rand = new Random();
+        SecureRandom rand = new SecureRandom();
         return DUMMY_VALUE + rand.nextInt(999999);
     }
 
@@ -284,7 +284,7 @@ public final class MongoUserCoreUtil {
             for (int i = 0; i < length; i++) {
                 password[i] = passwordChars.charAt(prng.nextInt(passwordFeed.length()));
             }
-            randomNum = new Integer(prng.nextInt()).toString();
+            randomNum = Integer.toString(prng.nextInt());
 
         } catch (NoSuchAlgorithmException e) {
             String errorMessage = "Error while creating the random password for user : " + username;
@@ -366,9 +366,11 @@ public final class MongoUserCoreUtil {
         if (base.indexOf(key) >= 0) {
             String[] arr = base.split(key);
             base = "";
+            StringBuffer buf = new StringBuffer();
             for (String s : arr) {
-                base += s;
+                buf.append(s);
             }
+            base = buf.toString();
             if (base.startsWith(",")) {
                 base = base.substring(1);
             }

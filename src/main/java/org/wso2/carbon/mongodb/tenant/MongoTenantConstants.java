@@ -17,5 +17,5 @@ public class MongoTenantConstants {
     public static final String IS_TENANT_ACTIVE_MONGOQUERY = "{'collection' : 'UM_TENANT','UM_ID' : '?','projection' : '{'UM_ACTIVE' : '1'}'}";
     public static final String DELETE_TENANT_MONGOQUERY = "{'collection' : 'UM_TENANT','UM_ID' : '?'}";
     public static final String GET_MATCHING_TENANT_IDS_MONGOQUERY = "{'collection' : 'UM_TENANT','UM_DOMAIN_NAME' : '{'$regex' : '?'}','projection' : '{'UM_ID' : '1','UM_DOMAIN_NAME' : '1','UM_EMAIL' : '1','UM_CREATED_DATE' : '1','UM_ACTIVE' : '1'}'}";
-    public static String DELETE_TENANT_STATUS_MONGOQUERY = "{'collection' : 'UM_TENANT','UM_ID' : '?','UM_ACTIVE' : '?'}";
+    public static final String DELETE_TENANT_STATUS_MONGOQUERY = "{'collection' : 'UM_TENANT','UM_ID' : '?','UM_ACTIVE' : '?'}";
 }
