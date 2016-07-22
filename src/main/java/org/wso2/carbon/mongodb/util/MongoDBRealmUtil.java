@@ -4,6 +4,9 @@ import java.util.Map;
 
 import org.wso2.carbon.mongodb.userstoremanager.MongoDBRealmConstants;
 
+/**
+ * MongoDBRealmUtil load all the default user store properties for configurations
+ */
 public class MongoDBRealmUtil {
 
 	public static Map<String, String> getMONGO_QUERY(Map<String, String> properties) {

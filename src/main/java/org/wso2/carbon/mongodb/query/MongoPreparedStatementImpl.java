@@ -11,6 +11,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.carbon.user.api.UserStoreException;
 
+/**
+ * MongoDB Prepared Statement interface implementation class
+ */
 public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 
 	private DB db=null;
@@ -36,11 +39,17 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 	private  boolean multipleLookUp = false;
     private ArrayList<Map<String,Object>> multiMapLookup = null;
     private ArrayList<Map<String,Object>> multiMapUnwind = null;
-    private static boolean dependencyTrue = false;
+    //private static boolean dependencyTrue = false;
     private String distinctKey = "";
     private boolean isCaseSensitive = true;
 	private Map<String,Object> mapMatchCaseInSensitive = null;
     private Map<String,Object> mapCaseQuery = null;
+
+    /**
+     * Constructor with two arguments
+     * @param db DB connection to mongodb
+     * @param query to execute
+     */
 	public MongoPreparedStatementImpl(DB db,String query){
 	
 		if(this.db == null){
@@ -247,14 +256,16 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         getAggregrationObjects(defaultObject);
         try{
             List<DBObject> pipeline = new ArrayList<DBObject>();
+            //add lookup attribute to pipeline
             if(mapLookUp != null) {
 
-                if(!isMultipleLookUp()) {
+                if(isMultipleLookUp()) {
 
                     DBObject lookup = new BasicDBObject("$lookup", new BasicDBObject(mapLookUp));
                     pipeline.add(lookup);
                 }else{
                     int track = 0;
+                    //add the json query object to aggregration pipeline in order manner
                     while(track < multiMapLookup.size()) {
                         for (Map<String, Object> map : multiMapLookup) {
                             if (map.containsKey("dependency")) {
@@ -293,16 +304,18 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
                     }
                 }
             }
+            //add unwind attribute to pipeline
 			if(mapUnwind != null){
 
-				if(!isMultipleLookUp()) {
+				if(isMultipleLookUp()) {
 					DBObject unwind = new BasicDBObject("$unwind", new BasicDBObject(mapUnwind));
 					pipeline.add(unwind);
 				}
 			}
+            //add match attribute to pipeline
             if(mapMatch != null){
 
-                DBObject match = null;
+                DBObject match;
                 if(this.isCaseSensitive) {
                     match = new BasicDBObject("$match", new BasicDBObject(mapMatch));
                 }else{
@@ -311,16 +324,19 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
                 }
                 pipeline.add(match);
             }
+            //add sort attribute to pipeline
             if(mapSort != null){
 
                 DBObject sort = new BasicDBObject("$sort",new BasicDBObject(mapSort));
                 pipeline.add(sort);
             }
+            //add group attribute to pipeline
             if(mapGroup != null){
 
                 DBObject group = new BasicDBObject("$group",new BasicDBObject(mapGroup));
                 pipeline.add(group);
             }
+            //add project attribute to pipeline
             if(mapProject != null) {
 
                 DBObject project = new BasicDBObject("$project", new BasicDBObject(mapProject));
@@ -476,13 +492,25 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 
 	public BulkWriteResult insertBulk() throws MongoQueryException {
 
-        return this.bulkWrite.execute();
+		try {
+
+			return this.bulkWrite.execute();
+
+		}catch (Exception e){
+
+			throw new MongoQueryException("Query Exception:"+e.getLocalizedMessage());
+		}
 	}
 
 	public BulkWriteResult updateBulk() throws MongoQueryException {
 
-        BulkWriteResult result = this.bulkWrite.execute();
-        return result;
+        try {
+
+            return this.bulkWrite.execute();
+        }catch (Exception e){
+
+            throw new MongoQueryException("Query Exception:"+e.getLocalizedMessage());
+        }
     }
 
     public void addBatch() throws MongoQueryException{
@@ -518,8 +546,14 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 
     }
 
+    /**
+     * check whether the provided arguments are equal to the parameters in json query
+     * @param query type JSONObject
+     * @return boolean status whether the argument correct or not
+     */
 	private boolean matchArguments(JSONObject query){
-		
+
+        //iterate over json query and match the query parameters with given values
 		Iterator<String> keys = query.keys();
 		while(keys.hasNext()){
 			String key = keys.next();
@@ -535,6 +569,12 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 		return parameterValue.size() == this.parameterCount;
 	}
 
+
+    /**
+     *  String JSON formatted query convert to DBObject
+     *  @param query to execute
+     *  @return boolean status
+     */
 	private boolean convertToDBObject(String query){
 		
 		JSONObject queryObject = new JSONObject(query);
@@ -542,10 +582,12 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 			String collection = queryObject.getString("collection");
 			this.collection = this.db.getCollection(collection);
 			queryObject.remove("collection");
+            //check whether the query has distinct key word
             if(queryObject.has("distinct")){
 
                 this.distinctKey = queryObject.getString("distinct");
             }
+            //if query has $set attribute then query will be update query
             if(query.contains("$set")){
 
                 getUpdateObject(queryObject);
@@ -559,11 +601,17 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 			return false;
 		}
 	}
-	
+
+    /**
+     *  set passed values to query parameters
+     *  @param object to execute
+     *  @param status boolean status
+     */
 	private void setQueryObject(JSONObject object,boolean status){
 
         boolean hasProjection = status;
         Iterator<String> keys = object.keys();
+        //set query parameter values with given values
         while(keys.hasNext()){
             String key = keys.next();
             Object val=null;
@@ -575,11 +623,13 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
                 setQueryObject(value,hasProjection);
             }catch(Exception e){
 
+                //if a case insensitive then check for $regex attribute
 				if(key.equals("$regex")){
 
 					key = "UM_USER_NAME";
                     this.isCaseSensitive = false;
 				}
+                //replace query parameter with respective value
                 if(parameterValue.containsKey(key)){
                     val = parameterValue.get(key);
                 }
@@ -615,12 +665,16 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         }
 	}
 
+    /**
+     *  get the value setted updated object
+     *  @param object to update
+     */
     private void getUpdateObject(JSONObject object){
 
         Iterator<String> keys = object.keys();
         while(keys.hasNext()) {
             String key = keys.next();
-            Object val = null;
+            Object val;
             if(key.equals("projection")){
 
                 JSONObject setObject = object.getJSONObject(key);
@@ -636,6 +690,10 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         this.query = new BasicDBObject(mapQuery);
     }
 
+    /**
+     *  Convert JSON Query to Aggregration Pipeline Object
+     *  @param stmt JSONObject
+     */
     private void getAggregrationObjects(JSONObject stmt){
 
         Iterator<String> keys = stmt.keys();
@@ -657,7 +715,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
                 this.collection = db.getCollection(stmt.get(key).toString());
             }else if(key.equals("$lookup") || key.contains("$lookup_sub")){
 
-                if(!isMultipleLookUp()) {
+                if(isMultipleLookUp()) {
 
                     mapLookUp = toMap(value);
                 }else{
@@ -675,7 +733,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 
                 mapGroup = toMap(value);
             }else if(key.equals("$unwind") || key.equals("$unwind_sub")){
-                if(!isMultipleLookUp()) {
+                if(isMultipleLookUp()) {
                     mapUnwind = toMap(value);
                 }else{
                     mapUnwind = toMap(value);
@@ -688,7 +746,11 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         }
     }
 
-    public void setMatchObject(JSONObject stmt){
+    /**
+     *  set object parameter with passed values
+     *  @param stmt to set values
+     */
+    private void setMatchObject(JSONObject stmt){
 
         String[] elementNames = JSONObject.getNames(stmt);
         for (String elementName : elementNames) {
@@ -702,7 +764,7 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
 
                     if(value instanceof JSONObject) {
                         JSONObject match = (JSONObject) value;
-                        String[] elements = match.getNames(match);
+                        String[] elements = JSONObject.getNames(match);
                         for (String element : elements) {
 
                             if (!val.equals("%")) {
@@ -724,11 +786,15 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         }
     }
 
-    public void setUpdateObject(JSONObject stmt){
+    /**
+     *  JSON query will update with  user values
+     *  @param stmt to update
+     */
+    private void setUpdateObject(JSONObject stmt){
 
         String[] elementNames = JSONObject.getNames(stmt);
         for (String elementName : elementNames) {
-            String value = stmt.getString(elementName);
+            //String value = stmt.getString(elementName);
             if (parameterValue.containsKey(elementName)) {
                 Object val = parameterValue.get(elementName);
                 mapProjection.put(elementName, val);
@@ -738,7 +804,13 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
             this.projection = new BasicDBObject(mapProjection);
         }
     }
-    public static Map<String, Object> toMap(JSONObject object) throws JSONException {
+
+    /**
+     *  Convert JSON Object to Map Object
+     *  @param object to convert
+     *  @return Map object
+     */
+    private static Map<String, Object> toMap(JSONObject object) throws JSONException {
         Map<String, Object> map = new HashMap<String, Object>();
 
         Iterator<String> keysItr = object.keys();
@@ -758,7 +830,12 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         return map;
     }
 
-    public static List<Object> toList(JSONArray array) throws JSONException {
+    /**
+     *  Convert JSON Array to List Object
+     *  @param array to convert to List
+     *  @return List object
+     */
+    private static List<Object> toList(JSONArray array) throws JSONException {
         List<Object> list = new ArrayList<Object>();
         for(int i = 0; i < array.length(); i++) {
             Object value = array.get(i);
@@ -774,8 +851,12 @@ public class MongoPreparedStatementImpl implements MongoPreparedStatement{
         return list;
     }
 
-    public boolean isMultipleLookUp() {
-        return multipleLookUp;
+    /**
+     *  Check for multiple look up for aggregration pipeline
+     *  @return boolean status
+     */
+    private boolean isMultipleLookUp() {
+        return !multipleLookUp;
     }
 
 }

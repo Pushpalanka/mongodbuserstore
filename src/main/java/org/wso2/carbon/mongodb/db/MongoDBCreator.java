@@ -15,12 +15,12 @@ public class MongoDBCreator {
         this.dataSource = datasource;
     }
 
-    public boolean isDatabaseStructureCreated(String dbCheckSql) {
+    /*public boolean isDatabaseStructureCreated() {
 
-        JSONObject object = new JSONObject(dbCheckSql);
+        JSONObject object = new JSONObject(MongoDBDefaultRealmService.DB_CHECK_SQL);
         String collection = object.get("UM_USER").toString();
         return (dataSource.collectionExists(collection));
-    }
+    }*/
 
     public void createRegistryDatabase() {
 

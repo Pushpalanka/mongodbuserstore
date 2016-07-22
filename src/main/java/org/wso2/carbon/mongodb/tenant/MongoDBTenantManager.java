@@ -6,7 +6,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bson.types.BSONTimestamp;
 import org.bson.types.Binary;
-import org.osgi.framework.BundleContext;
 import org.wso2.carbon.mongodb.query.MongoPreparedStatement;
 import org.wso2.carbon.mongodb.query.MongoPreparedStatementImpl;
 import org.wso2.carbon.user.api.RealmConfiguration;
@@ -26,7 +25,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.Map;
 
@@ -35,9 +33,9 @@ import java.util.Map;
  */
 public class MongoDBTenantManager implements TenantManager {
 
-    DB dataSource;
+    public DB dataSource;
     private static Log log = LogFactory.getLog(TenantManager.class);
-    protected BundleContext bundleContext;
+    //protected BundleContext bundleContext;
 
     /**
      * Map which maps tenant domains to tenant IDs
@@ -70,7 +68,7 @@ public class MongoDBTenantManager implements TenantManager {
         int id = 0;
         try{
             prepStmt = new MongoPreparedStatementImpl(dataSource,MongoTenantConstants.ADD_TENANT_MONGOQUERY);
-            id = getCollectionSequence("UM_TENANT",dataSource);
+            id = getCollectionSequence(dataSource);
             prepStmt.setInt("UM_ID",id);
             prepStmt.setString("UM_EMAIL",tenant.getEmail());
             prepStmt.setString("UM_DOMAIN_NAME",tenant.getDomain().toLowerCase());
@@ -84,7 +82,7 @@ public class MongoDBTenantManager implements TenantManager {
             prepStmt.setTimeStamp("UM_CREATED_DATE",new BSONTimestamp(createdTimeMs,1));
             String realmConfigString = RealmConfigXMLProcessor.serialize(
                     (RealmConfiguration) tenant.getRealmConfig()).toString();
-            InputStream is = new ByteArrayInputStream(realmConfigString.getBytes());
+            InputStream is = new ByteArrayInputStream(realmConfigString.getBytes("UTF-8"));
             byte b[] = new byte[is.available()];
             is.read(b);
             Binary binarStream = new Binary(b);
@@ -98,7 +96,9 @@ public class MongoDBTenantManager implements TenantManager {
             log.error(msg);
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
         return id;
     }
@@ -128,7 +128,9 @@ public class MongoDBTenantManager implements TenantManager {
             log.error(msg);
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
     }
 
@@ -153,15 +155,11 @@ public class MongoDBTenantManager implements TenantManager {
                 String domain = cursor.next().get("UM_DOMAIN_NAME").toString();
                 String email = cursor.next().get("UM_EMAIL").toString();
                 BSONTimestamp timestamp = (BSONTimestamp) cursor.next().get("UM_CREATED_DATE");
-                Date createdDate = new Date(timestamp.getTime());
+                long time = timestamp.getTime();
+                Date createdDate = getDate(time);
                 int active = Integer.parseInt(cursor.next().get("UM_ACTIVE").toString());
                 boolean status;
-                if(active == 0)
-                {
-                    status = false;
-                }else{
-                    status = true;
-                }
+                status = active != 0;
                 Binary binaryStream = (Binary)cursor.next().get("UM_USER_CONFIG");
                 InputStream is = new ByteArrayInputStream(binaryStream.getData());
                 RealmConfigXMLProcessor processor = new RealmConfigXMLProcessor();
@@ -178,15 +176,27 @@ public class MongoDBTenantManager implements TenantManager {
                 tenant.setAdminName(realmConfig.getAdminUserName());
                 tenantCacheManager.addToCache(new TenantIdKey(id), new TenantCacheEntry<Tenant>(tenant));
             }
+        }catch (RuntimeException e){
+
+            throw e;
         }catch(Exception ex){
-            String msg = "Error in updating tenant with " + "tenant domain: "
-                    + tenant.getDomain().toLowerCase() + ".";
-            log.error(msg);
+            if(tenant!=null) {
+                String msg = "Error in updating tenant with " + "tenant domain: "
+                        + tenant.getDomain().toLowerCase() + ".";
+                log.error(msg);
+            }
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
         return tenant;
+    }
+
+    private Date getDate(long seconds){
+
+        return new Date(seconds * 1000);
     }
 
     public Tenant[] getAllTenants() throws UserStoreException {
@@ -203,15 +213,11 @@ public class MongoDBTenantManager implements TenantManager {
                 String domain = cursor.next().get("UM_DOMAIN_NAME").toString();
                 String email = cursor.next().get("UM_EMAIL").toString();
                 BSONTimestamp timestamp = (BSONTimestamp) cursor.next().get("UM_CREATED_DATE");
-                Date createdDate = new Date(timestamp.getTime());
+                long time = timestamp.getTime();
+                Date createdDate = getDate(time);
                 int active = Integer.parseInt(cursor.next().get("UM_ACTIVE").toString());
                 boolean status;
-                if(active == 0)
-                {
-                    status = false;
-                }else{
-                    status = true;
-                }
+                status = active != 0;
                 Binary binaryStream = (Binary)cursor.next().get("UM_USER_CONFIG");
                 InputStream is = new ByteArrayInputStream(binaryStream.getData());
                 RealmConfigXMLProcessor processor = new RealmConfigXMLProcessor();
@@ -233,7 +239,9 @@ public class MongoDBTenantManager implements TenantManager {
             log.error(msg);
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
         return tenantList.toArray(new Tenant[tenantList.size()]);
     }
@@ -252,15 +260,11 @@ public class MongoDBTenantManager implements TenantManager {
                 String domain = cursor.next().get("UM_DOMAIN_NAME").toString();
                 String email = cursor.next().get("UM_EMAIL").toString();
                 BSONTimestamp timestamp = (BSONTimestamp) cursor.next().get("UM_CREATED_DATE");
-                Date createdDate = new Date(timestamp.getTime());
+                long time = timestamp.getTime();
+                Date createdDate = getDate(time);
                 int active = Integer.parseInt(cursor.next().get("UM_ACTIVE").toString());
                 boolean status;
-                if(active == 0)
-                {
-                    status = false;
-                }else{
-                    status = true;
-                }
+                status = active != 0;
                 Binary binaryStream = (Binary)cursor.next().get("UM_USER_CONFIG");
                 InputStream is = new ByteArrayInputStream(binaryStream.getData());
                 RealmConfigXMLProcessor processor = new RealmConfigXMLProcessor();
@@ -282,7 +286,9 @@ public class MongoDBTenantManager implements TenantManager {
             log.error(msg);
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
         return tenantList.toArray(new Tenant[tenantList.size()]);
     }
@@ -306,7 +312,9 @@ public class MongoDBTenantManager implements TenantManager {
             log.error(msg);
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
         return domain;
     }
@@ -330,7 +338,9 @@ public class MongoDBTenantManager implements TenantManager {
             log.error(msg);
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
         return tenantId;
     }
@@ -350,7 +360,9 @@ public class MongoDBTenantManager implements TenantManager {
             log.error(msg);
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
     }
 
@@ -369,7 +381,9 @@ public class MongoDBTenantManager implements TenantManager {
             log.error(msg);
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
     }
 
@@ -390,7 +404,9 @@ public class MongoDBTenantManager implements TenantManager {
             log.error(msg);
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
         return active;
     }
@@ -409,7 +425,9 @@ public class MongoDBTenantManager implements TenantManager {
             log.error(msg);
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
     }
 
@@ -432,7 +450,9 @@ public class MongoDBTenantManager implements TenantManager {
             log.error(msg);
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
     }
 
@@ -445,19 +465,19 @@ public class MongoDBTenantManager implements TenantManager {
         throw new UnsupportedOperationException("Operation getAllTenantDomainStrOfUse is unsupported " );
     }
 
-    private static int getCollectionSequence(String COLLECTION_NAME,DB db)
+    private static int getCollectionSequence(DB db)
     {
         int seq=0;
         try {
             DBCollection collection = db.getCollection("COUNTERS");
-            BasicDBObject dbObject =new BasicDBObject("_id",COLLECTION_NAME);
+            BasicDBObject dbObject =new BasicDBObject("_id", "UM_TENANT");
             DBCursor cursor = collection.find(dbObject);
             if(cursor.hasNext()){
                 seq = Integer.parseInt(cursor.next().get("seq").toString());
-                collection.update(new BasicDBObject("_id",COLLECTION_NAME),new BasicDBObject("$set",new BasicDBObject("seq",seq+1)));
+                collection.update(new BasicDBObject("_id", "UM_TENANT"),new BasicDBObject("$set",new BasicDBObject("seq",seq+1)));
             }
             else{
-                collection.insert(new BasicDBObject("_id",COLLECTION_NAME).append("seq",1));
+                collection.insert(new BasicDBObject("_id", "UM_TENANT").append("seq",1));
                 seq=1;
             }
         }catch(MongoWriteException e){
@@ -471,7 +491,7 @@ public class MongoDBTenantManager implements TenantManager {
     }
 
     private void setSecondaryUserStoreConfig(RealmConfiguration realmConfiguration, int tenantId)
-            throws UserStoreException {
+            throws UserStoreException, IOException {
 
         RealmConfiguration lastRealm = realmConfiguration;
         if(realmConfiguration != null) {
@@ -481,7 +501,9 @@ public class MongoDBTenantManager implements TenantManager {
 
             String configPath = CarbonUtils.getCarbonTenantsDirPath() +
                     File.separator + tenantId + File.separator + "userstores";
+
             File userStores = new File(configPath);
+
             UserStoreDeploymentManager userStoreDeploymentManager = new UserStoreDeploymentManager();
 
             File[] files = userStores.listFiles(new FilenameFilter() {

@@ -47,7 +47,6 @@ public class MongoDBDefaultRealmService implements RealmService {
     private RealmConfiguration bootstrapRealmConfig;
     private TenantMgtConfiguration tenantMgtConfiguration;
     private DB dataSource;
-    private OMElement parentElement;
     private TenantManager tenantManager;
     private UserRealm bootstrapRealm;
     private MultiTenantRealmConfigBuilder multiTenantBuilder = null;
@@ -62,14 +61,14 @@ public class MongoDBDefaultRealmService implements RealmService {
 
     public MongoDBDefaultRealmService(BundleContext bc,RealmConfiguration realmConfiguration) throws Exception{
 
-        if(realmConfiguration != null){
-            this.bootstrapRealmConfig = realmConfiguration;
+        if(null != null){
+            this.bootstrapRealmConfig = null;
         }
         else{
             this.bootstrapRealmConfig = buildBootStrapRealmConfig();
         }
        // this.tenantMgtConfiguration = buildTenantMgtConfig(bc,this.bootstrapRealmConfig.getUserStoreProperty(UserCoreConstants.TenantMgtConfig.LOCAL_NAME_TENANT_MANAGER));
-        this.tenantMgtConfiguration = buildTenantMgtConfig(bc,"com.mongodb.DB");
+        this.tenantMgtConfiguration = buildTenantMgtConfig(bc);
         this.dataSource = MongoDatabaseUtil.getRealmDataSource(this.bootstrapRealmConfig);
         properties.put(UserCoreConstants.DATA_SOURCE,this.dataSource);
         initializeDatabase(this.dataSource);
@@ -151,11 +150,11 @@ public class MongoDBDefaultRealmService implements RealmService {
         if (value != null) {
             MongoDBCreator databaseCreator = new MongoDBCreator(dataSource);
             try {
-                if (!databaseCreator.isDatabaseStructureCreated(DB_CHECK_SQL)) {
+                //if (!databaseCreator.isDatabaseStructureCreated()) {
                     databaseCreator.createRegistryDatabase();
-                } else {
+                ///} else {
                     log.info("Database already exists. Not creating a new database.");
-                }
+                //}
             } catch (Exception e) {
                 String msg = "Error in creating the database";
                 throw new Exception(msg, e);
@@ -163,16 +162,16 @@ public class MongoDBDefaultRealmService implements RealmService {
         }
     }
 
-    private TenantMgtConfiguration buildTenantMgtConfig(BundleContext bc,String tenantManagerClass) throws UserStoreException{
+    private TenantMgtConfiguration buildTenantMgtConfig(BundleContext bc) throws UserStoreException{
 
         TenantMgtXMLProcessor tenantMgtXMLProcessor = new TenantMgtXMLProcessor();
         tenantMgtXMLProcessor.setBundleContext(bc);
-        return tenantMgtXMLProcessor.buildTenantMgtConfigFromFile(tenantManagerClass);
+        return tenantMgtXMLProcessor.buildTenantMgtConfigFromFile("com.mongodb.DB");
     }
 
     private RealmConfiguration buildBootStrapRealmConfig() throws UserStoreException{
 
-        this.parentElement = getConfigurationElement();
+        OMElement parentElement = getConfigurationElement();
         OMElement realmElement = parentElement.getFirstChildWithName(new QName(
                 UserCoreConstants.RealmConfig.LOCAL_NAME_REALM));
         RealmConfigXMLProcessor rmProcessor = new RealmConfigXMLProcessor();
@@ -346,9 +345,8 @@ public class MongoDBDefaultRealmService implements RealmService {
                         .getRealmProperty("MultiTenantRealmConfigBuilder");
                 if (clazzName != null) {
                     Class clazz = Class.forName(clazzName);
-                    MultiTenantRealmConfigBuilder multiConfigBuilder = (MultiTenantRealmConfigBuilder) clazz
+                    return (MultiTenantRealmConfigBuilder) clazz
                             .newInstance();
-                    return multiConfigBuilder;
                 }
                 return null;
             } else {

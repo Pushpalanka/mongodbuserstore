@@ -18,7 +18,6 @@ import org.wso2.carbon.user.core.UserRealm;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.authorization.AuthorizationCache;
 import org.wso2.carbon.user.core.common.UserRolesCache;
-import org.wso2.carbon.user.core.constants.UserCoreDBConstants;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 
 import java.util.ArrayList;
@@ -29,17 +28,15 @@ import java.util.Map;
 /**
  * Hybrid Role Manager Class All Hybrid Role Configuration included.
  */
-public class HybridMongoDBRoleManager {
+public class HybridMongoDBRoleManager{
 
     private static Log log = LogFactory.getLog(MongoDBUserStoreManager.class);
-    private final int DEFAULT_MAX_ROLE_LIST_SIZE = 1000;
-    private final int DEFAULT_MAX_SEARCH_TIME = 1000;
+    private final static int DEFAULT_MAX_ROLE_LIST_SIZE = 1000;
+    private final static int DEFAULT_MAX_SEARCH_TIME = 1000;
     protected UserRealm userRealm = null;
     protected UserRolesCache userRolesCache = null;
     int tenantId;
-    private DB dataSource;
     private RealmConfiguration realmConfig;
-    private String isCascadeDeleteEnabled;
     private boolean userRolesCacheEnabled = true;
     private static final String APPLICATION_DOMAIN = "Application";
     private static final String WORKFLOW_DOMAIN = "Workflow";
@@ -50,7 +47,7 @@ public class HybridMongoDBRoleManager {
         //this.dataSource = dataSource;
         this.tenantId = tenantId;
         this.realmConfig = realmConfig;
-        //this.userRealm = realm;
+        this.userRealm = realm;
         //persist internal domain
         HybridMongoDBRoleManager.persistDomain(UserCoreConstants.INTERNAL_DOMAIN, tenantId, dataSource,realmConfig);
         HybridMongoDBRoleManager.persistDomain(APPLICATION_DOMAIN, tenantId, dataSource,realmConfig);
@@ -159,13 +156,6 @@ public class HybridMongoDBRoleManager {
                             sql, primaryDomainName, userList, roleName, tenantId, tenantId, tenantId);
 
             }
-        }catch(MongoQueryException e){
-
-            String errorMessage = "Error occurred while adding hybrid role : " + roleName;
-            if (log.isDebugEnabled()) {
-                log.debug(errorMessage, e);
-            }
-            throw new UserStoreException(errorMessage, e);
         }catch(UserStoreException e){
 
             String errorMessage = "Error occurred while adding hybrid role : " + roleName;
@@ -330,10 +320,9 @@ public class HybridMongoDBRoleManager {
         DB dbConnection = null;
         try {
             dbConnection = MongoDatabaseUtil.getRealmDataSource(realmConfig);
-            String[] names = MongoDatabaseUtil.getStringValuesFromDatabaseForInternalRoles(dbConnection, mongoStmt,
+            return MongoDatabaseUtil.getStringValuesFromDatabaseForInternalRoles(dbConnection, mongoStmt,
                     roleName, tenantId, tenantId);
-            return names;
-        } catch (MongoQueryException e) {
+        } catch (Exception e) {
             String errorMessage = "Error occurred while getting user list from hybrid role : " + roleName;
             if (log.isDebugEnabled()) {
                 log.debug(errorMessage, e);
@@ -381,14 +370,6 @@ public class HybridMongoDBRoleManager {
                             mongoStmt2, primaryDomainName, newUsers, roleName, tenantId, tenantId, tenantId);
             }
 
-        }catch(MongoQueryException e){
-
-            String errorMessage = "Error occurred while updating user list of hybrid role : " + roleName;
-            if (log.isDebugEnabled()) {
-                log.debug(errorMessage, e);
-            }
-            throw new UserStoreException(errorMessage, e);
-
         }catch(UserStoreException e){
 
             String errorMessage = "Error occurred while updating user list of hybrid role : " + roleName;
@@ -415,7 +396,7 @@ public class HybridMongoDBRoleManager {
      * @return
      * @throws UserStoreException
      */
-    public String[] getHybridRoleListOfUser(String userName, String filter) throws UserStoreException {
+    public String[] getHybridRoleListOfUser(String userName) throws UserStoreException {
 
         String getRoleListOfUserMongoConfig = realmConfig.getRealmProperty(HybridMongoDBConstants.GET_ROLE_LIST_OF_USER);
         String mongoStmt;
@@ -660,7 +641,7 @@ public class HybridMongoDBRoleManager {
      */
     public boolean isUserInRole(String userName, String roleName) throws UserStoreException {
         // TODO
-        String[] roles = getHybridRoleListOfUser(userName, "*");
+        String[] roles = getHybridRoleListOfUser(userName);
         if (roles != null && roleName != null) {
             for (String role : roles) {
                 if (UserCoreUtil.removeDomainFromName(role).equalsIgnoreCase(roleName)) {

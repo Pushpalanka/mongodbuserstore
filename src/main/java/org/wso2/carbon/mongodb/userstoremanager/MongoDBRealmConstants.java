@@ -1,5 +1,9 @@
 package org.wso2.carbon.mongodb.userstoremanager;
 
+/**
+ * MongoDBRealmConstants contain all the user store queries
+ */
+@SuppressWarnings("unused")
 public class MongoDBRealmConstants {
 
 	 public static final String SELECT_USER = "SelectUserMONGO_QUERY";
@@ -70,7 +74,7 @@ public class MongoDBRealmConstants {
 	    public static final String GET_USERNAME_FROM_TENANT_ID_MONGO_QUERY = "{'collection' : 'UM_USER','UM_TENANT_ID' : '?','projection' : {'UM_USER_NAME' : '1'}}";
 	    public static final String GET_TENANT_ID_FROM_USERNAME_MONGO_QUERY = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','projection' : {'UM_TENANT_ID' : '1','_id' : '0'}}";
         public static final String GET_SHARED_ROLE_MONGO_QUERY="{'collection' : 'UM_SHARED_USER_ROLE','user.UM_USER_NAME' : '?','UM_USER_TENANT_ID' : 'role.UM_TENANT_ID','UM_USER_TENANT_ID' : '?','$lookup' : [{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'user'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'role'}]}";
-        public static final String GET_USER_LIST_OF_ROLE_MONGO_QUERY = "{'collection' : 'UM_USER','attribute.UM_ATTR_NAME' : '?','attribute.UM_ATTR_VALUE' : '?','attribute.UM_ATTR_NAME' : '?','attribute.UM_PROFILE_ID' : '?','atrribute.UM_TENANT_ID' : '?','user.UM_TENANT_ID' : '?','$lookup' : {'from' : 'UM_USER_ATTRIBUTE','localField' : 'UM_ID','foreignField' : 'UM_USER_ID','as' : 'attribute'},'projection' : {'UM_USER_NAME' : '1'}}";
+        public static final String GET_USER_LIST_OF_ROLE_MONGO_QUERY = "{'collection' : 'UM_USER','attribute.UM_ATTR_NAME' : '?','attribute.UM_ATTR_VALUE' : '?','attribute.UM_ATTR_NAME' : '?','attribute.UM_PROFILE_ID' : '?','attribute.UM_TENANT_ID' : '?','user.UM_TENANT_ID' : '?','$lookup' : {'from' : 'UM_USER_ATTRIBUTE','localField' : 'UM_ID','foreignField' : 'UM_USER_ID','as' : 'attribute'},'projection' : {'UM_USER_NAME' : '1'}}";
 		public static final String GET_USERS_FOR_PROP_MONGO_QUERY = "{'collection' : 'UM_USER','$match' : {'UM_TENANT_ID' : '?','attribute.UM_ATTR_NAME' : '?','attribute.UM_ATTR_VALUE' : '?','attribute.UM_PROFILE_ID' : '?'},'$lookup' : {'from' : 'UM_USER_ATTRIBUTE','localField' : 'UM_ID','foreignField' : 'UM_USER_ID','as' : 'users'},'$unwind' : {'path' : '$users','preserveNullAndEmptyArrays' : false},'$project' : {'UM_USER_NAME' : '1'}}";
         public static final String GET_USERS_IN_SHARED_ROLE_MONGO_QUERY = "{'collection' : 'UM_SHARED_USER_ROLE','$match' : {'UM_ROLE_NAME' : '?','UM_USER_TENANT_ID' : 'user.UM_TENANT_ID','UM_ROLE_TENANT_ID' : 'role.UM_TENANT_ID'},'$lookup' : [{'from' : 'UM_USER','localField' : 'UM_USER_ID','foreignField' : 'UM_ID','as' : 'users'},{'from' : 'UM_ROLE','localField' : 'UM_ROLE_ID','foreignField' : 'UM_ID','as' : 'role'}],'$project' : {'UM_USER_NAME' : 1}}";
 	    public static final String ADD_USER_MONGO_QUERY = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_USER_PASSWORD' : '?','UM_SALT_VALUE' : '?','UM_REQUIRE_CHANGE' : '?','UM_CHANGED_TIME' : '?','UM_TENANT_ID' : '?','UM_ID' : '?'}";

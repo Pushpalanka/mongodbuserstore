@@ -71,7 +71,9 @@ public class MongoDBUserStoreConfigDao {
             log.error("Cannot add user store properties "+ex);
             throw new UserStoreException(ex);
         }finally {
-            prepStmt.close();
+            if(prepStmt!=null) {
+                prepStmt.close();
+            }
         }
 
     }

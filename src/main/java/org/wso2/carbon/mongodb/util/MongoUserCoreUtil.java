@@ -22,6 +22,7 @@ import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.utils.xml.StringUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -83,7 +84,13 @@ public final class MongoUserCoreUtil {
     public static String[] combine(String[] array, List<String> list) throws UserStoreException {
 
         if(array == null || list == null){
-            throw new IllegalArgumentException("Invalid parameters; array : " + array + ", list : " + list);
+
+            if(array==null) {
+                throw new IllegalArgumentException("Invalid parameters; array is null");
+            }
+            else{
+                throw new IllegalArgumentException("Invalid parameters list : list is null");
+            }
         }
         Set h = new HashSet(list);
         h.addAll(Arrays.asList(array));
@@ -174,11 +181,13 @@ public final class MongoUserCoreUtil {
 
             try {
                 MessageDigest messageDigest = MessageDigest.getInstance(passwordHashMethod);
-                byte[] digestValue = messageDigest.digest(password.getBytes());
+                byte[] digestValue = messageDigest.digest(password.getBytes("UTF-8"));
                 passwordToStore = "{" + passwordHashMethod + "}" + Base64.encode(digestValue);
 //				passwordToStore = Base64.encode(digestValue);
             } catch (NoSuchAlgorithmException e) {
                 throw new UserStoreException("Invalid hashMethod", e);
+            } catch (UnsupportedEncodingException e) {
+                throw new UserStoreException(e.getMessage(), e);
             }
         }
         return passwordToStore;
@@ -625,12 +634,9 @@ public final class MongoUserCoreUtil {
             myDomain += CarbonConstants.DOMAIN_SEPARATOR;
         }
 
-        if (realmConfig.isPrimary() && realmConfig.getEveryOneRoleName() != null
+        return realmConfig.isPrimary() && realmConfig.getEveryOneRoleName() != null
                 && (realmConfig.getEveryOneRoleName().equalsIgnoreCase(roleName))
-                || realmConfig.getEveryOneRoleName().equalsIgnoreCase(myDomain + roleName)) {
-            return true;
-        }
-        return false;
+                || realmConfig.getEveryOneRoleName().equalsIgnoreCase(myDomain + roleName);
     }
 
     /**
@@ -650,14 +656,11 @@ public final class MongoUserCoreUtil {
             return false;
         }
 
-        if ((oldStore.isHybridRole() && realmConfig
+        return !((oldStore.isHybridRole() && realmConfig
                 .isReservedRoleName(oldStore.getDomainFreeName()))
                 || (newStore.isHybridRole() && realmConfig.isReservedRoleName(newStore
-                .getDomainFreeName()))) {
-            return false;
-        }
+                .getDomainFreeName())));
 
-        return true;
     }
 
     /**
@@ -667,11 +670,8 @@ public final class MongoUserCoreUtil {
      */
     public static boolean isRegistryAnnonymousUser(String userName) {
 
-        if (CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME.equalsIgnoreCase(userName)) {
-            return true;
-        }
+        return CarbonConstants.REGISTRY_ANONNYMOUS_USERNAME.equalsIgnoreCase(userName);
 
-        return false;
     }
 
     /**
@@ -681,11 +681,8 @@ public final class MongoUserCoreUtil {
      */
     public static boolean isRegistrySystemUser(String userName) {
 
-        if (CarbonConstants.REGISTRY_SYSTEM_USERNAME.equalsIgnoreCase(userName)) {
-            return true;
-        }
+        return CarbonConstants.REGISTRY_SYSTEM_USERNAME.equalsIgnoreCase(userName);
 
-        return false;
     }
 
     public static String extractDomainFromName(String nameWithDomain) {

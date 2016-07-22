@@ -16,6 +16,7 @@ import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -248,6 +249,7 @@ public class SystemMongoUserRoleManager {
             prepStmt = new MongoPreparedStatementImpl(dbConnection,SystemMongoDBConstants.GET_ROLE_ID);
             prepStmt.setString("UM_ROLE_NAME",roleName);
             prepStmt.setInt("UM_TENANT_ID",tenantId);
+            cursor = prepStmt.find();
             if(cursor.hasNext()){
 
                 int roleId = Integer.parseInt(cursor.next().get("UM_ID").toString());
@@ -419,10 +421,16 @@ public class SystemMongoUserRoleManager {
                 digestInput = password + saltValue;
             }
             MessageDigest dgst = MessageDigest.getInstance("SHA-256");
-            byte[] byteValue = dgst.digest(digestInput.getBytes());
+            byte[] byteValue = dgst.digest(digestInput.getBytes("UTF-8"));
             password = Base64.encode(byteValue);
             return password;
         } catch (NoSuchAlgorithmException e) {
+            String errorMessage = "Error occurred while preparing password : " + password;
+            if (log.isDebugEnabled()) {
+                log.debug(errorMessage, e);
+            }
+            throw new UserStoreException(errorMessage, e);
+        } catch (UnsupportedEncodingException e) {
             String errorMessage = "Error occurred while preparing password : " + password;
             if (log.isDebugEnabled()) {
                 log.debug(errorMessage, e);
