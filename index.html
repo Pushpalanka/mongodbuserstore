@@ -22,14 +22,13 @@
       <h1>
 <a id="mongodbuserstore" class="anchor" href="#mongodbuserstore" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>mongodbuserstore</h1>
 
-<p>MongoDB User Store for WSO2 Identity Server
-First create a Database in MongoDB named wso2_carbon_db 
-In mongodb if you create a empty database without a collections it will store it in RAM and not store permanelty therefore create a samle collection using below script
-db.system.js.save(</p>
+<p>First create a Database in MongoDB named wso2_carbon_db 
+In mongodb if you create a empty database without a collections it will store it in RAM and not store permanelty therefore create a samle collection using below script</p>
 
-<p>{</p>
+<pre><code>db.system.js.save(
+{
 
-<pre><code> _id: "getNextSequence",
+ _id: "getNextSequence",
 
  value : function(name) { 
 
@@ -54,24 +53,23 @@ db.system.js.save(</p>
     return ret.seq;
 
  }
-</code></pre>
 
-<p>}</p>
+}
 
-<p>);
-db.COUNTERS.insert({</p>
+);
+db.COUNTERS.insert({
 
-<pre><code>_id: "UM_DOMAIN",
+ _id: "UM_DOMAIN",
 
-seq: 0
-</code></pre>
+  seq: 0
 
-<p>});
+});
 db.UM_DOMAIN.insert({
-    UM_DOMAIN_ID: getNextSequence("UM_DOMAIN"),
-    UM_DOMAIN_NAME: "",
-    UM_TENANT_ID: 0
-});</p>
+  UM_DOMAIN_ID: getNextSequence("UM_DOMAIN"),
+  UM_DOMAIN_NAME: "",
+  UM_TENANT_ID: 0
+});
+</code></pre>
 
 <p>here this getNextSequence is to auto_increment id in UM_DOMAIN collection since MongoDB doesn't have auto_increment i implement it using a simple script and COUNTERS is for store the current sequence of collection</p>
 
