@@ -5,21 +5,28 @@
       <w>aggregration</w>
       <w>anonnymous</w>
       <w>authed</w>
+      <w>bson</w>
+      <w>configration</w>
       <w>dgst</w>
       <w>digsest</w>
       <w>dscomponent</w>
       <w>evic</w>
       <w>exsists</w>
+      <w>intial</w>
       <w>iter</w>
       <w>keysfind</w>
       <w>occured</w>
       <w>ocurred</w>
       <w>ocuured</w>
+      <w>ofnew</w>
+      <w>paramfill</w>
       <w>pereviction</w>
       <w>pkey</w>
       <w>prng</w>
+      <w>rolelist</w>
       <w>rolename</w>
       <w>scim</w>
+      <w>setted</w>
       <w>soruce</w>
       <w>spacific</w>
       <w>stmts</w>
@@ -28,6 +35,7 @@
       <w>uniquenes</w>
       <w>upsert</w>
       <w>userid</w>
+      <w>userstore</w>
       <w>userstoremanager</w>
     </words>
   </dictionary>

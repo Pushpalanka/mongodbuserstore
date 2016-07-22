@@ -686,8 +686,8 @@ public final class MongoUserCoreUtil {
     }
 
     public static String extractDomainFromName(String nameWithDomain) {
-        int index;
-        if ((index = nameWithDomain.indexOf(CarbonConstants.DOMAIN_SEPARATOR)) > 0) {
+
+        if (nameWithDomain.indexOf(CarbonConstants.DOMAIN_SEPARATOR) > 0) {
             // extract the domain name if exist
             String names[] = nameWithDomain.split(CarbonConstants.DOMAIN_SEPARATOR);
             return names[0];

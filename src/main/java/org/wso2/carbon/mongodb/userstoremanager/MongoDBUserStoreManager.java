@@ -1219,7 +1219,7 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
 
             dbConnection = loadUserStoreSpacificDataSoruce();
            // Map<String,Object> map = new HashMap<String, Object>();
-            String mongoQuery2="";
+            String mongoQuery2;
             if(isShared){
 
                 mongoQuery2 = realmConfig.getUserStoreProperty(MongoDBRealmConstants.ADD_SHARED_ROLE_TO_USER);
@@ -1232,7 +1232,7 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
                 throw new UserStoreException("The mongo statement for add user to role is null");
             }
             int userIds[];
-            if(deletedUsers.length > 0)
+            if(deletedUsers!=null)
             {
                 userIds = getUserIDS(dbConnection,deletedUsers);
             }
@@ -1828,21 +1828,11 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
 
                     mongoQuery2 = realmConfig.getUserStoreProperty(MongoDBCaseInsensitiveConstants.ADD_SHARED_ROLE_TO_USER_CASE_INSENSITIVE);
                 }
-                String mongoCondition = MongoDBRealmConstants.GET_IS_ROLE_EXISTING_MONGO_QUERY;
-                MongoPreparedStatement prepStmt = new MongoPreparedStatementImpl(dbConnection,mongoCondition);
-                int roleID;
-                prepStmt.setString("UM_ROLE_NAME",roleName);
-                if (mongoCondition.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
-                    prepStmt.setInt("UM_TENANT_ID",tenantId);
-                    DBCursor cursor = prepStmt.find();
-                    roleID = Integer.parseInt(cursor.next().get("UM_ID").toString());
-                } else {
-                    DBCursor cursor = prepStmt.find();
-                    roleID = Integer.parseInt(cursor.next().get("UM_ID").toString());
-                }
+                String[] roles = {roleName};
+                int roleID[] = getRolesIDS(dbConnection,roles);
                 int[] userID = getUserIDS(dbConnection,userList);
                 Map<String,Object> mapRole = new HashMap<String, Object>();
-                mapRole.put("UM_USER_ID",roleID);
+                mapRole.put("UM_USER_ID",roleID[0]);
                 mapRole.put("UM_ROLE_ID",userID);
                 if (mongoQuery2.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
 
@@ -1852,7 +1842,6 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
                 }else {
                     MongoDatabaseUtil.updateUserRoleMappingInBatchMode(dbConnection, mongoQuery2, mapRole);
                 }
-
             }
         }catch (RuntimeException e) {
 
@@ -2560,7 +2549,6 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
     /**
      * check if multiple profile allowed
      * @return boolean status of multiple profile
-     * @throws UserStoreException if any exception occurred
      */
 	public boolean isMultipleProfilesAllowed() {
 		return true;
@@ -2661,7 +2649,6 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
     /**
      * get realm configuration
      * @return RealmConfiguration of logged in users
-     * @throws UserStoreException if any exception occurred
      */
 	public RealmConfiguration getRealmConfiguration() {
         return this.realmConfig;
@@ -2769,17 +2756,10 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
                 MongoPreparedStatement prepStmt = new MongoPreparedStatementImpl(dbConnection, MongoDBRealmConstants.GET_USERID_FROM_USERNAME_MONGO_QUERY);
                 prepStmt.setString("UM_USER_NAME", userName);
                 int rolesID[] = getRolesIDS(dbConnection, roles);
-                int userID;
-                if (sqlStmt2.contains(UserCoreConstants.UM_TENANT_COLUMN)) {
-                    prepStmt.setInt("UM_TENANT_ID", tenantId);
-                    DBCursor cursor = prepStmt.find();
-                    userID = Integer.parseInt(cursor.next().get("UM_ID").toString());
-                } else {
-                    DBCursor cursor = prepStmt.find();
-                    userID = Integer.parseInt(cursor.next().get("UM_ID").toString());
-                }
+                String[] users = {userName};
+                int userID[] = getUserIDS(dbConnection,users);
                 mapRole.put("UM_TENANT_ID", tenantId);
-                mapRole.put("UM_USER_ID", userID);
+                mapRole.put("UM_USER_ID", userID[0]);
                 mapRole.put("UM_ROLE_ID", rolesID);
                 MongoDatabaseUtil.updateUserRoleMappingInBatchMode(dbConnection, sqlStmt2,
                         mapRole);

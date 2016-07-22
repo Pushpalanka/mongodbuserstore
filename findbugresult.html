@@ -1,0 +1,1191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>FindBugs Report</title>
+<style type="text/css">
+		.tablerow0 {
+			background: #EEEEEE;
+		}
+
+		.tablerow1 {
+			background: white;
+		}
+
+		.detailrow0 {
+			background: #EEEEEE;
+		}
+
+		.detailrow1 {
+			background: white;
+		}
+
+		.tableheader {
+			background: #b9b9fe;
+			font-size: larger;
+		}
+		</style>
+</head>
+<body>
+<h1>FindBugs Report</h1>
+<p>Produced using <a href="http://findbugs.sourceforge.net">FindBugs</a>3.0.1.</p>
+<p>Project: 
+			mongodb.userstoremanager[mongodb.userstoremanager]</p>
+<h2>Metrics</h2>
+<p>5286 lines of code analyzed,
+	in 26 classes, 
+	in 10 packages.</p>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Metric</th>
+<th align="right">Total</th>
+<th align="right">Density*</th>
+</tr>
+<tr class="tablerow0">
+<td>High Priority Warnings</td>
+<td align="right">6</td>
+<td align="right">1.14</td>
+</tr>
+<tr class="tablerow1">
+<td>Medium Priority Warnings</td>
+<td align="right">46</td>
+<td align="right">8.70</td>
+</tr>
+<tr class="$totalClass">
+<td>
+<b>Total Warnings</b>
+</td>
+<td align="right">
+<b>52</b>
+</td>
+<td align="right">
+<b>9.84</b>
+</td>
+</tr>
+</table>
+<p>
+<i>(* Defects per Thousand lines of non-commenting source statements)</i>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h2>Summary</h2>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Warning Type</th>
+<th align="right">Number</th>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_CORRECTNESS">Correctness Warnings</a>
+</td>
+<td align="right">20</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_I18N">Internationalization Warnings</a>
+</td>
+<td align="right">4</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
+</td>
+<td align="right">12</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_PERFORMANCE">Performance Warnings</a>
+</td>
+<td align="right">4</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_SECURITY">Security Warnings</a>
+</td>
+<td align="right">2</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_STYLE">Dodgy code Warnings</a>
+</td>
+<td align="right">10</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<b>Total</b>
+</td>
+<td align="right">
+<b>52</b>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h1>Warnings</h1>
+<p>Click on each warning link to see a full description of the issue, and
+	    details of how to resolve it.</p>
+<h2>
+<a name="Warnings_CORRECTNESS">Correctness Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NP_ALWAYS_NULL">Null pointer dereference</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Null pointer dereference of cursor in org.wso2.carbon.mongodb.system.SystemMongoUserRoleManager.isUserInRole(String, String, DB)<br/>
+<br/>
+<br/>In file SystemMongoUserRoleManager.java,
+					
+						line 251<br/>In class org.wso2.carbon.mongodb.system.SystemMongoUserRoleManager<br/>In method org.wso2.carbon.mongodb.system.SystemMongoUserRoleManager.isUserInRole(String, String, DB)<br/>Value loaded from cursor<br/>Dereferenced at SystemMongoUserRoleManager.java:[line 251]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#UWF_NULL_FIELD">Field only ever set to null</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Field only ever set to null: org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.userRealm<br/>
+<br/>
+<br/>In file HybridMongoDBRoleManager.java,
+					
+						lines 
+						    to <br/>In class org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager<br/>Field org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.userRealm<br/>In HybridMongoDBRoleManager.java</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#ICAST_INT_2_LONG_AS_INSTANT">int value converted to long and used as absolute time</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>int converted to long and passed as absolute time to new java.util.Date(long) in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getAllTenants()<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 206<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getAllTenants()<br/>Called method new java.util.Date(long)<br/>At MongoDBTenantManager.java:[line 206]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#ICAST_INT_2_LONG_AS_INSTANT">int value converted to long and used as absolute time</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>int converted to long and passed as absolute time to new java.util.Date(long) in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getAllTenantsForTenantDomainStr(String)<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 255<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getAllTenantsForTenantDomainStr(String)<br/>Called method new java.util.Date(long)<br/>At MongoDBTenantManager.java:[line 255]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#ICAST_INT_2_LONG_AS_INSTANT">int value converted to long and used as absolute time</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>int converted to long and passed as absolute time to new java.util.Date(long) in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getTenant(int)<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 156<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getTenant(int)<br/>Called method new java.util.Date(long)<br/>At MongoDBTenantManager.java:[line 156]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.dao.MongoDBUserStoreConfigDao.addCustomUserStoreConfiguration(Map, int) on exception path<br/>
+<br/>
+<br/>In file MongoDBUserStoreConfigDao.java,
+					
+						line 74<br/>In class org.wso2.carbon.mongodb.dao.MongoDBUserStoreConfigDao<br/>In method org.wso2.carbon.mongodb.dao.MongoDBUserStoreConfigDao.addCustomUserStoreConfiguration(Map, int)<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBUserStoreConfigDao.java:[line 74]<br/>Null value at MongoDBUserStoreConfigDao.java:[line 57]<br/>Known null at MongoDBUserStoreConfigDao.java:[line 60]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.activateTenant(int) on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 353<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.activateTenant(int)<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBTenantManager.java:[line 353]<br/>Null value at MongoDBTenantManager.java:[line 340]<br/>Known null at MongoDBTenantManager.java:[line 343]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.addTenant(Tenant) on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 101<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.addTenant(Tenant)<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBTenantManager.java:[line 101]<br/>Null value at MongoDBTenantManager.java:[line 69]<br/>Known null at MongoDBTenantManager.java:[line 72]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.deactivateTenant(int) on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 372<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.deactivateTenant(int)<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBTenantManager.java:[line 372]<br/>Null value at MongoDBTenantManager.java:[line 359]<br/>Known null at MongoDBTenantManager.java:[line 362]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.deleteTenant(int) on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 412<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.deleteTenant(int)<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBTenantManager.java:[line 412]<br/>Null value at MongoDBTenantManager.java:[line 400]<br/>Known null at MongoDBTenantManager.java:[line 403]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.deleteTenant(int, boolean) on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 435<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.deleteTenant(int, boolean)<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBTenantManager.java:[line 435]<br/>Null value at MongoDBTenantManager.java:[line 418]<br/>Known null at MongoDBTenantManager.java:[line 421]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getAllTenants() on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 236<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getAllTenants()<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBTenantManager.java:[line 236]<br/>Null value at MongoDBTenantManager.java:[line 194]<br/>Known null at MongoDBTenantManager.java:[line 198]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getAllTenantsForTenantDomainStr(String) on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 285<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getAllTenantsForTenantDomainStr(String)<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBTenantManager.java:[line 285]<br/>Null value at MongoDBTenantManager.java:[line 242]<br/>Known null at MongoDBTenantManager.java:[line 246]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getDomain(int) on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 309<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getDomain(int)<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBTenantManager.java:[line 309]<br/>Null value at MongoDBTenantManager.java:[line 292]<br/>Known null at MongoDBTenantManager.java:[line 296]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getTenant(int) on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 187<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getTenant(int)<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBTenantManager.java:[line 187]<br/>Null value at MongoDBTenantManager.java:[line 143]<br/>Known null at MongoDBTenantManager.java:[line 147]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of tenant in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getTenant(int) on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 183<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getTenant(int)<br/>Value loaded from tenant<br/>Dereferenced at MongoDBTenantManager.java:[line 183]<br/>Null value at MongoDBTenantManager.java:[line 144]<br/>Known null at MongoDBTenantManager.java:[line 147]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getTenantId(String) on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 333<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getTenantId(String)<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBTenantManager.java:[line 333]<br/>Null value at MongoDBTenantManager.java:[line 316]<br/>Known null at MongoDBTenantManager.java:[line 320]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.isTenantActive(int) on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 393<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.isTenantActive(int)<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBTenantManager.java:[line 393]<br/>Null value at MongoDBTenantManager.java:[line 378]<br/>Known null at MongoDBTenantManager.java:[line 382]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference of prepStmt in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.updateTenant(Tenant) on exception path<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 131<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.updateTenant(Tenant)<br/>Value loaded from prepStmt<br/>Dereferenced at MongoDBTenantManager.java:[line 131]<br/>Null value at MongoDBTenantManager.java:[line 109]<br/>Known null at MongoDBTenantManager.java:[line 112]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DMI_INVOKING_TOSTRING_ON_ARRAY">Invocation of toString on an array</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Invocation of toString on array in org.wso2.carbon.mongodb.util.MongoUserCoreUtil.combine(String[], List)<br/>
+<br/>
+<br/>In file MongoUserCoreUtil.java,
+					
+						line 86<br/>In class org.wso2.carbon.mongodb.util.MongoUserCoreUtil<br/>In method org.wso2.carbon.mongodb.util.MongoUserCoreUtil.combine(String[], List)<br/>Local variable named array<br/>At MongoUserCoreUtil.java:[line 86]<br/>At MongoUserCoreUtil.java:[line 86]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_I18N">Internationalization Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in org.wso2.carbon.mongodb.system.SystemMongoUserRoleManager.preparePassword(String, String): String.getBytes()<br/>
+<br/>
+<br/>In file SystemMongoUserRoleManager.java,
+					
+						line 422<br/>In class org.wso2.carbon.mongodb.system.SystemMongoUserRoleManager<br/>In method org.wso2.carbon.mongodb.system.SystemMongoUserRoleManager.preparePassword(String, String)<br/>Called method String.getBytes()<br/>At SystemMongoUserRoleManager.java:[line 422]<br/>At SystemMongoUserRoleManager.java:[line 422]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.addTenant(Tenant): String.getBytes()<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 87<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.addTenant(Tenant)<br/>Called method String.getBytes()<br/>At MongoDBTenantManager.java:[line 87]<br/>At MongoDBTenantManager.java:[line 87]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager.preparePassword(String, String): String.getBytes()<br/>
+<br/>
+<br/>In file MongoDBUserStoreManager.java,
+					
+						line 459<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager<br/>In method org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager.preparePassword(String, String)<br/>Called method String.getBytes()<br/>At MongoDBUserStoreManager.java:[line 459]<br/>At MongoDBUserStoreManager.java:[line 459]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in org.wso2.carbon.mongodb.util.MongoUserCoreUtil.getPasswordToStore(String, String, boolean): String.getBytes()<br/>
+<br/>
+<br/>In file MongoUserCoreUtil.java,
+					
+						line 177<br/>In class org.wso2.carbon.mongodb.util.MongoUserCoreUtil<br/>In method org.wso2.carbon.mongodb.util.MongoUserCoreUtil.getPasswordToStore(String, String, boolean)<br/>Called method String.getBytes()<br/>At MongoUserCoreUtil.java:[line 177]<br/>At MongoUserCoreUtil.java:[line 177]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#EI_EXPOSE_REP">May expose internal representation by returning reference to mutable object</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.getRoles() may expose internal representation by returning MongoDBUserStoreManager$RoleBreakdown.roles<br/>
+<br/>
+<br/>In file MongoDBUserStoreManager.java,
+					
+						line 2689<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown<br/>In method org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.getRoles()<br/>Field org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.roles<br/>At MongoDBUserStoreManager.java:[line 2689]<br/>At MongoDBUserStoreManager.java:[line 2689]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#EI_EXPOSE_REP">May expose internal representation by returning reference to mutable object</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.getSharedRoles() may expose internal representation by returning MongoDBUserStoreManager$RoleBreakdown.sharedRoles<br/>
+<br/>
+<br/>In file MongoDBUserStoreManager.java,
+					
+						line 2705<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown<br/>In method org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.getSharedRoles()<br/>Field org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.sharedRoles<br/>At MongoDBUserStoreManager.java:[line 2705]<br/>At MongoDBUserStoreManager.java:[line 2705]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#EI_EXPOSE_REP">May expose internal representation by returning reference to mutable object</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.getSharedTenantids() may expose internal representation by returning MongoDBUserStoreManager$RoleBreakdown.sharedTenantids<br/>
+<br/>
+<br/>In file MongoDBUserStoreManager.java,
+					
+						line 2713<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown<br/>In method org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.getSharedTenantids()<br/>Field org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.sharedTenantids<br/>At MongoDBUserStoreManager.java:[line 2713]<br/>At MongoDBUserStoreManager.java:[line 2713]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#EI_EXPOSE_REP">May expose internal representation by returning reference to mutable object</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.getTenantIds() may expose internal representation by returning MongoDBUserStoreManager$RoleBreakdown.tenantIds<br/>
+<br/>
+<br/>In file MongoDBUserStoreManager.java,
+					
+						line 2697<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown<br/>In method org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.getTenantIds()<br/>Field org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.tenantIds<br/>At MongoDBUserStoreManager.java:[line 2697]<br/>At MongoDBUserStoreManager.java:[line 2697]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#EI_EXPOSE_REP2">May expose internal representation by incorporating reference to mutable object</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.setRoles(String[]) may expose internal representation by storing an externally mutable object into MongoDBUserStoreManager$RoleBreakdown.roles<br/>
+<br/>
+<br/>In file MongoDBUserStoreManager.java,
+					
+						line 2693<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown<br/>In method org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.setRoles(String[])<br/>Field org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.roles<br/>Local variable named roles<br/>At MongoDBUserStoreManager.java:[line 2693]<br/>At MongoDBUserStoreManager.java:[line 2693]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#EI_EXPOSE_REP2">May expose internal representation by incorporating reference to mutable object</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.setSharedRoles(String[]) may expose internal representation by storing an externally mutable object into MongoDBUserStoreManager$RoleBreakdown.sharedRoles<br/>
+<br/>
+<br/>In file MongoDBUserStoreManager.java,
+					
+						line 2709<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown<br/>In method org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.setSharedRoles(String[])<br/>Field org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.sharedRoles<br/>Local variable named sharedRoles<br/>At MongoDBUserStoreManager.java:[line 2709]<br/>At MongoDBUserStoreManager.java:[line 2709]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#EI_EXPOSE_REP2">May expose internal representation by incorporating reference to mutable object</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.setSharedTenantids(Integer[]) may expose internal representation by storing an externally mutable object into MongoDBUserStoreManager$RoleBreakdown.sharedTenantids<br/>
+<br/>
+<br/>In file MongoDBUserStoreManager.java,
+					
+						line 2717<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown<br/>In method org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.setSharedTenantids(Integer[])<br/>Field org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.sharedTenantids<br/>Local variable named sharedTenantids<br/>At MongoDBUserStoreManager.java:[line 2717]<br/>At MongoDBUserStoreManager.java:[line 2717]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#EI_EXPOSE_REP2">May expose internal representation by incorporating reference to mutable object</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.setTenantIds(Integer[]) may expose internal representation by storing an externally mutable object into MongoDBUserStoreManager$RoleBreakdown.tenantIds<br/>
+<br/>
+<br/>In file MongoDBUserStoreManager.java,
+					
+						line 2701<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown<br/>In method org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.setTenantIds(Integer[])<br/>Field org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager$RoleBreakdown.tenantIds<br/>Local variable named tenantIds<br/>At MongoDBUserStoreManager.java:[line 2701]<br/>At MongoDBUserStoreManager.java:[line 2701]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#MS_MUTABLE_COLLECTION_PKGPROTECT">Field is a mutable collection which should be package protected</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreConstants.CUSTOM_UM_ADVANCED_PROPERTIES is a mutable collection which should be package protected<br/>
+<br/>
+<br/>In file MongoDBUserStoreConstants.java,
+					
+						line 15<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreConstants<br/>Field org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreConstants.CUSTOM_UM_ADVANCED_PROPERTIES<br/>At MongoDBUserStoreConstants.java:[line 15]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#MS_MUTABLE_COLLECTION_PKGPROTECT">Field is a mutable collection which should be package protected</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES is a mutable collection which should be package protected<br/>
+<br/>
+<br/>In file MongoDBUserStoreConstants.java,
+					
+						line 13<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreConstants<br/>Field org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreConstants.CUSTOM_UM_MANDATORY_PROPERTIES<br/>At MongoDBUserStoreConstants.java:[line 13]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#MS_MUTABLE_COLLECTION_PKGPROTECT">Field is a mutable collection which should be package protected</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreConstants.CUSTOM_UM_OPTIONAL_PROPERTIES is a mutable collection which should be package protected<br/>
+<br/>
+<br/>In file MongoDBUserStoreConstants.java,
+					
+						line 14<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreConstants<br/>Field org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreConstants.CUSTOM_UM_OPTIONAL_PROPERTIES<br/>At MongoDBUserStoreConstants.java:[line 14]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#MS_CANNOT_BE_FINAL">Field isn't final and can't be protected from malicious code</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager.dataSource isn't final and can't be protected from malicious code <br/>
+<br/>
+<br/>In file MongoDBUserStoreManager.java,
+					
+						line 51<br/>In class org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager<br/>Field org.wso2.carbon.mongodb.userstoremanager.MongoDBUserStoreManager.dataSource<br/>At MongoDBUserStoreManager.java:[line 51]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_PERFORMANCE">Performance Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#SS_SHOULD_BE_STATIC">Unread field: should this field be static?</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Unread field: org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.DEFAULT_MAX_ROLE_LIST_SIZE; should this field be static?<br/>
+<br/>
+<br/>In file HybridMongoDBRoleManager.java,
+					
+						line 35<br/>In class org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager<br/>Field org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.DEFAULT_MAX_ROLE_LIST_SIZE<br/>At HybridMongoDBRoleManager.java:[line 35]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#SS_SHOULD_BE_STATIC">Unread field: should this field be static?</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Unread field: org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.DEFAULT_MAX_SEARCH_TIME; should this field be static?<br/>
+<br/>
+<br/>In file HybridMongoDBRoleManager.java,
+					
+						line 36<br/>In class org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager<br/>Field org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.DEFAULT_MAX_SEARCH_TIME<br/>At HybridMongoDBRoleManager.java:[line 36]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#UUF_UNUSED_FIELD">Unused field</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Unused field: org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.dataSource<br/>
+<br/>
+<br/>In file HybridMongoDBRoleManager.java,
+					
+						lines 
+						    to <br/>In class org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager<br/>Field org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.dataSource<br/>In HybridMongoDBRoleManager.java</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#UUF_UNUSED_FIELD">Unused field</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Unused field: org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.isCascadeDeleteEnabled<br/>
+<br/>
+<br/>In file HybridMongoDBRoleManager.java,
+					
+						lines 
+						    to <br/>In class org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager<br/>Field org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.isCascadeDeleteEnabled<br/>In HybridMongoDBRoleManager.java</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_SECURITY">Security Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#PATH_TRAVERSAL_IN">Potential Path Traversal (file read)</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>File(...) reads a file whose location might be specified by user input<br/>
+<br/>
+<br/>In file MongoDBDefaultRealmService.java,
+					
+						line 189<br/>In class org.wso2.carbon.mongodb.db.MongoDBDefaultRealmService<br/>In method org.wso2.carbon.mongodb.db.MongoDBDefaultRealmService.getConfigurationElement()<br/>At MongoDBDefaultRealmService.java:[line 189]<br/>Value File(...)<br/>At MongoDBDefaultRealmService.java:[line 186]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#PATH_TRAVERSAL_IN">Potential Path Traversal (file read)</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>File(...) reads a file whose location might be specified by user input<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 484<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.setSecondaryUserStoreConfig(RealmConfiguration, int)<br/>At MongoDBTenantManager.java:[line 484]<br/>Value File(...)<br/>At MongoDBTenantManager.java:[line 482]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_STYLE">Dodgy code Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DLS_DEAD_LOCAL_STORE">Dead store to local variable</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Dead store to maxItemLimit in org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.getHybridRoles(String)<br/>
+<br/>
+<br/>In file HybridMongoDBRoleManager.java,
+					
+						line 253<br/>In class org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager<br/>In method org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.getHybridRoles(String)<br/>Local variable named maxItemLimit<br/>At HybridMongoDBRoleManager.java:[line 253]<br/>At HybridMongoDBRoleManager.java:[line 253]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DLS_DEAD_LOCAL_STORE">Dead store to local variable</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Dead store to searchTime in org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.getHybridRoles(String)<br/>
+<br/>
+<br/>In file HybridMongoDBRoleManager.java,
+					
+						line 260<br/>In class org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager<br/>In method org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.getHybridRoles(String)<br/>Local variable named searchTime<br/>At HybridMongoDBRoleManager.java:[line 260]<br/>At HybridMongoDBRoleManager.java:[line 260]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DLS_DEAD_LOCAL_STORE">Dead store to local variable</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Dead store to index in org.wso2.carbon.mongodb.util.MongoUserCoreUtil.extractDomainFromName(String)<br/>
+<br/>
+<br/>In file MongoUserCoreUtil.java,
+					
+						line 693<br/>In class org.wso2.carbon.mongodb.util.MongoUserCoreUtil<br/>In method org.wso2.carbon.mongodb.util.MongoUserCoreUtil.extractDomainFromName(String)<br/>Local variable named index<br/>At MongoUserCoreUtil.java:[line 693]<br/>At MongoUserCoreUtil.java:[line 693]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD">Read of unwritten public or protected field</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Read of unwritten public or protected field userRealm in org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.deleteHybridRole(String)<br/>
+<br/>
+<br/>In file HybridMongoDBRoleManager.java,
+					
+						line 604<br/>In class org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager<br/>In method org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.deleteHybridRole(String)<br/>Field org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.userRealm<br/>At HybridMongoDBRoleManager.java:[line 604]<br/>At HybridMongoDBRoleManager.java:[line 604]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD">Read of unwritten public or protected field</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Read of unwritten public or protected field userRealm in org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.getUserListOfHybridRole(String)<br/>
+<br/>
+<br/>In file HybridMongoDBRoleManager.java,
+					
+						line 326<br/>In class org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager<br/>In method org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.getUserListOfHybridRole(String)<br/>Field org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.userRealm<br/>At HybridMongoDBRoleManager.java:[line 326]<br/>At HybridMongoDBRoleManager.java:[line 326]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD">Read of unwritten public or protected field</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Read of unwritten public or protected field userRealm in org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.updateHybridRoleListOfUser(String, String[], String[])<br/>
+<br/>
+<br/>In file HybridMongoDBRoleManager.java,
+					
+						line 551<br/>In class org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager<br/>In method org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.updateHybridRoleListOfUser(String, String[], String[])<br/>Field org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.userRealm<br/>At HybridMongoDBRoleManager.java:[line 551]<br/>At HybridMongoDBRoleManager.java:[line 551]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD">Read of unwritten public or protected field</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Read of unwritten public or protected field userRealm in org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.updateHybridRoleName(String, String)<br/>
+<br/>
+<br/>In file HybridMongoDBRoleManager.java,
+					
+						line 638<br/>In class org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager<br/>In method org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.updateHybridRoleName(String, String)<br/>Field org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.userRealm<br/>At HybridMongoDBRoleManager.java:[line 638]<br/>At HybridMongoDBRoleManager.java:[line 638]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD">Read of unwritten public or protected field</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Read of unwritten public or protected field userRealm in org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.updateUserListOfHybridRole(String, String[], String[])<br/>
+<br/>
+<br/>In file HybridMongoDBRoleManager.java,
+					
+						line 375<br/>In class org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager<br/>In method org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.updateUserListOfHybridRole(String, String[], String[])<br/>Field org.wso2.carbon.mongodb.hybrid.HybridMongoDBRoleManager.userRealm<br/>At HybridMongoDBRoleManager.java:[line 375]<br/>At HybridMongoDBRoleManager.java:[line 375]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#REC_CATCH_EXCEPTION">Exception is caught when Exception is not thrown</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Exception is caught when Exception is not thrown in org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getTenant(int)<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						line 181<br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>In method org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.getTenant(int)<br/>At MongoDBTenantManager.java:[line 181]<br/>At MongoDBTenantManager.java:[line 181]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD">Unused public or protected field</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Unused public or protected field: org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.bundleContext<br/>
+<br/>
+<br/>In file MongoDBTenantManager.java,
+					
+						lines 
+						    to <br/>In class org.wso2.carbon.mongodb.tenant.MongoDBTenantManager<br/>Field org.wso2.carbon.mongodb.tenant.MongoDBTenantManager.bundleContext<br/>In MongoDBTenantManager.java</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h1>
+<a name="Details">Warning Types</a>
+</h1>
+<h2>
+<a name="DLS_DEAD_LOCAL_STORE">Dead store to local variable</a>
+</h2>
+
+<p>
+This instruction assigns a value to a local variable,
+but the value is not read or used in any subsequent instruction.
+Often, this indicates an error, because the value computed is never
+used.
+</p>
+<p>
+Note that Sun's javac compiler often generates dead stores for
+final local variables.  Because FindBugs is a bytecode-based tool,
+there is no easy way to eliminate these false positives.
+</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</h2>
+
+<p> Found a call to a method which will perform a byte to String (or String to byte) conversion, and will assume that the default platform encoding is suitable. This will cause the application behaviour to vary between platforms. Use an alternative API and specify a charset name or Charset object explicitly.  </p>
+
+      
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="EI_EXPOSE_REP">May expose internal representation by returning reference to mutable object</a>
+</h2>
+
+  <p> Returning a reference to a mutable object value stored in one of the object's fields
+  exposes the internal representation of the object.&nbsp;
+   If instances
+   are accessed by untrusted code, and unchecked changes to
+   the mutable object would compromise security or other
+   important properties, you will need to do something different.
+  Returning a new copy of the object is better approach in many situations.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="EI_EXPOSE_REP2">May expose internal representation by incorporating reference to mutable object</a>
+</h2>
+
+  <p> This code stores a reference to an externally mutable object into the
+  internal representation of the object.&nbsp;
+   If instances
+   are accessed by untrusted code, and unchecked changes to
+   the mutable object would compromise security or other
+   important properties, you will need to do something different.
+  Storing a copy of the object is better approach in many situations.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="ICAST_INT_2_LONG_AS_INSTANT">int value converted to long and used as absolute time</a>
+</h2>
+
+<p>
+This code converts a 32-bit int value to a 64-bit long value, and then
+passes that value for a method parameter that requires an absolute time value.
+An absolute time value is the number
+of milliseconds since the standard base time known as "the epoch", namely January 1, 1970, 00:00:00 GMT.
+For example, the following method, intended to convert seconds since the epoch into a Date, is badly
+broken:</p>
+<pre>
+Date getDate(int seconds) { return new Date(seconds * 1000); }
+</pre>
+<p>The multiplication is done using 32-bit arithmetic, and then converted to a 64-bit value.
+When a 32-bit value is converted to 64-bits and used to express an absolute time
+value, only dates in December 1969 and January 1970 can be represented.</p>
+
+<p>Correct implementations for the above method are:</p>
+
+<pre>
+// Fails for dates after 2037
+Date getDate(int seconds) { return new Date(seconds * 1000L); }
+
+// better, works for all dates
+Date getDate(long seconds) { return new Date(seconds * 1000); }
+</pre>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="MS_MUTABLE_COLLECTION_PKGPROTECT">Field is a mutable collection which should be package protected</a>
+</h2>
+
+ <p>A mutable collection instance is assigned to a final static field, 
+   thus can be changed by malicious code or by accident from another package.
+   The field could be made package protected to avoid this vulnerability. 
+   Alternatively you may wrap this field into Collections.unmodifiableSet/List/Map/etc.
+   to avoid this vulnerability.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="MS_CANNOT_BE_FINAL">Field isn't final and can't be protected from malicious code</a>
+</h2>
+
+  <p>
+ A mutable static field could be changed by malicious code or
+        by accident from another package.
+   Unfortunately, the way the field is used doesn't allow
+   any easy fix to this problem.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="NP_ALWAYS_NULL">Null pointer dereference</a>
+</h2>
+
+<p> A null pointer is dereferenced here.&nbsp; This will lead to a
+<code>NullPointerException</code> when the code is executed.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="NP_NULL_ON_SOME_PATH_EXCEPTION">Possible null pointer dereference in method on exception path</a>
+</h2>
+
+<p> A reference value which is null on some exception control path is
+dereferenced here.&nbsp; This may lead to a <code>NullPointerException</code>
+when the code is executed.&nbsp;
+Note that because FindBugs currently does not prune infeasible exception paths,
+this may be a false warning.</p>
+
+<p> Also note that FindBugs considers the default case of a switch statement to
+be an exception path, since the default case is often infeasible.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD">Read of unwritten public or protected field</a>
+</h2>
+
+  <p> The program is dereferencing a public or protected
+field that does not seem to ever have a non-null value written to it.
+Unless the field is initialized via some mechanism not seen by the analysis,
+dereferencing this value will generate a null pointer exception.
+</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="REC_CATCH_EXCEPTION">Exception is caught when Exception is not thrown</a>
+</h2>
+  
+  <p>
+  This method uses a try-catch block that catches Exception objects, but Exception is not
+  thrown within the try block, and RuntimeException is not explicitly caught.  It is a common bug pattern to
+  say try { ... } catch (Exception e) { something } as a shorthand for catching a number of types of exception
+  each of whose catch blocks is identical, but this construct also accidentally catches RuntimeException as well,
+  masking potential bugs.
+  </p>
+  <p>A better approach is to either explicitly catch the specific exceptions that are thrown,
+  or to explicitly catch RuntimeException exception, rethrow it, and then catch all non-Runtime Exceptions, as shown below:</p>
+  <pre>
+  try {
+    ...
+  } catch (RuntimeException e) {
+    throw e;
+  } catch (Exception e) {
+    ... deal with all non-runtime exceptions ...
+  }</pre>
+  
+     
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="PATH_TRAVERSAL_IN">Potential Path Traversal (file read)</a>
+</h2>
+            
+<p>A file is opened to read its content. The filename comes from an <b>input</b> parameter. 
+If an unfiltered parameter is passed to this file API, files from an arbitrary filesystem location could be read.</p>
+<p>This rule identifies <b>potential</b> path traversal vulnerabilities. In many cases, the constructed file path cannot be controlled
+by the user. If that is the case, the reported instance is a false positive.</p>
+<br/>
+<p>
+<b>References</b><br/>
+<a href="http://projects.webappsec.org/w/page/13246952/Path%20Traversal">WASC: Path Traversal</a><br/>
+<a href="https://www.owasp.org/index.php/Path_Traversal">OWASP: Path Traversal</a><br/>
+<a href="http://capec.mitre.org/data/definitions/126.html">CAPEC-126: Path Traversal</a><br/>
+<a href="http://cwe.mitre.org/data/definitions/22.html">CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')</a>
+</p>
+
+        
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="SS_SHOULD_BE_STATIC">Unread field: should this field be static?</a>
+</h2>
+
+  <p> This class contains an instance final field that
+   is initialized to a compile-time static value.
+   Consider making the field static.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="DMI_INVOKING_TOSTRING_ON_ARRAY">Invocation of toString on an array</a>
+</h2>
+
+<p>
+The code invokes toString on an array, which will generate a fairly useless result
+such as [C@16f0472. Consider using Arrays.toString to convert the array into a readable
+String that gives the contents of the array. See Programming Puzzlers, chapter 3, puzzle 12.
+</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="UUF_UNUSED_FIELD">Unused field</a>
+</h2>
+
+  <p> This field is never used.&nbsp; Consider removing it from the class.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD">Unused public or protected field</a>
+</h2>
+
+  <p> This field is never used.&nbsp;
+The field is public or protected, so perhaps
+    it is intended to be used with classes not seen as part of the analysis. If not,
+consider removing it from the class.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="UWF_NULL_FIELD">Field only ever set to null</a>
+</h2>
+
+  <p> All writes to this field are of the constant value null, and thus
+all reads of the field will return null.
+Check for errors, or remove it if it is useless.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+</body>
+</html>

@@ -129,7 +129,7 @@ public interface MongoPreparedStatement {
     /**
      * search documents through aggregration pipeline from mongodb
      * @return AggregrationOutput instance
-     * @throws MongoQueryException if any exception occurred
+     * @throws UserStoreException if any exception occurred
      */
 	AggregationOutput aggregate() throws UserStoreException;
 
