@@ -1,0 +1,5 @@
+org.wso2.carbon.mongodb.query
+org.wso2.carbon.mongodb.userstoremanager
+org.wso2.carbon.mongodb.userstoremanager.caseinsensitive
+org.wso2.carbon.mongodb.userstoremanager.internal
+org.wso2.carbon.mongodb.util
