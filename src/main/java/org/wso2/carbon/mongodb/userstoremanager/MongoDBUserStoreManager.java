@@ -1267,7 +1267,7 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
                         MongoDatabaseUtil.updateUserRoleMappingInBatchMode(dbConnection, mongoQuery2,
                                 mapRole);
                     }
-                    if (deletedUsers.length > 0) {
+                    if (deletedUsers != null && deletedUsers.length > 0) {
 
                         MongoDatabaseUtil.deleteUserMappingInBatchMode(dbConnection, mongoQuery,
                                 mapRole);
