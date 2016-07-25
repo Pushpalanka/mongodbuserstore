@@ -18,11 +18,12 @@ import org.wso2.carbon.mongodb.userstoremanager.MongoDBRealmConstants;
 import org.wso2.carbon.user.api.RealmConfiguration;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.util.DatabaseUtil;
+import org.wso2.carbon.user.core.util.UserCoreUtil;
 
 /**
  * MongoDB database operations
  */
-@SuppressWarnings({"deprecation", "WeakerAccess"})
+@SuppressWarnings({"deprecation", "WeakerAccess", "unused"})
 public class MongoDatabaseUtil {
 
 	private static final Log log = LogFactory.getLog(DatabaseUtil.class);
@@ -714,16 +715,16 @@ public class MongoDatabaseUtil {
                 for (String value : values) {
                     String strParam =  value;
                     //add domain if not set
-                    strParam = MongoUserCoreUtil.addDomainToName(strParam, primaryDomain);
+                    strParam = UserCoreUtil.addDomainToName(strParam, primaryDomain);
                     //get domain from name
-                    String domainParam = MongoUserCoreUtil.extractDomainFromName(strParam);
+                    String domainParam = UserCoreUtil.extractDomainFromName(strParam);
                     if (domainParam != null) {
                         domainParam = domainParam.toUpperCase();
                     }
                     //set domain to mongodb
                     prepStmt.setString(keys.get(params.length + 1), domainParam);
                     //remove domain before persisting
-                    String nameWithoutDomain = MongoUserCoreUtil.removeDomainFromName(strParam);
+                    String nameWithoutDomain = UserCoreUtil.removeDomainFromName(strParam);
                     //set name in mongodb
                     prepStmt.setString(keys.get(batchParamIndex + 1), nameWithoutDomain);
                     WriteResult result = prepStmt.update();
@@ -776,7 +777,7 @@ public class MongoDatabaseUtil {
                 String name = cursor.next().get(keys.get(1)).toString();
                 String domain = cursor.next().get(keys.get(2)).toString();
                 if (domain != null) {
-                    name = MongoUserCoreUtil.addDomainToName(name, domain);
+                    name = UserCoreUtil.addDomainToName(name, domain);
                 }
                 lst.add(name);
             }

@@ -29,7 +29,7 @@ public class MongoDBUserStoreDSComponent{
         carbonContext.setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
         UserStoreManager userStoreManager = new MongoDBUserStoreManager();
         RealmService service = new DefaultRealmService(cc.getBundleContext());
-        MongoDBUserStoreManager.dataSource = DatabaseUtil.getRealmDataSource(service.getBootstrapRealmConfiguration());
+        MongoDBUserStoreManager.setDBDataSource(DatabaseUtil.getRealmDataSource(service.getBootstrapRealmConfiguration()));
         cc.getBundleContext().registerService(UserStoreManager.class.getName(), userStoreManager, null);
         log.info("MongoDB User Store bundle activated successfully..");
         UserStoreManagerRegistry.init(cc.getBundleContext());

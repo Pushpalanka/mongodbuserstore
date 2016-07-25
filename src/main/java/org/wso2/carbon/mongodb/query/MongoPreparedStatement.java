@@ -13,7 +13,7 @@ import org.wso2.carbon.user.api.UserStoreException;
 /**
  * MongoDB Prepared Statement Interface
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public interface MongoPreparedStatement {
 
     /**

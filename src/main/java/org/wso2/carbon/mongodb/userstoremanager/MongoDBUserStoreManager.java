@@ -50,7 +50,7 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
     private static final String CASE_INSENSITIVE_USERNAME = "CaseInsensitiveUsername";
     private final SecureRandom random = new SecureRandom();
     private static final String SHA_1_PRNG = "SHA1PRNG";
-    public static DataSource dataSource = null;
+    private static DataSource dataSource = null;
 	private final org.apache.commons.logging.Log log = LogFactory.getLog(MongoDBUserStoreManager.class);
 
     /**
@@ -1232,7 +1232,7 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
                 throw new UserStoreException("The mongo statement for add user to role is null");
             }
             int userIds[];
-            if(deletedUsers!=null)
+            if(deletedUsers!=null && deletedUsers.length > 0)
             {
                 userIds = getUserIDS(dbConnection,deletedUsers);
             }
@@ -1248,11 +1248,11 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
             if (isShared) {
 
                 mapRole.put("UM_ROLE_ID", roleIds[0]);
-                if (newUsers != null) {
+                if (newUsers.length > 0) {
                     MongoDatabaseUtil.updateUserRoleMappingInBatchMode(dbConnection, mongoQuery2,
                             mapRole);
                 }
-                if (deletedUsers != null) {
+                if (deletedUsers.length > 0) {
 
                     MongoDatabaseUtil.deleteUserMappingInBatchMode(dbConnection, mongoQuery,
                             mapRole);
@@ -1262,12 +1262,12 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
 
                     mapRole.put("UM_ROLE_ID", roleIds[0]);
                     mapRole.put("UM_TENANT_ID", roleTenantId);
-                    if (newUsers != null) {
+                    if (newUsers.length > 0) {
 
                         MongoDatabaseUtil.updateUserRoleMappingInBatchMode(dbConnection, mongoQuery2,
                                 mapRole);
                     }
-                    if (deletedUsers != null) {
+                    if (deletedUsers.length > 0) {
 
                         MongoDatabaseUtil.deleteUserMappingInBatchMode(dbConnection, mongoQuery,
                                 mapRole);
@@ -1276,11 +1276,11 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
                 } else {
 
                     mapRole.put("UM_ROLE_ID", roleIds[0]);
-                    if (newUsers != null) {
+                    if (newUsers.length > 0) {
                         MongoDatabaseUtil.updateUserRoleMappingInBatchMode(dbConnection, mongoQuery2,
                                 mapRole);
                     }
-                    if (deletedUsers != null) {
+                    if (deletedUsers.length > 0) {
                         MongoDatabaseUtil.deleteUserMappingInBatchMode(dbConnection, mongoQuery,
                                 mapRole);
                     }
@@ -3529,6 +3529,11 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager{
             throws org.wso2.carbon.user.api.UserStoreException {
         addRole(roleName, userList, permissions, false);
 
+    }
+
+    public static void setDBDataSource(DataSource source){
+
+        dataSource = source;
     }
 
     public boolean isOthersSharedRole(String roleName) {
