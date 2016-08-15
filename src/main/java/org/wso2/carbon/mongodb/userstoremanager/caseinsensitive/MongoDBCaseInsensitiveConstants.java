@@ -43,10 +43,10 @@ public class MongoDBCaseInsensitiveConstants {
     public static final String GET_PROFILE_NAMES_FOR_USER_MONGO_CASE_INSENSITIVE = "{'collection' : 'UM_USER_ATTRIBUTE','UM_USER_ID' : '?','projection' : {'UM_PROFILE_ID' : 1,_id : 0},'distinct' : 'UM_PROFILE_ID'}";
     public static final String GET_PROFILE_NAMES_FOR_USER_MONGO_CASE_INSENSITIVE_CONDITION = "{'collection' : 'UM_USER','UM_USER_NAME' : '?','UM_TENANT_ID' : '?','projection' : {'UM_ID' : '1'}}";
     public static final String GET_USERID_FROM_USERNAME_MONGO_INSENSITIVE = "{'collection' : 'UM_USER','UM_USER_NAME' : {'$regex' : '?','$options' : 'i'},'UM_TENANT_ID' : '?'}";
-    public static final String GET_TENANT_ID_FROM_USERNAME_MONGO_INSENSITIVE = "{'collection' : 'UM_USER','UM_USER_NAME' : {'$regex' : '?','$option' : 'i'},'projection' : {'UM_TENANT_ID' : 1,_id : 0}}" ;
+    public static final String GET_TENANT_ID_FROM_USERNAME_MONGO_INSENSITIVE = "{'collection' : 'UM_USER','UM_USER_NAME' : {'$regex' : '?','$option' : 'i'},'projection' : {'UM_TENANT_ID' : 1,_id : 0}}";
     public static final String ADD_USER_TO_ROLE_MONGO__CASE_INSENSITIVE = "{'collection' : 'UM_USER_ROLE','UM_USER_ID' : '?','UM_ROLE_ID' : '?','UM_TENANT_ID' : '?'}";
     public static final String ADD_USER_TO_ROLE_MONGO_CASE_INSENSITIVE_CONDITION1 = "{'collection' : 'UM_USER','UM_USER_NAME' : {'$regex' : '?','$options' : 'i'},'UM_TENANT_ID' : '?','projection' : {'UM_ID' : '1','_id' : 0}}";
-    public static final String ADD_USER_TO_ROLE_MONGO_CASE_INSENSITIVE_CONDITION2	= "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : {'$regex' : '?','$options' : 'i'},'UM_TENANT_ID' : '?','projection' : {'UM_ID' : '1','_id' : 0}}";
+    public static final String ADD_USER_TO_ROLE_MONGO_CASE_INSENSITIVE_CONDITION2 = "{'collection' : 'UM_ROLE','UM_ROLE_NAME' : {'$regex' : '?','$options' : 'i'},'UM_TENANT_ID' : '?','projection' : {'UM_ID' : '1','_id' : 0}}";
     public static final String ADD_ROLE_TO_USER_MONGO_CASE_INSENSITIVE = "{'collection' : 'UM_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_TENANT_ID' : '?','UM_ID' : '?'}";
     public static final String ADD_SHARED_ROLE_TO_USER_MONGO_CASE_INSENSITIVE = "{'collection' : 'UM_SHARED_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_USER_TENANT_ID' : '?','UM_ROLE_TENANT_ID' : '?'}";
     public static final String REMOVE_USER_FROM_SHARED_ROLE_MONGO_CASE_INSENSITIVE = "{'collection' : 'UM_SHARED_USER_ROLE','UM_ROLE_ID' : '?','UM_USER_ID' : '?','UM_USER_TENANT_ID' : '?','UM_ROLE_TENANT_ID' : '?'}";

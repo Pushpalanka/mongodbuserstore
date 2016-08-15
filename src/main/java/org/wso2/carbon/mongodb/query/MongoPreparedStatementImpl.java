@@ -1,8 +1,27 @@
 package org.wso2.carbon.mongodb.query;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
-import com.mongodb.*;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.BulkWriteOperation;
+import com.mongodb.DBRef;
+import com.mongodb.WriteResult;
+import com.mongodb.DBCursor;
+import com.mongodb.AggregationOutput;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoException;
+import com.mongodb.DBEncoder;
+import com.mongodb.WriteConcern;
+import com.mongodb.BulkWriteRequestBuilder;
+import com.mongodb.BulkWriteResult;
+import com.mongodb.BulkUpdateRequestBuilder;
 import org.bson.types.BSONTimestamp;
 import org.bson.types.Binary;
 import org.bson.types.Symbol;
