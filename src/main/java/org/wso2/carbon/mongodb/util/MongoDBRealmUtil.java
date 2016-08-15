@@ -5,11 +5,11 @@ import java.util.Map;
 import org.wso2.carbon.mongodb.userstoremanager.MongoDBRealmConstants;
 
 /**
- * MongoDBRealmUtil load all the default user store properties for configurations
+ * MongoDBRealmUtil loads all the default user store properties for configurations
  */
 public class MongoDBRealmUtil {
 
-	public static Map<String, String> getMONGO_QUERY(Map<String, String> properties) {
+    public static Map<String, String> getMONGO_QUERY(Map<String, String> properties) {
 
         if (!properties.containsKey(MongoDBRealmConstants.SELECT_USER)) {
             properties.put(MongoDBRealmConstants.SELECT_USER, MongoDBRealmConstants.SELECT_USER_MONGO_QUERY);
@@ -172,17 +172,17 @@ public class MongoDBRealmUtil {
             properties.put(MongoDBRealmConstants.ADD_DOMAIN,
                     MongoDBRealmConstants.ADD_DOMAIN_MONGO_QUERY);
         }
-        if(properties.containsKey(MongoDBRealmConstants.GET_SHARED_ROLES_FOR_USER)){
+        if (properties.containsKey(MongoDBRealmConstants.GET_SHARED_ROLES_FOR_USER)) {
             properties.put(MongoDBRealmConstants.GET_SHARED_ROLES_FOR_USER,
                     MongoDBRealmConstants.GET_SHARED_ROLES_FOR_USER_MONGO_QUERY);
         }
-        if(properties.containsKey(MongoDBRealmConstants.ADD_SHARED_ROLE)){
+        if (properties.containsKey(MongoDBRealmConstants.ADD_SHARED_ROLE)) {
             properties.put(MongoDBRealmConstants.ADD_SHARED_ROLE,
                     MongoDBRealmConstants.ADD_SHARED_ROLE_MONGO_QUERY);
         }
-        if(properties.containsKey(MongoDBRealmConstants.GET_USERS_IN_SHARED_ROLE)){
-            properties.put(MongoDBRealmConstants.GET_USERS_IN_SHARED_ROLE,MongoDBRealmConstants.GET_USERS_IN_SHARED_ROLE_MONGO_QUERY);
+        if (properties.containsKey(MongoDBRealmConstants.GET_USERS_IN_SHARED_ROLE)) {
+            properties.put(MongoDBRealmConstants.GET_USERS_IN_SHARED_ROLE, MongoDBRealmConstants.GET_USERS_IN_SHARED_ROLE_MONGO_QUERY);
         }
         return properties;
-    } 
+    }
 }

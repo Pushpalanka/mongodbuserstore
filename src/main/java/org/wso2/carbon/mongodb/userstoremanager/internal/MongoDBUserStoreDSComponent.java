@@ -17,11 +17,11 @@ import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
  * @scr.component name="mongodb.userstoremanager.dscomponent" immediate=true
  */
 @SuppressWarnings({"unused", "JavaDoc"})
-public class MongoDBUserStoreDSComponent{
+public class MongoDBUserStoreDSComponent {
 
-   private static final Log log = LogFactory.getLog(MongoDBUserStoreDSComponent.class);
+    private static final Log log = LogFactory.getLog(MongoDBUserStoreDSComponent.class);
 
-    protected void activate(ComponentContext cc) throws Exception{
+    protected void activate(ComponentContext cc) throws Exception {
 
         PrivilegedCarbonContext carbonContext = PrivilegedCarbonContext
                 .getThreadLocalCarbonContext();
@@ -37,7 +37,7 @@ public class MongoDBUserStoreDSComponent{
     }
 
     @SuppressWarnings({"RedundantThrows", "UnusedParameters"})
-    protected void deactivate(ComponentContext cc) throws Exception{
+    protected void deactivate(ComponentContext cc) throws Exception {
         System.out.println("MongoDB Bundle Shutting down");
         if (log.isDebugEnabled()) {
             log.debug("MongoDB User Store Manager is deactivated ");
