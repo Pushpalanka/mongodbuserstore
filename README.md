@@ -64,10 +64,10 @@ this is still not merged to wso2 identity server main repo and mongodb user stor
 
 All the documents related to this userstore you can find my repository and below i shared publicaly with google doc also
 
-[1] https://docs.google.com/document/d/1mdnmYruzQz5QSxAYwM1XVeJntJMFdxUsV5gord7LuPA/edit?usp=sharing
-[2] https://docs.google.com/document/d/1fCLfZYsPOBkHMzRCGM3aexoBSplX3bKIRmONmFsgkBc/edit?usp=sharing
-[3] http://googledrive.com/host/0B__ZE1ru1jkXbDVoSDlveV9yNk0
-[4] https://docs.google.com/spreadsheets/d/1jwSR_qFV-LfOS7ZTZ8CpiFFTYPoudDQF7zQhvblivaE/edit?usp=sharing
+[1] https://docs.google.com/document/d/1mdnmYruzQz5QSxAYwM1XVeJntJMFdxUsV5gord7LuPA/edit?usp=sharing<br>
+[2] https://docs.google.com/document/d/1fCLfZYsPOBkHMzRCGM3aexoBSplX3bKIRmONmFsgkBc/edit?usp=sharing<br>
+[3] http://googledrive.com/host/0B__ZE1ru1jkXbDVoSDlveV9yNk0<br>
+[4] https://docs.google.com/spreadsheets/d/1jwSR_qFV-LfOS7ZTZ8CpiFFTYPoudDQF7zQhvblivaE/edit?usp=sharing<br>
 
 And below has the link to my blog which contain all my gsoc2016 experience
 
