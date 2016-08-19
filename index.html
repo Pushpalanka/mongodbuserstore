@@ -73,7 +73,7 @@ db.UM_DOMAIN.insert({
 
 <p>here this getNextSequence is to auto_increment id in UM_DOMAIN collection since MongoDB doesn't have auto_increment i implement it using a simple script and COUNTERS is for store the current sequence of collection</p>
 
-<p>to deploy MongoDBUserStoreManager to WSO2 Identity Server you need to add <a href="http://central.maven.org/maven2/org/mongodb/mongo-java-driver/3.2.2/">mongo-java-driver</a> jar and <a href="https://github.com/asanthamax/mongodbuserstore/tree/gh-pages">json</a> lib to deployment folder in IS just download the mongo-java-driver-3.2.2.jar from after that go to add user store in IS admin console and select MongoDBUserStoreManager from UserStoreManager class dropdown 
+<p>to deploy MongoDBUserStoreManager to WSO2 Identity Server you need to add <a href="http://central.maven.org/maven2/org/mongodb/mongo-java-driver/3.2.2/">mongo-java-driver</a> jar and <a href="https://github.com/asanthamax/mongodbuserstore/tree/gh-pages">json</a> lib to deployment folder in IS just download the mongo-java-driver-3.2.2.jar after that go to add user store in IS admin console and select MongoDBUserStoreManager from UserStoreManager class dropdown 
 then create a new user store with giving appropriate connection configuration</p>
 
 <p>and thats all it will create a new mongodb userstore in Identity Server there after you can do user related activities in IS inside mongodb user store domain since this is development repository you can simply download this and install it using <b>mvn clean install</b></p>
