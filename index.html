@@ -78,7 +78,7 @@ then create a new user store with giving appropriate connection configuration</p
 
 <p>and thats all it will create a new mongodb userstore in Identity Server there after you can do user related activities in IS inside mongodb user store domain since this is development repository you can simply download this and install it using mvn clean install</p>
 
-<p>after successfully built get the jar from target folder and add it with mongo-java-driver you download from above link and get the json lib also from here and add to deployment folder</p>
+<p>after successfully built get the jar from target folder and add it with mongo-java-driver you download from above link and get the json lib also from <a href="https://github.com/asanthamax/mongodbuserstore/tree/gh-pages">here</a> and add to deployment folder</p>
 
 <p>If you want IS to default have the MongoDBUserStore you can simply clone product-is repository from here and identity-mongodb-extension from here and first build the mongodb-extension using maven clean install command and after successfully built it build product-is using mvn clean install -Dmaven.test.skip=true command there after it will build a wso-IS zip you can find it inside modules/distributions/target folder get it and unzip and add mongo-java-driver to dropins folder and run the server,you should be able to see MongoDBUserStoreManager in dropdown in create user store UI in admin console this is still not merged to wso2 identity server main repo and mongodb user store manin extension where it will be more likely distributed with IS 5.3.0 until that you can follow one of the process describe in above to deploy mongodbuser store in wso2 identity server</p>
 
