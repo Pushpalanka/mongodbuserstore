@@ -28,18 +28,29 @@
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.user.core</artifactId>
-            <version>4.4.3</version>
+            <version>4.4.11</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.user.api</artifactId>
-            <version>4.4.3</version>
+            <version>4.4.11</version>
         </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.json</groupId>-->
+        <!--<artifactId>json</artifactId>-->
+        <!--<version>20160212</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>org.json</groupId>-->
+        <!--<artifactId>json</artifactId>-->
+        <!--<version>20160810</version>-->
+        <!--</dependency>-->
         <dependency>
-            <groupId>org.json</groupId>
+            <groupId>org.json.wso2</groupId>
             <artifactId>json</artifactId>
-            <version>20160212</version>
+            <version>3.0.0.wso2v1</version>
         </dependency>
+
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
@@ -56,11 +67,36 @@
             <artifactId>jasypt</artifactId>
             <version>1.9.2</version>
         </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.mongodb</groupId>-->
+        <!--<artifactId>mongo-java-driver</artifactId>-->
+        <!--<version>3.2.2</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
-            <version>3.2.2</version>
+            <version>3.4.2</version>
         </dependency>
+
+
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver</artifactId>
+            <version>3.4.2</version>
+        </dependency>
+
+
+        <!--<dependency>-->
+            <!--<groupId>org.mongodb</groupId>-->
+            <!--<artifactId>bson</artifactId>-->
+            <!--<version>3.4.2</version>-->
+        <!--</dependency>-->
+
+
+        <!--Missing optionally imported package com.mongodb_3.2.0.-->
+        <!--Missing optionally imported package org.apache.axiom.om.util_1.2.11.wso2v9.-->
+        <!--Missing optionally imported package org.bson.types_3.2.0.-->
+        <!--Missing optionally imported package org.json_20160212.0.0.-->
     </dependencies>
     <build>
         <plugins>
@@ -100,15 +136,21 @@
                         </Private-Package>
                         <Export-Package>
                             !org.wso2.carbon.mongodb.userstoremanager.internal,
-                            org.wso2.carbon.mongodb.*;
-                            org.wso2.carbon.user.core.internal;
+                            org.wso2.carbon.mongodb.*; version=0.0.1-SNAPSHOT
                         </Export-Package>
                         <Import-Package>
                             javax.servlet; version=2.4.0,
                             javax.servlet.http; version=2.4.0,
                             org.wso2.carbon.base.*,
-                            org.wso2.carbon.user.core.*; version=4.4.3,
-                            *;resolution:=optional
+                            org.wso2.carbon.user.core.*; version=4.4.11,
+                            org.mongodb.*; version=3.4.2,
+                            org.apache.axiom.om.util.*; version=1.2.11.wso2v11,
+                            org.json.wso2*; version=3.0.0.wso2v1,
+                            <!--*;resolution:=optional-->
+                            <!--Missing optionally imported package com.mongodb_3.2.0.-->
+                            <!--Missing optionally imported package org.apache.axiom.om.util_1.2.11.wso2v9.-->
+                            <!--Missing optionally imported package org.bson.types_3.2.0.-->
+                            <!--Missing optionally imported package org.json_20160212.0.0.-->
                         </Import-Package>
                         <DynamicImport-Package>*</DynamicImport-Package>
                     </instructions>

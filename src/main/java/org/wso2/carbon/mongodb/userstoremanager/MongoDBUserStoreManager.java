@@ -59,6 +59,8 @@ import org.wso2.carbon.user.core.tenant.Tenant;
 import org.wso2.carbon.mongodb.util.MongoDBRealmUtil;
 import org.wso2.carbon.user.core.util.DatabaseUtil;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
+import org.wso2.carbon.utils.Secret;
+import org.wso2.carbon.utils.UnsupportedSecretTypeException;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.mongodb.query.MongoQueryException;
 
@@ -502,7 +504,7 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager {
             return false;
         }
         String mongoQuery = null;
-        String password = (String) credential;
+        Object password = credential;
         boolean isAuthed = false;
         MongoPreparedStatement prepStmt = null;
         try {
@@ -563,31 +565,80 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager {
     }
 
 
-    private String preparePassword(String password, String saltValue) throws UserStoreException {
+//    private String preparePassword(Object password, String saltValue) throws UserStoreException {
+//
+//        try {
+//            String digestInput = password;
+//            if (saltValue != null) {
+//                digestInput = password + saltValue;
+//            }
+//            String digsestFunction = realmConfig.getUserStoreProperties().get(
+//                    MongoDBRealmConstants.DIGEST_FUNCTION);
+//            if (digsestFunction != null) {
+//
+//                if (digsestFunction
+//                        .equals(UserCoreConstants.RealmConfig.PASSWORD_HASH_METHOD_PLAIN_TEXT)) {
+//                    return password;
+//                }
+//
+//                MessageDigest dgst = MessageDigest.getInstance(digsestFunction);
+//                byte[] byteValue = dgst.digest(digestInput.getBytes("UTF-8"));
+//                password = Base64.encode(byteValue);
+//            }
+//            return password;
+//        } catch (NoSuchAlgorithmException e) {
+//            throw new UserStoreException(e.getMessage(), e);
+//        } catch (UnsupportedEncodingException e) {
+//            throw new UserStoreException(e.getMessage(), e);
+//        }
+//    }
+
+    /**
+     * Prepare the password including the salt, and hashes if hash algorithm is provided
+     *
+     * @param password original password value
+     * @param saltValue salt value
+     * @return  hashed password or plain text password as a String
+     * @throws UserStoreException
+     */
+    protected String preparePassword(Object password, String saltValue) throws UserStoreException {
+
+        Secret credentialObj;
+        try {
+            credentialObj = Secret.getSecret(password);
+        } catch (UnsupportedSecretTypeException e) {
+            throw new UserStoreException("Unsupported credential type", e);
+        }
 
         try {
-            String digestInput = password;
+            String passwordString;
             if (saltValue != null) {
-                digestInput = password + saltValue;
+                credentialObj.addChars(saltValue.toCharArray());
             }
-            String digsestFunction = realmConfig.getUserStoreProperties().get(
-                    MongoDBRealmConstants.DIGEST_FUNCTION);
-            if (digsestFunction != null) {
 
-                if (digsestFunction
-                        .equals(UserCoreConstants.RealmConfig.PASSWORD_HASH_METHOD_PLAIN_TEXT)) {
-                    return password;
+            String digestFunction = realmConfig.getUserStoreProperties().get(MongoDBRealmConstants.DIGEST_FUNCTION);
+            if (digestFunction != null) {
+                if (digestFunction.equals(UserCoreConstants.RealmConfig.PASSWORD_HASH_METHOD_PLAIN_TEXT)) {
+                    passwordString = new String(credentialObj.getChars());
+                    return passwordString;
                 }
 
-                MessageDigest dgst = MessageDigest.getInstance(digsestFunction);
-                byte[] byteValue = dgst.digest(digestInput.getBytes("UTF-8"));
-                password = Base64.encode(byteValue);
+                MessageDigest digest = MessageDigest.getInstance(digestFunction);
+                byte[] byteValue = digest.digest(credentialObj.getBytes()); //ToDO add charset "UTF-8"
+                passwordString = Base64.encode(byteValue);
+            } else {
+                passwordString = new String(credentialObj.getChars());
             }
-            return password;
+
+            return passwordString;
         } catch (NoSuchAlgorithmException e) {
-            throw new UserStoreException(e.getMessage(), e);
-        } catch (UnsupportedEncodingException e) {
-            throw new UserStoreException(e.getMessage(), e);
+            String msg = "Error occurred while preparing password.";
+            if (log.isDebugEnabled()) {
+                log.debug(msg, e);
+            }
+            throw new UserStoreException(msg, e);
+        } finally {
+            credentialObj.clear();
         }
     }
 
@@ -644,7 +695,7 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager {
                 MongoDBRealmConstants.STORE_SALTED_PASSWORDS))) {
             saltValue = generateSaltValue();
         }
-        String password = this.preparePassword((String) newCredential, saltValue);
+        String password = this.preparePassword(newCredential, saltValue);
         map.put("UM_USER_NAME", userName);
         map.put("UM_USER_PASSWORD", password);
 
@@ -2398,7 +2449,7 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager {
 
             names = userList.toArray(new String[userList.size()]);
         }
-        log.debug("Roles are not defined for the role name " + roleName);
+        log.debug("Users are not defined for the role name " + roleName);
 
         return names;
     }
@@ -2748,7 +2799,7 @@ public class MongoDBUserStoreManager extends AbstractUserStoreManager {
         }
 
         DB dbConnection = null;
-        String password = (String) credential;
+        Object password = credential;
         String sqlStmt1 = "";
         String sqlStmt2 = "";
         Map<String, Object> map = new HashMap<String, Object>();

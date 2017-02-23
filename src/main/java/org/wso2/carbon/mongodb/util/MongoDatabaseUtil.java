@@ -442,7 +442,7 @@ public class MongoDatabaseUtil {
             keys.add(index, key);
             if (stmt.get(key) instanceof JSONObject) {
                 JSONObject value = stmt.getJSONObject(key);
-                key = value.keys().next();
+                key = (String) value.keys().next();
                 if (key.equals("$set")) {
 
                     String names[] = JSONObject.getNames(value.getJSONObject(key));
